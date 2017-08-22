@@ -1,37 +1,62 @@
 import numpy as np
 import os,sys
+from reaction_tools import *
 #
 # form reactant and product information
 #
-argvs = sys.argv
-reac  = sys.argv[1]
+(reac, rxn, prod) = read_reactionfile("reaction.txt")
 
-print("calculating reaction %s") % reac
+rxn_num = len(rxn)
 
-reac, prod = reac.split("-->")
-reac = reac.replace(" ","")
-prod = prod.replace(" ","")
+r_ads  = [ [] for i in range(rxn_num) ]
+p_ads  = [ [] for i in range(rxn_num) ]
+r_site = [ [] for i in range(rxn_num) ]
+p_site = [ [] for i in range(rxn_num) ]
+r_coef = [ [] for i in range(rxn_num) ]
+p_coef = [ [] for i in range(rxn_num) ]
 
-reac = reac.split("+")
-prod = prod.split("+")
-reac_num = len(reac)
-prod_num = len(prod)
+for irxn, jrnx in enumerate(rxn):
+	ireac = reac[irxn];     iprod = prod[irxn]
+	ireac_num = len(ireac); iprod_num = len(iprod)
 
-#print("reactant: %s, product: %s") % (reac,prod)
-#print reac_num, prod_num
+	r_ads[irxn]  = range(ireac_num)
+	r_site[irxn] = range(ireac_num)
+	r_coef[irxn] = range(ireac_num)
 
-r_ads = range(reac_num) ; r_site = range(reac_num)
-for i,j in enumerate(reac):
-	r_ads[i]  = j.split("_")[0]
-	r_site[i] = j.split("_")[1]
+	for i,j in enumerate(ireac):
+		if "*" in j:
+			r_coef[irxn][i] = int( j.split("*")[0] )
+			rest = j.split("*")[1]
+		else:
+			r_coef[irxn][i] = 1
+			rest = j
+		if "_" in rest:
+			r_site[irxn][i] = rest.split("_")[1]
+			r_ads[irxn][i]  = rest.split("_")[0]
+		else:
+			r_site[irxn][i] = "gas"
+			r_ads[irxn][i]  = rest
 
-p_ads = range(prod_num) ; p_site = range(prod_num)
-for i,j in enumerate(prod):
- 	p_ads[i]  =  j.split("_")[0]
-  	p_site[i] = j.split("_")[1]
+	p_ads[irxn]  = range(iprod_num)
+	p_site[irxn] = range(iprod_num)
+	p_coef[irxn] = range(iprod_num)
 
-#print r_ads, r_site
-#print p_ads, p_site
+	for i,j in enumerate(iprod):
+		if "*" in j:
+			p_coef[irxn][i] = int( j.split("*")[0] )
+			rest = j.split("*")[1]
+		else:
+			p_coef[irxn][i] = 1
+			rest = j
+		if "_" in rest:
+			p_site[irxn][i] = rest.split("_")[1]
+			p_ads[irxn][i]  = rest.split("_")[0]
+		else:
+			p_site[irxn][i] = "gas"
+			p_ads[irxn][i]  = rest
+
+#print r_ads, r_site, r_coef
+#print p_ads, p_site, p_coef
 
 #
 from ase import Atoms, Atom
@@ -44,47 +69,58 @@ from ase.vibrations import Vibrations
 # molecule's data should be stored in "methane.json"
 #
 method = "b3lyp"
-basis  = "aug-cc-pvdz"
-ZPE = True
+basis  = "sto-3g"
+ZPE = False
 
-reac_en = np.array(range(len(r_ads)),dtype="f")
-prod_en = np.array(range(len(p_ads)),dtype="f")
+for irxn in range(rxn_num):
+	print "---------", irxn, "------------"
 
-for i,mol in enumerate(r_ads):
-	tmp = methane[mol]
-	natom = len(tmp.get_atomic_numbers())
-	tmp.calc = Gaussian(method=method, basis=basis)
-	opt = BFGS(tmp)
-	opt.run(fmax=0.05)
-	en  = tmp.get_potential_energy()
-	if ZPE == True and natom != 1:
-		vib = Vibrations(tmp)
-		vib.run()
-		hnu = vib.get_energies()
-		zpe = vib.get_zero_point_energy()
-		reac_en[i] = en + zpe
-		os.system("rm vib.*")
-	else:
-		reac_en[i] = en
+	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
+	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
 
-for i,mol in enumerate(p_ads):
-	tmp = methane[mol]
-	natom = len(tmp.get_atomic_numbers())
-	tmp.calc = Gaussian(method=method, basis=basis)
-	opt = BFGS(tmp)
-	opt.run(fmax=0.05)
-	en  = tmp.get_potential_energy()
-	if ZPE == True and natom != 1:
-		vib = Vibrations(tmp)
-		vib.run()
-		hnu = vib.get_energies()
-		zpe = vib.get_zero_point_energy()
-		prod_en[i] = en + zpe
-		os.system("rm vib.*")
-	else:
-		prod_en[i] = en
+	for imol, mol in enumerate(r_ads[irxn]):
+		tmp   = methane[mol]
+		natom = len(tmp.get_atomic_numbers())
+		coef  = r_coef[irxn][imol]
 
-deltaE = np.sum(prod_en) - np.sum(reac_en)
+		tmp.calc = Gaussian(method=method, basis=basis)
+		opt = BFGS(tmp)
+		opt.run(fmax=0.05)
+		en  = tmp.get_potential_energy()
+		if ZPE == True and natom != 1:
+			vib = Vibrations(tmp)
+			vib.run()
+			hnu = vib.get_energies()
+			zpe = vib.get_zero_point_energy()
+			reac_en[imol] = en + zpe
+			os.system("rm vib.*")
+		else:
+			reac_en[imol] = en
 
-print deltaE
+		reac_en[imol] = coef * reac_en[imol]
+
+	for imol, mol in enumerate(p_ads[irxn]):
+		tmp   = methane[mol]
+		natom = len(tmp.get_atomic_numbers())
+		coef  = p_coef[irxn][imol]
+
+		tmp.calc = Gaussian(method=method, basis=basis)
+		opt = BFGS(tmp)
+		opt.run(fmax=0.05)
+		en  = tmp.get_potential_energy()
+		if ZPE == True and natom != 1:
+			vib = Vibrations(tmp)
+			vib.run()
+			hnu = vib.get_energies()
+			zpe = vib.get_zero_point_energy()
+			prod_en[imol] = en + zpe
+			os.system("rm vib.*")
+		else:
+			prod_en[imol] = en
+
+		prod_en[imol] = coef * prod_en[imol]
+
+	deltaE = np.sum(prod_en) - np.sum(reac_en)
+
+	print deltaE
 
