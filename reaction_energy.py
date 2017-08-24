@@ -69,8 +69,8 @@ from ase.vibrations import Vibrations
 # molecule's data should be stored in "methane.json"
 #
 method = "b3lyp"
-basis  = "sto-3g"
-ZPE = False
+basis  = "6-31G"
+ZPE = True
 
 for irxn in range(rxn_num):
 	print "---------", irxn, "------------"
@@ -122,5 +122,5 @@ for irxn in range(rxn_num):
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 
-	print deltaE
+	print r_ads[irxn], "--->", p_ads[irxn], " DeltaE =", deltaE
 
