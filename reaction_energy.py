@@ -69,7 +69,7 @@ from ase.vibrations import Vibrations
 # molecule's data should be stored in "methane.json"
 #
 calculator = "Gaussian"
-ZPE = True
+ZPE = False
 
 ## --- Gaussian ---
 if "Gau" in calculator:
