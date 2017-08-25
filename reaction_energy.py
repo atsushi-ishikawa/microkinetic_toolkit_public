@@ -68,9 +68,23 @@ from ase.vibrations import Vibrations
 # now calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-method = "b3lyp"
-basis  = "6-31G"
+calculator = "Gaussian"
 ZPE = True
+
+## --- Gaussian ---
+if "Gau" in calculator:
+	method = "b3lyp"
+	basis  = "6-31G"
+## --- VASP ---
+elif "VASP" in calculator:
+	xc = "pbe"
+	prec = "normal"
+	encut = 400.0
+	potim = 0.1
+	nsw = 0
+	ediff = 1.0e-4
+	ediffg = -0.03
+	kpts = [1, 1, 1]
 
 for irxn in range(rxn_num):
 	print "---------", irxn, "------------"
@@ -83,7 +97,15 @@ for irxn in range(rxn_num):
 		natom = len(tmp.get_atomic_numbers())
 		coef  = r_coef[irxn][imol]
 
-		tmp.calc = Gaussian(method=method, basis=basis)
+		if "Gau" in calculator:
+			tmp.calc = Gaussian(method=method, basis=basis)
+		elif "VASP" in calculator:
+			cell = [10.0, 10.0, 10.0]
+			tmp.cell = cell
+			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut,
+							ismear=0, ibrion=0, nsw=nsw, ediff=ediff, ediffg=ediffg,
+							kpts=kpts )
+
 		opt = BFGS(tmp)
 		opt.run(fmax=0.05)
 		en  = tmp.get_potential_energy()
@@ -104,7 +126,15 @@ for irxn in range(rxn_num):
 		natom = len(tmp.get_atomic_numbers())
 		coef  = p_coef[irxn][imol]
 
-		tmp.calc = Gaussian(method=method, basis=basis)
+		if "Gau" in calculator:
+			tmp.calc = Gaussian(method=method, basis=basis)
+		elif "VASP" in calculator:
+			cell = [10.0, 10.0, 10.0]
+			tmp.cell = cell
+			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut,
+							ismear=0, ibrion=0, nsw=nsw, ediff=ediff, ediffg=ediffg,
+							kpts=kpts }
+
 		opt = BFGS(tmp)
 		opt.run(fmax=0.05)
 		en  = tmp.get_potential_energy()
