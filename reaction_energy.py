@@ -61,6 +61,7 @@ for irxn, jrnx in enumerate(rxn):
 #
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
+from ase.calculators.vasp import Vasp
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
@@ -68,20 +69,20 @@ from ase.vibrations import Vibrations
 # now calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-calculator = "Gaussian"
+calculator = "Gaussian" ; calculator = calculator.lower()
 ZPE = False
 
 ## --- Gaussian ---
-if "Gau" in calculator:
+if "gau" in calculator:
 	method = "b3lyp"
-	basis  = "6-31G"
+	basis  = "6-311G*"
 ## --- VASP ---
-elif "VASP" in calculator:
+elif "vasp" in calculator:
 	xc = "pbe"
 	prec = "normal"
 	encut = 400.0
-	potim = 0.1
-	nsw = 0
+	potim = 0.10
+	nsw = 100
 	ediff = 1.0e-4
 	ediffg = -0.03
 	kpts = [1, 1, 1]
@@ -94,21 +95,23 @@ for irxn in range(rxn_num):
 
 	for imol, mol in enumerate(r_ads[irxn]):
 		tmp   = methane[mol]
+		magmom = tmp.get_initial_magnetic_moments()
 		natom = len(tmp.get_atomic_numbers())
 		coef  = r_coef[irxn][imol]
 
-		if "Gau" in calculator:
+		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-		elif "VASP" in calculator:
+			opt = BFGS(tmp)
+			opt.run(fmax=0.05)
+		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut,
-							ismear=0, ibrion=0, nsw=nsw, ediff=ediff, ediffg=ediffg,
-							kpts=kpts )
+			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
+					kpts=kpts )
 
-		opt = BFGS(tmp)
-		opt.run(fmax=0.05)
 		en  = tmp.get_potential_energy()
+
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
 			vib.run()
@@ -126,18 +129,19 @@ for irxn in range(rxn_num):
 		natom = len(tmp.get_atomic_numbers())
 		coef  = p_coef[irxn][imol]
 
-		if "Gau" in calculator:
+		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-		elif "VASP" in calculator:
+			opt = BFGS(tmp)
+			opt.run(fmax=0.05)
+		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut,
-							ismear=0, ibrion=0, nsw=nsw, ediff=ediff, ediffg=ediffg,
-							kpts=kpts }
+			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
+					kpts=kpts )
 
-		opt = BFGS(tmp)
-		opt.run(fmax=0.05)
 		en  = tmp.get_potential_energy()
+
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
 			vib.run()
