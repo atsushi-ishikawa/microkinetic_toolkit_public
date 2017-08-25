@@ -55,8 +55,10 @@ for irxn, jrnx in enumerate(rxn):
 			p_site[irxn][i] = "gas"
 			p_ads[irxn][i]  = rest
 
-#print r_ads, r_site, r_coef
-#print p_ads, p_site, p_coef
+print r_ads, r_site, r_coef
+print p_ads, p_site, p_coef
+
+"""
 
 #
 from ase import Atoms, Atom
@@ -158,3 +160,4 @@ for irxn in range(rxn_num):
 
 	print r_ads[irxn], "--->", p_ads[irxn], " DeltaE =", deltaE
 
+"""
