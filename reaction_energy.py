@@ -58,7 +58,6 @@ for irxn, jrnx in enumerate(rxn):
 #print r_ads, r_site, r_coef
 #print p_ads, p_site, p_coef
 
-
 #
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
