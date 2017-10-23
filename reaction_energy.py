@@ -1,75 +1,29 @@
 import numpy as np
 import os,sys
 from reaction_tools import *
-#
-# form reactant and product information
-#
-(reac, rxn, prod) = read_reactionfile("reaction.txt")
-
-rxn_num = len(rxn)
-
-r_ads  = [ [] for i in range(rxn_num) ]
-p_ads  = [ [] for i in range(rxn_num) ]
-r_site = [ [] for i in range(rxn_num) ]
-p_site = [ [] for i in range(rxn_num) ]
-r_coef = [ [] for i in range(rxn_num) ]
-p_coef = [ [] for i in range(rxn_num) ]
-
-for irxn, jrnx in enumerate(rxn):
-	ireac = reac[irxn];     iprod = prod[irxn]
-	ireac_num = len(ireac); iprod_num = len(iprod)
-
-	r_ads[irxn]  = range(ireac_num)
-	r_site[irxn] = range(ireac_num)
-	r_coef[irxn] = range(ireac_num)
-
-	for i,j in enumerate(ireac):
-		if "*" in j:
-			r_coef[irxn][i] = int( j.split("*")[0] )
-			rest = j.split("*")[1]
-		else:
-			r_coef[irxn][i] = 1
-			rest = j
-		if "_" in rest:
-			r_site[irxn][i] = rest.split("_")[1]
-			r_ads[irxn][i]  = rest.split("_")[0]
-		else:
-			r_site[irxn][i] = "gas"
-			r_ads[irxn][i]  = rest
-
-	p_ads[irxn]  = range(iprod_num)
-	p_site[irxn] = range(iprod_num)
-	p_coef[irxn] = range(iprod_num)
-
-	for i,j in enumerate(iprod):
-		if "*" in j:
-			p_coef[irxn][i] = int( j.split("*")[0] )
-			rest = j.split("*")[1]
-		else:
-			p_coef[irxn][i] = 1
-			rest = j
-		if "_" in rest:
-			p_site[irxn][i] = rest.split("_")[1]
-			p_ads[irxn][i]  = rest.split("_")[0]
-		else:
-			p_site[irxn][i] = "gas"
-			p_ads[irxn][i]  = rest
-
-#print r_ads, r_site, r_coef
-#print p_ads, p_site, p_coef
-
-#
 from ase import Atoms, Atom
-from ase.calculators.gaussian import Gaussian
-from ase.calculators.vasp import Vasp
+#from ase.calculators.gaussian import Gaussian
+#from ase.calculators.vasp import Vasp
+from ase.calculators.emt import EMT
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
+
 #
-# now calculate reaction energy
+# calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-calculator = "Gaussian" ; calculator = calculator.lower()
+reactionfile = "reaction.txt"
+barrierfile  = "barrier.txt"
+
+fbarrier = open(barrierfile, "w")
+
+(r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
+
+rxn_num = get_number_of_reaction(reactionfile)
+Ea = np.array(2, dtype="f")
+
+calculator = "EMT" ; calculator = calculator.lower()
 ZPE = False
 
 ## --- Gaussian ---
@@ -86,13 +40,18 @@ elif "vasp" in calculator:
 	ediff = 1.0e-4
 	ediffg = -0.03
 	kpts = [1, 1, 1]
+## --- EMT --- -> nothing to set
 
 for irxn in range(rxn_num):
 	print "---------", irxn, "------------"
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
-
+	reac_A  = np.array(range(len(r_ads[irxn])),dtype="f")
+	prod_A  = np.array(range(len(r_ads[irxn])),dtype="f")
+	#
+	# reactants
+	#
 	for imol, mol in enumerate(r_ads[irxn]):
 		tmp   = methane[mol]
 		magmom = tmp.get_initial_magnetic_moments()
@@ -109,6 +68,10 @@ for irxn in range(rxn_num):
 			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
 					kpts=kpts )
+		elif "emt" in calculator:
+			tmp.calc = EMT()
+			opt = BFGS(tmp)
+			opt.run(fmax=0.05)
 
 		en  = tmp.get_potential_energy()
 
@@ -124,6 +87,9 @@ for irxn in range(rxn_num):
 
 		reac_en[imol] = coef * reac_en[imol]
 
+	#
+	# products
+	#
 	for imol, mol in enumerate(p_ads[irxn]):
 		tmp   = methane[mol]
 		natom = len(tmp.get_atomic_numbers())
@@ -139,6 +105,10 @@ for irxn in range(rxn_num):
 			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
 					kpts=kpts )
+		elif "emt" in calculator:
+			tmp.calc = EMT()
+			opt = BFGS(tmp)
+			opt.run(fmax=0.05)
 
 		en  = tmp.get_potential_energy()
 
@@ -155,6 +125,11 @@ for irxn in range(rxn_num):
 		prod_en[imol] = coef * prod_en[imol]
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
+	Eafor  =  deltaE
+	Earev  = -deltaE
+	Ea = [Eafor, Earev]
+	fbarrier.write(str(Ea))
 
-	print r_ads[irxn], "--->", p_ads[irxn], " DeltaE =", deltaE
+fbarrier.close()
+remove_parentheses(barrierfile)
 
