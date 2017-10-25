@@ -9,32 +9,41 @@ reactionfile = "reaction.txt"
 
 rxn_num = get_number_of_reaction(reactionfile)
 
-tmp = "delta_dt(1) = "
 for irxn in range(rxn_num):
-	print "---", irxn, "---"
+	rxn_idx = str(irxn + 1) # MATLAB
+
+	tmp = "dtheta_dt(" + rxn_idx + ") = "
 	#
 	# reactants
 	#
-	tmp = tmp + "kfor[" + irxn + "]"
-	for imol, mol in enumerate(r_ads[irxn]):
-		num = get_species_num(mol)
-		if r_site[irxn][imol] == "gas":
-			theta = "P[" + num + "]"
-		else
-			theta = "theta[" + num + "]"
+	tmp = tmp + "kfor(" + rxn_idx + ")"
 
-		print "forward", tmp
+	for imol, mol in enumerate(r_ads[irxn]):
+		spe = get_species_num(mol)
+		spe_idx = str(spe + 1)  # MATLAB
+
+		if r_site[irxn][imol] == "gas":
+			theta = "P(" + rxn_idx + ")"
+		else:
+			theta = "theta(" + spe_idx + ")"
+		tmp = tmp + "*" + theta
 
 	#
 	# products
 	#
-	tmp = tmp + "- krev[" + irxn + "]"
-	for imol, mol in enumerate(p_ads[irxn]):
-		num = get_species_num(mol)
-		if p_site[irxn][imol] == "gas":
-			theta = "P[" + num + "]"
-		else
-			theta = "theta[" + num + "]"
+	tmp = tmp + " - krev(" + rxn_idx + ")"
 
-	print "for and rev",tmp
+	for imol, mol in enumerate(p_ads[irxn]):
+		rxn_idx = str(irxn + 1) # MATLAB
+		spe = get_species_num(mol)
+		spe_idx = str(spe + 1)  # MATLAB
+
+		if p_site[irxn][imol] == "gas":
+			theta = "P(" + rxn_idx + ")"
+		else:
+			theta = "theta(" + spe_idx + ")"
+		tmp = tmp + "*" + theta
+
+
+	print "for and rev", tmp
 

@@ -1,6 +1,5 @@
 def read_reactionfile(file):
 	import os
-#	import matplotlib.pyplot as plt
 	import networkx as nx
 	import re
 
@@ -24,11 +23,11 @@ def read_reactionfile(file):
 		rxn_tmp   = text[1]
 		prod_tmp  = text[2]
 
-		reac[i] = re.split(" \+ ",reac_tmp) # for cations
-		prod[i] = re.split(" \+ ",prod_tmp) # for cations
+		reac[i] = re.split(" \+ ", reac_tmp) # for cations
+		prod[i] = re.split(" \+ ", prod_tmp) # for cations
 
-		reac = remove_space(reac)
-		prod = remove_space(prod)
+		reac[i] = remove_space(reac[i])
+		prod[i] = remove_space(prod[i])
 
 		rxn[i]  = reac[i][0] + "_" + rxn_tmp
 
@@ -72,16 +71,42 @@ def read_speciesfile(file):
 
 	return reac,rxn,prod
 
-def remove_space(nested_list):
-		li = nested_list
-		for i,j in enumerate(li):
-			tmp = j
-			for ii,jj in enumerate(tmp):
-				tmp[ii] = tmp[ii].strip()
+def remove_space(obj):
+		newobj = [0]*len(obj)
+		if isinstance(obj, str):
+			#
+			# string
+			#
+			newobj = obj.replace(" ","")
+		elif isinstance(obj, list):
+			#
+			# list
+			#
+			for i, obj2 in enumerate(obj):
+				if isinstance(obj2, list):
+					#
+					# nested list
+					#
+					for ii,jj in enumerate(obj2):
+						jj = jj.strip()
+					newobj[i] = jj
+				elif isinstance(obj2, str):
+					#
+					# simple list
+					#
+					obj2 = obj2.replace(" ","")
+					newobj[i] = obj2
+				elif isinstance(obj2, int):
+					#
+					# integer
+					#
+					newobj[i] = obj2
+				else:
+					newobj[i] = obj2
+		else: # error
+			print "remove_space: input str or list"
 
-			li[i] = tmp
-		
-		return li
+		return newobj
 
 def get_reac_and_prod(reactionfile):
 	import numpy as np
@@ -100,6 +125,7 @@ def get_reac_and_prod(reactionfile):
 	p_ads  = [ [] for i in range(rxn_num) ]
 	p_site = [ [] for i in range(rxn_num) ]
 	p_coef = [ [] for i in range(rxn_num) ]
+
 
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
@@ -177,7 +203,6 @@ def get_preexponential(reactionfile):
 
 	for irxn in range(rxn_num):
 		print "---------", irxn, "------------"
-
 		#
 		# reactants
 		#
@@ -248,4 +273,13 @@ def remove_parentheses(file):
 	os.system('cat %s | sed "s/\[//g" > %s' % (file, tmpfile) )
 	os.system('cat %s | sed "s/\]//g" > %s' % (tmpfile, file) )
 	os.system('rm %s' % tmpfile)
+
+
+def get_species_num(species):
+	from reaction_tools import read_speciesfile
+
+	speciesfile = "species.txt"
+	lst = read_speciesfile(speciesfile)
+
+	return lst.index(species)
 

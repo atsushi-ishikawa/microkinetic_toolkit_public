@@ -43,7 +43,7 @@ elif "vasp" in calculator:
 ## --- EMT --- -> nothing to set
 
 for irxn in range(rxn_num):
-	print "---------", irxn, "------------"
+	print "--- calculating elementary reaction No. ", irxn, "---"
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
@@ -53,6 +53,7 @@ for irxn in range(rxn_num):
 	# reactants
 	#
 	for imol, mol in enumerate(r_ads[irxn]):
+		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 		tmp   = methane[mol]
 		magmom = tmp.get_initial_magnetic_moments()
 		natom = len(tmp.get_atomic_numbers())
@@ -91,6 +92,7 @@ for irxn in range(rxn_num):
 	# products
 	#
 	for imol, mol in enumerate(p_ads[irxn]):
+		print "----- product: molecule No.", imol, " is ", mol, "-----"
 		tmp   = methane[mol]
 		natom = len(tmp.get_atomic_numbers())
 		coef  = p_coef[irxn][imol]
@@ -128,7 +130,10 @@ for irxn in range(rxn_num):
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
-	fbarrier.write(str(Ea))
+	fbarrier.write(str(Ea) + "\n")
+	#
+	# loop over reaction
+	#
 
 fbarrier.close()
 remove_parentheses(barrierfile)

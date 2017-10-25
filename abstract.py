@@ -55,5 +55,6 @@ for irxn, jrnx in enumerate(rxn):
 			p_site[irxn][i] = "gas"
 			p_ads[irxn][i]  = rest
 
-return print r_ads, r_site, r_coef
+print r_ads, r_site, r_coef
 print p_ads, p_site, p_coef
+
