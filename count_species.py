@@ -17,6 +17,7 @@ for imol in p_ads:
 	species.append(imol)
 
 species = [item for sublist in species for item in sublist]
+species = list(set(species)) # remove duplication
 
 fspecies.write(str(species))
 fspecies.close()
