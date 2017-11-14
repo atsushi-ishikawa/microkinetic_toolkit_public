@@ -29,7 +29,7 @@ ZPE = False
 ## --- Gaussian ---
 if "gau" in calculator:
 	method = "b3lyp"
-	basis  = "6-311G*"
+	basis  = "aug-cc-pvdz"
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc = "pbe"
