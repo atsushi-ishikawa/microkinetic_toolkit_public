@@ -1,0 +1,298 @@
+2*O  --a--> O2
+O + H  --a--> OH
+O + H2 --a--> H + OH
+O + HO2 --a--> OH + O2
+O + H2O2 --a--> OH + HO2
+O + CH --a--> H + CO
+O + CH2 --a--> H + HCO
+O + CH3 --a--> H + CH2O
+O + CH4 --a--> OH + CH3
+O + CO --a--> CO2
+O + HCO --a--> OH + CO
+O + HCO --a--> H + CO2
+O + CH2O --a--> OH + HCO
+O + CH2OH --a--> OH + CH2O
+O + CH3O --a--> OH + CH2O
+O + CH3OH --a--> OH + CH2OH
+O + CH3OH --a--> OH + CH3O
+O + C2H --a--> CH + CO
+O + C2H2 --a--> H + HCCO
+O + C2H2 --a--> OH + C2H
+O + C2H2 --a--> CO + CH2
+O + C2H3 --a--> H + CH2CO
+O + C2H4 --a--> CH3 + HCO
+O + C2H5 --a--> CH3 + CH2O
+O + C2H6 --a--> OH + C2H5
+O + HCCO --a--> H + 2*CO
+O + CH2CO --a--> OH + HCCO
+O + CH2CO --a--> CH2 + CO2
+O2 + CO --a--> O + CO2
+O2 + CH2O --a--> HO2 + HCO
+H + O2  --a--> HO2
+H + 2*O2 --a--> HO2 + O2
+H + O2 + H2O --a--> HO2 + H2O
+H + O2 + N2 --a--> HO2 + N2
+H + O2 --a--> O + OH
+2*H  --a--> H2
+2*H + H2 --a--> 2*H2
+2*H + H2O --a--> H2 + H2O
+2*H + CO2 --a--> H2 + CO2
+H + OH  --a--> H2O
+H + HO2 --a--> O + H2O
+H + HO2 --a--> O2 + H2
+H + HO2 --a--> 2*OH
+H + H2O2 --a--> HO2 + H2
+H + H2O2 --a--> OH + H2O
+H + CH --a--> C + H2
+H + CH2 --a--> CH3
+H + CH3 --a--> CH4
+H + CH4 --a--> CH3 + H2
+H + HCO --a--> CH2O
+H + HCO --a--> H2 + CO
+H + CH2O --a--> CH2OH
+H + CH2O --a--> CH3O
+H + CH2O --a--> HCO + H2
+H + CH2OH --a--> CH3OH
+H + CH2OH --a--> H2 + CH2O
+H + CH2OH --a--> OH + CH3
+H + CH3O --a--> CH3OH
+H + CH3O --a--> H + CH2OH
+H + CH3O --a--> H2 + CH2O
+H + CH3O --a--> OH + CH3
+H + CH3OH --a--> CH2OH + H2
+H + CH3OH --a--> CH3O + H2
+H + C2H --a--> C2H2
+H + C2H2 --a--> C2H3
+H + C2H3 --a--> C2H4
+H + C2H3 --a--> H2 + C2H2
+H + C2H4 --a--> C2H5
+H + C2H4 --a--> C2H3 + H2
+H + C2H5 --a--> C2H6
+H + C2H5 --a--> H2 + C2H4
+H + C2H6 --a--> C2H5 + H2
+H + CH2CO --a--> HCCO + H2
+H + CH2CO --a--> CH3 + CO
+H + HCCOH --a--> H + CH2CO
+H2 + CO --a--> CH2O
+OH + H2 --a--> H + H2O
+2*OH --a--> H2O2
+2*OH --a--> O + H2O
+OH + HO2 --a--> O2 + H2O
+OH + H2O2 --a--> HO2 + H2O
+OH + H2O2 --a--> HO2 + H2O
+OH + C --a--> H + CO
+OH + CH --a--> H + HCO
+OH + CH2 --a--> H + CH2O
+OH + CH2 --a--> CH + H2O
+OH + CH3 --a--> CH3OH
+OH + CH3 --a--> CH2 + H2O
+OH + CH4 --a--> CH3 + H2O
+OH + CO --a--> H + CO2
+OH + HCO --a--> H2O + CO
+OH + CH2O --a--> HCO + H2O
+OH + CH2OH --a--> H2O + CH2O
+OH + CH3O --a--> H2O + CH2O
+OH + CH3OH --a--> CH2OH + H2O
+OH + CH3OH --a--> CH3O + H2O
+OH + C2H --a--> H + HCCO
+OH + C2H2 --a--> H + CH2CO
+OH + C2H2 --a--> H + HCCOH
+OH + C2H2 --a--> C2H + H2O
+OH + C2H2 --a--> CH3 + CO
+OH + C2H3 --a--> H2O + C2H2
+OH + C2H4 --a--> C2H3 + H2O
+OH + C2H6 --a--> C2H5 + H2O
+OH + CH2CO --a--> HCCO + H2O
+2*HO2 --a--> O2 + H2O2
+2*HO2 --a--> O2 + H2O2
+HO2 + CH2 --a--> OH + CH2O
+HO2 + CH3 --a--> O2 + CH4
+HO2 + CH3 --a--> OH + CH3O
+HO2 + CO --a--> OH + CO2
+HO2 + CH2O --a--> HCO + H2O2
+C + O2 --a--> O + CO
+C + CH2 --a--> H + C2H
+C + CH3 --a--> H + C2H2
+CH + O2 --a--> O + HCO
+CH + H2 --a--> H + CH2
+CH + H2O --a--> H + CH2O
+CH + CH2 --a--> H + C2H2
+CH + CH3 --a--> H + C2H3
+CH + CH4 --a--> H + C2H4
+CH + CO --a--> HCCO
+CH + CO2 --a--> HCO + CO
+CH + CH2O --a--> H + CH2CO
+CH + HCCO --a--> CO + C2H2
+CH2 + O2 --a--> OH + H + CO
+CH2 + H2 --a--> H + CH3
+2*CH2 --a--> H2 + C2H2
+CH2 + CH3 --a--> H + C2H4
+CH2 + CH4 --a--> 2*CH3
+CH2 + CO --a--> CH2CO
+CH2 + HCCO --a--> C2H3 + CO
+CH3 + O2 --a--> O + CH3O
+CH3 + O2 --a--> OH + CH2O
+CH3 + H2O2 --a--> HO2 + CH4
+2*CH3 --a--> C2H6
+2*CH3 --a--> H + C2H5
+CH3 + HCO --a--> CH4 + CO
+CH3 + CH2O --a--> HCO + CH4
+CH3 + CH3OH --a--> CH2OH + CH4
+CH3 + CH3OH --a--> CH3O + CH4
+CH3 + C2H4 --a--> C2H3 + CH4
+CH3 + C2H6 --a--> C2H5 + CH4
+HCO + H2O --a--> H + CO + H2O
+HCO  --a--> H + CO
+HCO + O2 --a--> HO2 + CO
+CH2OH + O2 --a--> HO2 + CH2O
+CH3O + O2 --a--> HO2 + CH2O
+C2H + O2 --a--> HCO + CO
+C2H + H2 --a--> H + C2H2
+C2H3 + O2 --a--> HCO + CH2O
+C2H4 --a--> H2 + C2H2
+C2H5 + O2 --a--> HO2 + C2H4
+HCCO + O2 --a--> OH + 2*CO
+2*HCCO --a--> 2*CO + C2H2
+N + NO --a--> N2 + O
+N + O2 --a--> NO + O
+N + OH --a--> NO + H
+N2O + O --a--> N2 + O2
+N2O + O --a--> 2*NO
+N2O + H --a--> N2 + OH
+N2O + OH --a--> N2 + HO2
+N2O --a--> N2 + O
+HO2 + NO --a--> NO2 + OH
+NO + O  --a--> NO2
+NO2 + O --a--> NO + O2
+NO2 + H --a--> NO + OH
+NH + O --a--> NO + H
+NH + H --a--> N + H2
+NH + OH --a--> HNO + H
+NH + OH --a--> N + H2O
+NH + O2 --a--> HNO + O
+NH + O2 --a--> NO + OH
+NH + N --a--> N2 + H
+NH + H2O --a--> HNO + H2
+NH + NO --a--> N2 + OH
+NH + NO --a--> N2O + H
+NH2 + O --a--> OH + NH
+NH2 + O --a--> H + HNO
+NH2 + H --a--> NH + H2
+NH2 + OH --a--> NH + H2O
+NNH --a--> N2 + H
+NNH  --a--> N2 + H
+NNH + O2 --a--> HO2 + N2
+NNH + O --a--> OH + N2
+NNH + O --a--> NH + NO
+NNH + H --a--> H2 + N2
+NNH + OH --a--> H2O + N2
+NNH + CH3 --a--> CH4 + N2
+H + NO  --a--> HNO
+HNO + O --a--> NO + OH
+HNO + H --a--> H2 + NO
+HNO + OH --a--> NO + H2O
+HNO + O2 --a--> HO2 + NO
+CN + O --a--> CO + N
+CN + OH --a--> NCO + H
+CN + H2O --a--> HCN + OH
+CN + O2 --a--> NCO + O
+CN + H2 --a--> HCN + H
+NCO + O --a--> NO + CO
+NCO + H --a--> NH + CO
+NCO + OH --a--> NO + H + CO
+NCO + N --a--> N2 + CO
+NCO + O2 --a--> NO + CO2
+NCO  --a--> N + CO
+NCO + NO --a--> N2O + CO
+NCO + NO --a--> N2 + CO2
+HCN  --a--> H + CN
+HCN + O --a--> NCO + H
+HCN + O --a--> NH + CO
+HCN + O --a--> CN + OH
+HCN + OH --a--> HOCN + H
+HCN + OH --a--> HNCO + H
+HCN + OH --a--> NH2 + CO
+H + HCN --a--> H2CN
+H2CN + N --a--> N2 + CH2
+C + N2 --a--> CN + N
+CH + N2 --a--> HCN + N
+CH + N2 --a--> HCNN
+CH2 + N2 --a--> HCN + NH
+C + NO --a--> CN + O
+C + NO --a--> CO + N
+CH + NO --a--> HCN + O
+CH + NO --a--> H + NCO
+CH + NO --a--> N + HCO
+CH2 + NO --a--> H + HNCO
+CH2 + NO --a--> OH + HCN
+CH2 + NO --a--> H + HCNO
+CH3 + NO --a--> HCN + H2O
+CH3 + NO --a--> H2CN + OH
+HCNN + O --a--> CO + H + N2
+HCNN + O --a--> HCN + NO
+HCNN + O2 --a--> O + HCO + N2
+HCNN + OH --a--> H + HCO + N2
+HCNN + H --a--> CH2 + N2
+HNCO + O --a--> NH + CO2
+HNCO + O --a--> HNO + CO
+HNCO + O --a--> NCO + OH
+HNCO + H --a--> NH2 + CO
+HNCO + H --a--> H2 + NCO
+HNCO + OH --a--> NCO + H2O
+HNCO + OH --a--> NH2 + CO2
+HNCO  --a--> NH + CO
+HCNO + H --a--> H + HNCO
+HCNO + H --a--> OH + HCN
+HCNO + H --a--> NH2 + CO
+HOCN + H --a--> H + HNCO
+HCCO + NO --a--> HCNO + CO
+CH3 + N --a--> H2CN + H
+CH3 + N --a--> HCN + H2
+NH3 + H --a--> NH2 + H2
+NH3 + OH --a--> NH2 + H2O
+NH3 + O --a--> NH2 + OH
+NH + CO2 --a--> HNO + CO
+CN + NO2 --a--> NCO + NO
+NCO + NO2 --a--> N2O + CO2
+N + CO2 --a--> NO + CO
+O + CH3 --a--> H + H2 + CO
+O + C2H4 --a--> H + CH2CHO
+O + C2H5 --a--> H + CH3CHO
+OH + HO2 --a--> O2 + H2O
+OH + CH3 --a--> H2 + CH2O
+CH + H2 --a--> CH3
+CH2 + O2 --a--> 2*H + CO2
+CH2 + O2 --a--> O + CH2O
+CH2 + CH2 --a--> 2*H + C2H2
+C2H3 + O2 --a--> O + CH2CHO
+C2H3 + O2 --a--> HO2 + C2H2
+O + CH3CHO --a--> OH + CH2CHO
+O + CH3CHO --a--> OH + CH3 + CO
+O2 + CH3CHO --a--> HO2 + CH3 + CO
+H + CH3CHO --a--> CH2CHO + H2
+H + CH3CHO --a--> CH3 + H2 + CO
+OH + CH3CHO --a--> CH3 + H2O + CO
+HO2 + CH3CHO --a--> CH3 + H2O2 + CO
+CH3 + CH3CHO --a--> CH3 + CH4 + CO
+H + CH2CO --a--> CH2CHO
+O + CH2CHO --a--> H + CH2 + CO2
+O2 + CH2CHO --a--> OH + CO + CH2O
+O2 + CH2CHO --a--> OH + 2*HCO
+H + CH2CHO --a--> CH3 + HCO
+H + CH2CHO --a--> CH2CO + H2
+OH + CH2CHO --a--> H2O + CH2CO
+OH + CH2CHO --a--> HCO + CH2OH
+CH3 + C2H5 --a--> C3H8
+O + C3H8 --a--> OH + C3H7
+H + C3H8 --a--> C3H7 + H2
+OH + C3H8 --a--> C3H7 + H2O
+C3H7 + H2O2 --a--> HO2 + C3H8
+CH3 + C3H8 --a--> C3H7 + CH4
+CH3 + C2H4 --a--> C3H7
+O + C3H7 --a--> C2H5 + CH2O
+H + C3H7 --a--> C3H8
+H + C3H7 --a--> CH3 + C2H5
+OH + C3H7 --a--> C2H5 + CH2OH
+HO2 + C3H7 --a--> O2 + C3H8
+HO2 + C3H7 --a--> OH + C2H5 + CH2O
+CH3 + C3H7 --a--> 2*C2H5
