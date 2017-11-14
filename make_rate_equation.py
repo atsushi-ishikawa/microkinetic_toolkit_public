@@ -1,8 +1,7 @@
 import os,sys
 from reaction_tools import *
 #
-# calculate reaction energy
-# molecule's data should be stored in "methane.json"
+# make rate equation for MATLAB format
 #
 reactionfile = "reaction.txt"
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)

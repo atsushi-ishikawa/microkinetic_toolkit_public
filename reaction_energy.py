@@ -13,8 +13,8 @@ from ase.vibrations import Vibrations
 # calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-reactionfile = "reaction.txt"
-barrierfile  = "barrier.txt"
+reactionfile = "gri.txt"
+barrierfile  = "gri_barrier.txt"
 
 fbarrier = open(barrierfile, "w")
 
