@@ -2,8 +2,8 @@ import numpy as np
 import os,sys
 from reaction_tools import *
 from ase import Atoms, Atom
-#from ase.calculators.gaussian import Gaussian
-#from ase.calculators.vasp import Vasp
+from ase.calculators.gaussian import Gaussian
+from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
 from ase.optimize import BFGS
@@ -23,13 +23,13 @@ fbarrier = open(barrierfile, "w")
 rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
-calculator = "EMT" ; calculator = calculator.lower()
+calculator = "vasp" ; calculator = calculator.lower()
 ZPE = False
 
 ## --- Gaussian ---
 if "gau" in calculator:
 	method = "b3lyp"
-	basis  = "aug-cc-pvdz"
+	basis  = "6-31G"
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc = "pbe"
@@ -127,6 +127,7 @@ for irxn in range(rxn_num):
 		prod_en[imol] = coef * prod_en[imol]
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
+	print "deltaE = ",deltaE
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
