@@ -3,19 +3,28 @@ import os,sys
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
-from ase.calculators.vasp import Vasp
+# from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
+from ase.io import read
 
 #
 # calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-reactionfile = "gri.txt"
-barrierfile  = "gri_barrier.txt"
-
+# settings
+#
+reactionfile = "test.txt"
+barrierfile  = "test_barrier.txt"
+calculator   = "EMT" ; calculator = calculator.lower()
+#
+# if surface present, provide surface file
+# in ase.db form
+#
+surf = read("surf.db")
+#
 fbarrier = open(barrierfile, "w")
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
@@ -23,7 +32,6 @@ fbarrier = open(barrierfile, "w")
 rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
-calculator = "vasp" ; calculator = calculator.lower()
 ZPE = False
 
 ## --- Gaussian ---
@@ -54,7 +62,12 @@ for irxn in range(rxn_num):
 	#
 	for imol, mol in enumerate(r_ads[irxn]):
 		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
-		tmp   = methane[mol]
+		if mol == "surf":
+			print "surface detected"
+			tmp = surf
+		else:
+			tmp   = methane[mol]
+
 		magmom = tmp.get_initial_magnetic_moments()
 		natom = len(tmp.get_atomic_numbers())
 		coef  = r_coef[irxn][imol]
@@ -93,7 +106,11 @@ for irxn in range(rxn_num):
 	#
 	for imol, mol in enumerate(p_ads[irxn]):
 		print "----- product: molecule No.", imol, " is ", mol, "-----"
-		tmp   = methane[mol]
+		if mol == "surf":
+			print "surface detected"
+			tmp = surf
+		else:
+			tmp   = methane[mol]
 		natom = len(tmp.get_atomic_numbers())
 		coef  = p_coef[irxn][imol]
 
