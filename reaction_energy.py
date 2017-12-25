@@ -9,6 +9,7 @@ from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
 from ase.io import read
+from ase.build import add_adsorbate
 
 #
 # calculate reaction energy
@@ -33,6 +34,7 @@ rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
 ZPE = False
+maxoptsteps = 100
 
 ## --- Gaussian ---
 if "gau" in calculator:
@@ -61,21 +63,28 @@ for irxn in range(rxn_num):
 	# reactants
 	#
 	for imol, mol in enumerate(r_ads[irxn]):
+		site = r_site[irxn]
 		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
+
+		#
 		if mol == "surf":
-			print "surface detected"
 			tmp = surf
 		else:
 			tmp   = methane[mol]
+		if site != 'gas':
+			add_adsorbate(surf, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			tmp = surf
+		#
 
 		magmom = tmp.get_initial_magnetic_moments()
-		natom = len(tmp.get_atomic_numbers())
-		coef  = r_coef[irxn][imol]
+		natom  = len(tmp.get_atomic_numbers())
+		coef   = r_coef[irxn][imol]
+		r_traj = str(irxn) + "-" + str(imol) + "reac.traj"
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = BFGS(tmp)
-			opt.run(fmax=0.05)
+			opt = BFGS(tmp, trajectory=r_traj)
+			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
@@ -84,8 +93,8 @@ for irxn in range(rxn_num):
 					kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = BFGS(tmp)
-			opt.run(fmax=0.05)
+			opt = BFGS(tmp, trajectory=r_traj)
+			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
 
@@ -106,18 +115,25 @@ for irxn in range(rxn_num):
 	#
 	for imol, mol in enumerate(p_ads[irxn]):
 		print "----- product: molecule No.", imol, " is ", mol, "-----"
+		#
 		if mol == "surf":
-			print "surface detected"
 			tmp = surf
 		else:
 			tmp   = methane[mol]
-		natom = len(tmp.get_atomic_numbers())
-		coef  = p_coef[irxn][imol]
+		if site != 'gas':
+			add_adsorbate(surf, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			tmp = surf
+		#
+
+		magmom = tmp.get_initial_magnetic_moments()
+		natom  = len(tmp.get_atomic_numbers())
+		coef   = p_coef[irxn][imol]
+		p_traj = str(irxn) + "-" + str(imol) + "prod.traj"
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = BFGS(tmp)
-			opt.run(fmax=0.05)
+			opt = BFGS(tmp, trajectory=p_traj)
+			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
@@ -126,8 +142,8 @@ for irxn in range(rxn_num):
 					kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = BFGS(tmp)
-			opt.run(fmax=0.05)
+			opt = BFGS(tmp, trajectory=p_traj)
+			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
 
