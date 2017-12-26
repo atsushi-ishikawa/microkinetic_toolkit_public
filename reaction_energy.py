@@ -63,18 +63,19 @@ for irxn in range(rxn_num):
 	# reactants
 	#
 	for imol, mol in enumerate(r_ads[irxn]):
-		site = r_site[irxn]
 		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 
-		#
 		if mol == "surf":
 			tmp = surf
 		else:
 			tmp   = methane[mol]
+
+		site = r_site[irxn]
 		if site != 'gas':
-			add_adsorbate(surf, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
-			tmp = surf
-		#
+			surf_tmp = surf.copy()
+			add_adsorbate(surf_tmp, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			tmp = surf_tmp
+			del surf_tmp
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
@@ -89,8 +90,7 @@ for irxn in range(rxn_num):
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
 			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
-					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
-					kpts=kpts )
+					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=r_traj)
@@ -115,15 +115,18 @@ for irxn in range(rxn_num):
 	#
 	for imol, mol in enumerate(p_ads[irxn]):
 		print "----- product: molecule No.", imol, " is ", mol, "-----"
-		#
+
 		if mol == "surf":
 			tmp = surf
 		else:
 			tmp   = methane[mol]
+
+		site = p_site[irxn]
 		if site != 'gas':
-			add_adsorbate(surf, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
-			tmp = surf
-		#
+			surf_tmp = surf.copy()
+			add_adsorbate(surf_tmp, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			tmp = surf_tmp
+			del surf_tmp
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
@@ -138,8 +141,7 @@ for irxn in range(rxn_num):
 			cell = [10.0, 10.0, 10.0]
 			tmp.cell = cell
 			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
-					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
-					kpts=kpts )
+					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=p_traj)

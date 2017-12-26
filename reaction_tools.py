@@ -8,7 +8,7 @@ def read_reactionfile(file):
 
 	numlines = sum(1 for line in open("reaction3.txt"))
 
-	f = open("reaction3.txt","r")
+	f = open(file,"r")
 
 	lines = f.readlines()
 
@@ -130,7 +130,9 @@ def get_reac_and_prod(reactionfile):
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
 		ireac_num = len(ireac); iprod_num = len(iprod)
-
+		#
+		# reactant
+		#
 		r_ads[irxn]  = range(ireac_num)
 		r_site[irxn] = range(ireac_num)
 		r_coef[irxn] = range(ireac_num)
@@ -148,7 +150,9 @@ def get_reac_and_prod(reactionfile):
 			else:
 				r_site[irxn][i] = "gas"
 				r_ads[irxn][i]  = rest
-
+		#
+		# product
+		#
 		p_ads[irxn]  = range(iprod_num)
 		p_site[irxn] = range(iprod_num)
 		p_coef[irxn] = range(iprod_num)
