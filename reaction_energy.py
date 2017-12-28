@@ -1,20 +1,21 @@
 import numpy as np
 import os,sys
+import json
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
-# from ase.calculators.vasp import Vasp
+from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
+from ase.db import connect
 from ase.io import read
 from ase.build import add_adsorbate
-
-#
-# calculate reaction energy
+# -------------------------------------------------
+# calculate reaction energy.
 # molecule's data should be stored in "methane.json"
-#
+# -------------------------------------------------
 # settings
 #
 reactionfile = "test.txt"
@@ -24,7 +25,15 @@ calculator   = "EMT" ; calculator = calculator.lower()
 # if surface present, provide surface file
 # in ase.db form
 #
-surf = read("surf.db")
+db = connect('surf.db')
+surf    = db.get_atoms(id=1)
+lattice = db.get(id=1).data.lattice
+facet   = db.get(id=1).data.facet
+
+# load site information
+f = open('site_info.json','r')
+site_info = json.load(f)
+f.close()
 #
 fbarrier = open(barrierfile, "w")
 
@@ -33,8 +42,10 @@ fbarrier = open(barrierfile, "w")
 rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
+# parameters
 ZPE = False
 maxoptsteps = 100
+ads_hight = 2.5
 
 ## --- Gaussian ---
 if "gau" in calculator:
@@ -42,11 +53,11 @@ if "gau" in calculator:
 	basis  = "6-31G"
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc = "pbe"
-	prec = "normal"
+	xc    = "pbe"
+	prec  = "normal"
 	encut = 400.0
 	potim = 0.10
-	nsw = 100
+	nsw   = 100
 	ediff = 1.0e-4
 	ediffg = -0.03
 	kpts = [1, 1, 1]
@@ -68,12 +79,19 @@ for irxn in range(rxn_num):
 		if mol == "surf":
 			tmp = surf
 		else:
-			tmp   = methane[mol]
+			tmp = methane[mol]
 
-		site = r_site[irxn]
+		site = r_site[irxn][0]
+
+		try:
+			site_pos = site.split(".")[1]
+		except:
+			site_pos = "x1y1"
+
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			add_adsorbate(surf_tmp, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			offset = site_info[lattice][facet][site][site_pos]
+			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
 
@@ -122,9 +140,15 @@ for irxn in range(rxn_num):
 			tmp   = methane[mol]
 
 		site = p_site[irxn]
+		try:
+			site_pos = site.split(".")[1]
+		except:
+			site_pos = "x1y1"
+
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			add_adsorbate(surf_tmp, tmp, 2.0, position=(0,0), offset=(0,0)) # should be corrected!
+			offset = site_info[lattice][facet][site[0]][site_pos]
+			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
 
@@ -173,4 +197,3 @@ for irxn in range(rxn_num):
 
 fbarrier.close()
 remove_parentheses(barrierfile)
-

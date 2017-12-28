@@ -1,7 +1,15 @@
 from ase.build import fcc111
 from ase.calculators.emt import EMT
-from ase.io import write
+from ase.db import connect
 
-surf = fcc111(symbol="Pt", size=[3,3,4], a=3.8, vacuum=10.0)
+surf    =  fcc111(symbol="Pt", size=[3,3,4], a=3.8, vacuum=10.0)
 
-write("surf.db", surf)
+lattice = "fcc"
+facet   = "111"
+
+pos = {	'lattice' : lattice, 
+		'facet'   : facet }
+
+db = connect("surf.db")
+db.write(surf, data=pos)
+
