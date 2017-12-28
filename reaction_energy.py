@@ -7,7 +7,7 @@ from ase.calculators.gaussian import Gaussian
 from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
-from ase.optimize import BFGS
+from ase.optimize import MDMin
 from ase.vibrations import Vibrations
 from ase.db import connect
 from ase.io import read
@@ -45,7 +45,7 @@ Ea = np.array(2, dtype="f")
 # parameters
 ZPE = False
 maxoptsteps = 100
-ads_hight = 2.5
+ads_hight = 2.0
 
 ## --- Gaussian ---
 if "gau" in calculator:
@@ -102,7 +102,7 @@ for irxn in range(rxn_num):
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = BFGS(tmp, trajectory=r_traj)
+			opt = MDMin(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
@@ -111,7 +111,7 @@ for irxn in range(rxn_num):
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = BFGS(tmp, trajectory=r_traj)
+			opt = MDMin(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
@@ -159,7 +159,7 @@ for irxn in range(rxn_num):
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = BFGS(tmp, trajectory=p_traj)
+			opt = MDMin(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = [10.0, 10.0, 10.0]
@@ -168,7 +168,7 @@ for irxn in range(rxn_num):
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = BFGS(tmp, trajectory=p_traj)
+			opt = MDMin(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
