@@ -18,8 +18,10 @@ from ase.build import add_adsorbate
 # -------------------------------------------------
 # settings
 #
-reactionfile = "test.txt"
-barrierfile  = "test_barrier.txt"
+#reactionfile = "test.txt"
+#barrierfile  = "test_barrier.txt"
+reactionfile = "gri3.0_ads.txt"
+barrierfile  = "gri3.0_ads_bar.txt"
 calculator   = "EMT" ; calculator = calculator.lower()
 #
 # if surface present, provide surface file
@@ -45,7 +47,7 @@ Ea = np.array(2, dtype="f")
 # parameters
 ZPE = False
 maxoptsteps = 100
-ads_hight = 2.0
+ads_hight = 2.5
 
 ## --- Gaussian ---
 if "gau" in calculator:
@@ -90,6 +92,7 @@ for irxn in range(rxn_num):
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
+			# print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			offset = site_info[lattice][facet][site][site_pos]
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
