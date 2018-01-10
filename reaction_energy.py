@@ -20,8 +20,12 @@ from ase.build import add_adsorbate
 #
 #reactionfile = "test.txt"
 #barrierfile  = "test_barrier.txt"
-reactionfile = "gri3.0_ads.txt"
-barrierfile  = "gri3.0_ads_bar.txt"
+#reactionfile = "gri3.0_ads.txt"
+#barrierfile  = "gri3.0_ads_bar.txt"
+reactionfile = "gri_surf.txt"
+barrierfile  = "gri_surf_bar.txt"
+#reactionfile = "gri_gas.txt"
+#barrierfile  = "gri_gas_bar.txt"
 calculator   = "EMT" ; calculator = calculator.lower()
 #
 # if surface present, provide surface file
@@ -83,7 +87,7 @@ for irxn in range(rxn_num):
 		else:
 			tmp = methane[mol]
 
-		site = r_site[irxn][0]
+		site = r_site[irxn][imol]
 
 		try:
 			site_pos = site.split(".")[1]
@@ -92,7 +96,7 @@ for irxn in range(rxn_num):
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			# print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
+			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			offset = site_info[lattice][facet][site][site_pos]
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
@@ -142,7 +146,7 @@ for irxn in range(rxn_num):
 		else:
 			tmp   = methane[mol]
 
-		site = p_site[irxn]
+		site = p_site[irxn][imol]
 		try:
 			site_pos = site.split(".")[1]
 		except:
@@ -150,7 +154,8 @@ for irxn in range(rxn_num):
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			offset = site_info[lattice][facet][site[0]][site_pos]
+			offset = site_info[lattice][facet][site][site_pos]
+			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
