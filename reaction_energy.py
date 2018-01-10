@@ -1,5 +1,5 @@
 import numpy as np
-import os,sys
+import os, sys
 import json
 from reaction_tools import *
 from ase import Atoms, Atom
@@ -18,29 +18,29 @@ from ase.build import add_adsorbate
 # -------------------------------------------------
 # settings
 #
-#reactionfile = "test.txt"
-#barrierfile  = "test_barrier.txt"
-#reactionfile = "gri3.0_ads.txt"
-#barrierfile  = "gri3.0_ads_bar.txt"
-reactionfile = "gri_surf.txt"
-barrierfile  = "gri_surf_bar.txt"
-#reactionfile = "gri_gas.txt"
-#barrierfile  = "gri_gas_bar.txt"
+argvs = sys.argv
+
+reactionfile = argvs[1]
+barrierfile  = reactionfile.split(".")[0] + "_Ea" + ".txt"
+
 calculator   = "EMT" ; calculator = calculator.lower()
 #
 # if surface present, provide surface file
 # in ase.db form
 #
-db = connect('surf.db')
-surf    = db.get_atoms(id=1)
-lattice = db.get(id=1).data.lattice
-facet   = db.get(id=1).data.facet
+surface = False
 
-# load site information
-f = open('site_info.json','r')
-site_info = json.load(f)
-f.close()
-#
+if surface:
+	db = connect('surf.db')
+	surf    = db.get_atoms(id=1)
+	lattice = db.get(id=1).data.lattice
+	facet   = db.get(id=1).data.facet
+
+	# load site information
+	f = open('site_info.json','r')
+	site_info = json.load(f)
+	f.close()
+
 fbarrier = open(barrierfile, "w")
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
