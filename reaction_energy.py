@@ -200,7 +200,7 @@ for irxn in range(rxn_num):
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
-	fbarrier.write(str(Ea) + "\n")
+	fbarrier.write("{0:<16.8f} {1:<16.8f}\n".format(Eafor, Earev))
 	fbarrier.close()
 	#
 	# loop over reaction
