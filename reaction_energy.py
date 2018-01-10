@@ -23,7 +23,7 @@ argvs = sys.argv
 reactionfile = argvs[1]
 barrierfile  = reactionfile.split(".")[0] + "_Ea" + ".txt"
 
-calculator   = "EMT" ; calculator = calculator.lower()
+calculator   = "gaussian" ; calculator = calculator.lower()
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -42,6 +42,7 @@ if surface:
 	f.close()
 
 fbarrier = open(barrierfile, "w")
+fbarrier.close()
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
@@ -70,6 +71,7 @@ elif "vasp" in calculator:
 ## --- EMT --- -> nothing to set
 
 for irxn in range(rxn_num):
+	fbarrier = open(barrierfile, "a")
 	print "--- calculating elementary reaction No. ", irxn, "---"
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
@@ -199,9 +201,10 @@ for irxn in range(rxn_num):
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
 	fbarrier.write(str(Ea) + "\n")
+	fbarrier.close()
 	#
 	# loop over reaction
 	#
 
-fbarrier.close()
 remove_parentheses(barrierfile)
+
