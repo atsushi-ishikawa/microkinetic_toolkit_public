@@ -7,7 +7,7 @@ from ase.calculators.gaussian import Gaussian
 from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
-from ase.optimize import MDMin
+from ase.optimize import BFGS
 from ase.vibrations import Vibrations
 from ase.db import connect
 from ase.io import read
@@ -23,7 +23,7 @@ argvs = sys.argv
 reactionfile = argvs[1]
 barrierfile  = reactionfile.split(".")[0] + "_Ea" + ".txt"
 
-calculator   = "gaussian" ; calculator = calculator.lower()
+calculator   = "vasp" ; calculator = calculator.lower()
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -56,18 +56,21 @@ ads_hight = 2.5
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "b3lyp"
-	basis  = "6-31G"
+	method = "pbepbe"
+	basis  = "cc-pvdz"
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc    = "pbe"
-	prec  = "normal"
-	encut = 400.0
-	potim = 0.10
-	nsw   = 100
-	ediff = 1.0e-4
+	xc     = "b3lyp"
+	prec   = "normal"
+	encut  = 213.0 # 213.0 or 400.0 or 500.0
+	potim  = 0.10
+	nsw    = 100
+	ediff  = 1.0e-5
 	ediffg = -0.03
-	kpts = [1, 1, 1]
+	kpts   = [1, 1, 1]
+	vacuum = 10.0
+	#setups = None
+	setups = {"O" : "_s"}
 ## --- EMT --- -> nothing to set
 
 for irxn in range(rxn_num):
@@ -98,8 +101,8 @@ for irxn in range(rxn_num):
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			offset = site_info[lattice][facet][site][site_pos]
+			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
@@ -111,16 +114,17 @@ for irxn in range(rxn_num):
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = MDMin(tmp, trajectory=r_traj)
+			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
-			cell = [10.0, 10.0, 10.0]
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+		 	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = MDMin(tmp, trajectory=r_traj)
+			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
@@ -169,16 +173,17 @@ for irxn in range(rxn_num):
 
 		if "gau" in calculator:
 			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = MDMin(tmp, trajectory=p_traj)
+			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
-			cell = [10.0, 10.0, 10.0]
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+		 	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = MDMin(tmp, trajectory=p_traj)
+			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
