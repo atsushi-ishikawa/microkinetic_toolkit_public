@@ -19,11 +19,10 @@ from ase.build import add_adsorbate
 # settings
 #
 argvs = sys.argv
-
 reactionfile = argvs[1]
-barrierfile  = reactionfile.split(".")[0] + "_Ea" + ".txt"
 
-calculator   = "vasp" ; calculator = calculator.lower()
+calculator   = "gaussian" ; calculator = calculator.lower()
+
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -41,9 +40,6 @@ if surface:
 	site_info = json.load(f)
 	f.close()
 
-fbarrier = open(barrierfile, "w")
-fbarrier.close()
-
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 rxn_num = get_number_of_reaction(reactionfile)
@@ -54,23 +50,29 @@ ZPE = False
 maxoptsteps = 100
 ads_hight = 2.5
 
+label = "b3lyp-accT"
+
+barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
+fbarrier = open(barrierfile, "w")
+fbarrier.close()
+
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "pbepbe"
-	basis  = "cc-pvdz"
+	method = "b3lyp"
+	basis  = "aug-cc-pvtz"
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc     = "b3lyp"
 	prec   = "normal"
-	encut  = 213.0 # 213.0 or 400.0 or 500.0
+	encut  = 500.0 # 213.0 or 400.0 or 500.0
 	potim  = 0.10
 	nsw    = 100
 	ediff  = 1.0e-5
 	ediffg = -0.03
 	kpts   = [1, 1, 1]
 	vacuum = 10.0
-	#setups = None
-	setups = {"O" : "_s"}
+	setups = None
+	#setups = {"O" : "_h"}
 ## --- EMT --- -> nothing to set
 
 for irxn in range(rxn_num):
@@ -107,20 +109,21 @@ for irxn in range(rxn_num):
 			tmp = surf_tmp
 			del surf_tmp
 
-		magmom = tmp.get_initial_magnetic_moments()
-		natom  = len(tmp.get_atomic_numbers())
-		coef   = r_coef[irxn][imol]
-		r_traj = str(irxn) + "-" + str(imol) + "reac.traj"
+		magmom  = tmp.get_initial_magnetic_moments()
+		natom   = len(tmp.get_atomic_numbers())
+		coef    = r_coef[irxn][imol]
+		r_traj  = str(irxn) + "-" + str(imol) + "reac.traj"
+		r_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
-			tmp.calc = Gaussian(method=method, basis=basis)
+			tmp.calc = Gaussian(label=r_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.cell = cell
-		 	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
@@ -166,20 +169,21 @@ for irxn in range(rxn_num):
 			tmp = surf_tmp
 			del surf_tmp
 
-		magmom = tmp.get_initial_magnetic_moments()
-		natom  = len(tmp.get_atomic_numbers())
-		coef   = p_coef[irxn][imol]
-		p_traj = str(irxn) + "-" + str(imol) + "prod.traj"
+		magmom  = tmp.get_initial_magnetic_moments()
+		natom   = len(tmp.get_atomic_numbers())
+		coef    = p_coef[irxn][imol]
+		p_traj  = str(irxn) + "-" + str(imol) + "prod.traj"
+		p_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
-			tmp.calc = Gaussian(method=method, basis=basis)
+			tmp.calc = Gaussian(label=p_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 		elif "vasp" in calculator:
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.cell = cell
-		 	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
