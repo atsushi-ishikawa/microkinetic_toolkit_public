@@ -21,7 +21,8 @@ from ase.build import add_adsorbate
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "gaussian" ; calculator = calculator.lower()
+calculator   = "vasp"
+calculator = calculator.lower()
 
 #
 # if surface present, provide surface file
@@ -50,7 +51,7 @@ ZPE = False
 maxoptsteps = 100
 ads_hight = 2.5
 
-label = "b3lyp-accT"
+label = "pbe"
 
 barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
 fbarrier = open(barrierfile, "w")
@@ -58,17 +59,17 @@ fbarrier.close()
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "b3lyp"
+	method = "m06"
 	basis  = "aug-cc-pvtz"
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc     = "b3lyp"
+	xc     = "pbe"
 	prec   = "normal"
-	encut  = 500.0 # 213.0 or 400.0 or 500.0
+	encut  = 400.0 # 213.0 or 400.0 or 500.0
 	potim  = 0.10
 	nsw    = 100
 	ediff  = 1.0e-5
-	ediffg = -0.03
+	ediffg = -0.01
 	kpts   = [1, 1, 1]
 	vacuum = 10.0
 	setups = None
@@ -112,7 +113,7 @@ for irxn in range(rxn_num):
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())
 		coef    = r_coef[irxn][imol]
-		r_traj  = str(irxn) + "-" + str(imol) + "reac.traj"
+		r_traj  = label + str(irxn) + "-" + str(imol) + "reac.traj"
 		r_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
@@ -123,7 +124,7 @@ for irxn in range(rxn_num):
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.cell = cell
-		 	tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
@@ -172,7 +173,7 @@ for irxn in range(rxn_num):
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())
 		coef    = p_coef[irxn][imol]
-		p_traj  = str(irxn) + "-" + str(imol) + "prod.traj"
+		p_traj  = label + str(irxn) + "-" + str(imol) + "prod.traj"
 		p_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
@@ -183,7 +184,7 @@ for irxn in range(rxn_num):
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.cell = cell
-		 	tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
