@@ -1,6 +1,5 @@
 import numpy as np
-import os, sys
-import json
+import os, sys, re, json
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
@@ -21,7 +20,7 @@ from ase.build import add_adsorbate
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "vasp"
+calculator   = "gaussian"
 calculator = calculator.lower()
 
 #
@@ -46,21 +45,20 @@ if surface:
 rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
-# parameters
+## --- parameters
 ZPE = False
-maxoptsteps = 100
+maxoptsteps = 200
 ads_hight = 2.5
-
-label = "pbe"
-
-barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
-fbarrier = open(barrierfile, "w")
-fbarrier.close()
+# whether to do single point after optimization
+# at different computational level
+SP = True
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "m06"
-	basis  = "aug-cc-pvtz"
+	method = "b3lyp"
+	basis  = "6-31G"
+	if SP:
+		method_sp = "mp2"
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc     = "pbe"
@@ -75,6 +73,17 @@ elif "vasp" in calculator:
 	setups = None
 	#setups = {"O" : "_h"}
 ## --- EMT --- -> nothing to set
+
+basis_name = re.sub("\(", "", basis)
+basis_name = re.sub("\)", "", basis_name)
+basis_name = re.sub(",",  "", basis_name)
+label = method + "-" + basis_name + "SP"
+
+barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
+fbarrier = open(barrierfile, "w")
+fbarrier.close()
+
+print "calculator:" + calculator + " method: " + method + " basis: " + basis
 
 for irxn in range(rxn_num):
 	fbarrier = open(barrierfile, "a")
@@ -120,6 +129,9 @@ for irxn in range(rxn_num):
 			tmp.calc = Gaussian(label=r_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
+			if SP:
+				r_label = r_label + "_sp"
+				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
@@ -180,6 +192,9 @@ for irxn in range(rxn_num):
 			tmp.calc = Gaussian(label=p_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
+			if SP:
+				label = label + "_sp"
+				tmp.calc = Gaussian(method=method_sp, basis=basis)
 		elif "vasp" in calculator:
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
