@@ -20,7 +20,7 @@ from ase.build import add_adsorbate
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "gaussian"
+calculator   = "vasp"
 calculator = calculator.lower()
 
 #
@@ -47,18 +47,23 @@ Ea = np.array(2, dtype="f")
 
 ## --- parameters
 ZPE = False
+SP  = False
 maxoptsteps = 200
 ads_hight = 2.5
 # whether to do single point after optimization
 # at different computational level
-SP = True
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "b3lyp"
-	basis  = "6-31G"
+	method = "m06"
+	basis  = "aug-cc-pvtz" # do not use aesterisk for polarization func
 	if SP:
-		method_sp = "mp2"
+		method_sp = "ccsd(t)"
+	basis_name = re.sub("\(", "", basis)
+	basis_name = re.sub("\)", "", basis_name)
+	basis_name = re.sub(",",  "", basis_name)
+	label = method + "-" + basis_name
+
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc     = "pbe"
@@ -72,12 +77,18 @@ elif "vasp" in calculator:
 	vacuum = 10.0
 	setups = None
 	#setups = {"O" : "_h"}
+
+	method = xc
+	basis = ""
+	label = method
+
 ## --- EMT --- -> nothing to set
 
-basis_name = re.sub("\(", "", basis)
-basis_name = re.sub("\)", "", basis_name)
-basis_name = re.sub(",",  "", basis_name)
-label = method + "-" + basis_name + "SP"
+
+if ZPE:
+	label = label + "ZPE"
+if SP:
+	label = label + "SP"
 
 barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
 fbarrier = open(barrierfile, "w")
