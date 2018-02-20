@@ -244,3 +244,4 @@ for irxn in range(rxn_num):
 
 remove_parentheses(barrierfile)
 
+
