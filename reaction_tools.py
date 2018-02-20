@@ -287,3 +287,22 @@ def get_species_num(species):
 
 	return lst.index(species)
 
+
+def get_adsorption_sites(infile):
+	from reaction_tools import remove_space
+
+	f = open(infile,"r")
+
+	lines = f.readlines()
+
+	mol  = range(len(lines))
+	site = range(len(lines))
+
+	for i,line in enumerate(lines):
+		aaa,bbb = line.replace("\n","").split(":")
+		mol[i]  = remove_space(aaa)
+		bbb     = remove_space(bbb)
+		site[i] = bbb.split(",")
+
+	return mol,site
+
