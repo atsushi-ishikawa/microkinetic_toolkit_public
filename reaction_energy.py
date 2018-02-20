@@ -1,13 +1,12 @@
 import numpy as np
-import os, sys
-import json
+import os, sys, re, json
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
 from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
 from ase.collections import methane
-from ase.optimize import MDMin
+from ase.optimize import BFGS
 from ase.vibrations import Vibrations
 from ase.db import connect
 from ase.io import read
@@ -19,11 +18,11 @@ from ase.build import add_adsorbate
 # settings
 #
 argvs = sys.argv
-
 reactionfile = argvs[1]
-barrierfile  = reactionfile.split(".")[0] + "_Ea" + ".txt"
 
-calculator   = "EMT" ; calculator = calculator.lower()
+calculator   = "vasp"
+calculator = calculator.lower()
+
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -41,35 +40,64 @@ if surface:
 	site_info = json.load(f)
 	f.close()
 
-fbarrier = open(barrierfile, "w")
-
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
-# parameters
+## --- parameters
 ZPE = False
-maxoptsteps = 100
+SP  = False
+maxoptsteps = 200
 ads_hight = 2.5
+# whether to do single point after optimization
+# at different computational level
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "b3lyp"
-	basis  = "6-31G"
+	method = "m06"
+	basis  = "aug-cc-pvtz" # do not use aesterisk for polarization func
+	if SP:
+		method_sp = "ccsd(t)"
+	basis_name = re.sub("\(", "", basis)
+	basis_name = re.sub("\)", "", basis_name)
+	basis_name = re.sub(",",  "", basis_name)
+	label = method + "-" + basis_name
+
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc    = "pbe"
-	prec  = "normal"
-	encut = 400.0
-	potim = 0.10
-	nsw   = 100
-	ediff = 1.0e-4
-	ediffg = -0.03
-	kpts = [1, 1, 1]
+	xc     = "pbe"
+	prec   = "normal"
+	encut  = 400.0 # 213.0 or 400.0 or 500.0
+	potim  = 0.10
+	nsw    = 100
+	ediff  = 1.0e-5
+	ediffg = -0.01
+	kpts   = [1, 1, 1]
+	vacuum = 10.0
+	setups = None
+	#setups = {"O" : "_h"}
+
+	method = xc
+	basis = ""
+	label = method
+
 ## --- EMT --- -> nothing to set
 
+
+if ZPE:
+	label = label + "ZPE"
+if SP:
+	label = label + "SP"
+
+barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
+fbarrier = open(barrierfile, "w")
+fbarrier.close()
+
+print "calculator:" + calculator + " method: " + method + " basis: " + basis
+
 for irxn in range(rxn_num):
+	fbarrier = open(barrierfile, "a")
 	print "--- calculating elementary reaction No. ", irxn, "---"
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
@@ -96,29 +124,34 @@ for irxn in range(rxn_num):
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
-			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			offset = site_info[lattice][facet][site][site_pos]
+			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
 
-		magmom = tmp.get_initial_magnetic_moments()
-		natom  = len(tmp.get_atomic_numbers())
-		coef   = r_coef[irxn][imol]
-		r_traj = str(irxn) + "-" + str(imol) + "reac.traj"
+		magmom  = tmp.get_initial_magnetic_moments()
+		natom   = len(tmp.get_atomic_numbers())
+		coef    = r_coef[irxn][imol]
+		r_traj  = label + str(irxn) + "-" + str(imol) + "reac.traj"
+		r_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
-			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = MDMin(tmp, trajectory=r_traj)
+			tmp.calc = Gaussian(label=r_label, method=method, basis=basis)
+			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
+			if SP:
+				r_label = r_label + "_sp"
+				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			cell = [10.0, 10.0, 10.0]
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = MDMin(tmp, trajectory=r_traj)
+			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
@@ -160,23 +193,28 @@ for irxn in range(rxn_num):
 			tmp = surf_tmp
 			del surf_tmp
 
-		magmom = tmp.get_initial_magnetic_moments()
-		natom  = len(tmp.get_atomic_numbers())
-		coef   = p_coef[irxn][imol]
-		p_traj = str(irxn) + "-" + str(imol) + "prod.traj"
+		magmom  = tmp.get_initial_magnetic_moments()
+		natom   = len(tmp.get_atomic_numbers())
+		coef    = p_coef[irxn][imol]
+		p_traj  = label + str(irxn) + "-" + str(imol) + "prod.traj"
+		p_label = label + str(irxn) + "-" + str(imol)
 
 		if "gau" in calculator:
-			tmp.calc = Gaussian(method=method, basis=basis)
-			opt = MDMin(tmp, trajectory=p_traj)
+			tmp.calc = Gaussian(label=p_label, method=method, basis=basis)
+			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
+			if SP:
+				label = label + "_sp"
+				tmp.calc = Gaussian(method=method_sp, basis=basis)
 		elif "vasp" in calculator:
-			cell = [10.0, 10.0, 10.0]
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
 			tmp.cell = cell
-			tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
-			opt = MDMin(tmp, trajectory=p_traj)
+			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
@@ -198,10 +236,11 @@ for irxn in range(rxn_num):
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
-	fbarrier.write(str(Ea) + "\n")
+	fbarrier.write("{0:<16.8f} {1:<16.8f}\n".format(Eafor, Earev))
+	fbarrier.close()
 	#
 	# loop over reaction
 	#
 
-fbarrier.close()
 remove_parentheses(barrierfile)
+
