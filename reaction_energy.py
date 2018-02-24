@@ -20,7 +20,7 @@ from ase.build import add_adsorbate
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "vasp"
+calculator   = "gaussian"
 calculator = calculator.lower()
 
 #
@@ -55,8 +55,8 @@ ads_hight = 2.5
 
 ## --- Gaussian ---
 if "gau" in calculator:
-	method = "m06"
-	basis  = "aug-cc-pvtz" # do not use aesterisk for polarization func
+	method = "b3lyp"
+	basis  = "cc-pvtz" # do not use aesterisk for polarization func
 	if SP:
 		method_sp = "ccsd(t)"
 	basis_name = re.sub("\(", "", basis)

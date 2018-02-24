@@ -23,10 +23,10 @@ e_ads_file = ads_file.split(".")[0] + "_Ead" + ".txt"
 
 calculator = "vasp" ; calculator = calculator.lower()
 
-db_surf  = connect('surf.db')
-surf     = db_surf.get_atoms(id=1)
-lattice  = db_surf.get(id=1).data.lattice
-facet    = db_surf.get(id=1).data.facet
+db_surf = connect('surf.db')
+surf    = db_surf.get_atoms(id=1)
+lattice = db_surf.get(id=1).data.lattice
+facet   = db_surf.get(id=1).data.facet
 
 # load site information
 f = open('site_info.json','r')
