@@ -81,6 +81,7 @@ for imol, mol in enumerate(mols):
 			del surf_tmp
 		else:
 			tmp2 = tmp
+			tmp2.set_cell([10.0, 10.0, 10.0])
 
 		magmom = tmp2.get_initial_magnetic_moments()
 		natom  = len(tmp2.get_atomic_numbers())
