@@ -21,7 +21,7 @@ argvs = sys.argv
 ads_file   = argvs[1]
 e_ads_file = ads_file.split(".")[0] + "_Ead" + ".txt"
 
-calculator   = "EMT" ; calculator = calculator.lower()
+calculator = "EMT" ; calculator = calculator.lower()
 
 db_surf  = connect('surf.db')
 surf     = db_surf.get_atoms(id=1)
@@ -104,6 +104,10 @@ for imol, mol in enumerate(mols):
 		db_ads.write(tmp2, data={ mol + "-" + site: en})
 
 		del tmp2
+
+		if "vasp" in calculator:
+			xmlfile = "vasprun_" + mol + "_" + site + ".xml"
+			os.system("cp vasprun.xml %s",xmlfile)
 
 		# loop over site
 	# loop over molecule
