@@ -108,7 +108,7 @@ for imol, mol in enumerate(mols):
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + mol + "_" + site + ".xml"
-			os.system("cp vasprun.xml %s",xmlfile)
+			os.system("cp vasprun.xml %s" % xmlfile)
 
 		# loop over site
 	# loop over molecule
