@@ -21,7 +21,7 @@ argvs = sys.argv
 ads_file   = argvs[1]
 e_ads_file = ads_file.split(".")[0] + "_Ead" + ".txt"
 
-calculator = "EMT" ; calculator = calculator.lower()
+calculator = "vasp" ; calculator = calculator.lower()
 
 db_surf  = connect('surf.db')
 surf     = db_surf.get_atoms(id=1)
