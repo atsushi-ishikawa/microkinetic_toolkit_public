@@ -2,8 +2,11 @@ from ase.build import fcc111, surface
 from ase.calculators.emt import EMT
 from ase.db import connect
 from ase.io import read
+import os
 
 vacuum = 10.0
+
+os.system('rm surf.db')
 
 #surf =  fcc111(symbol="Cu", size=[3,3,4], a=3.6, vacuum=vacuum)
 bulk = read("mgo.cif")
