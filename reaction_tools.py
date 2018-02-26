@@ -3,12 +3,14 @@ def read_reactionfile(file):
 	import networkx as nx
 	import re
 
-	os.system('grep -v "^#"    %s  > reaction2.txt' % file)
-	os.system('grep -v "^\s*$" reaction2.txt > reaction3.txt')
+	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
+	os.system('grep -v "^#" tmpfile1 > tmpfile2')
+	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
 
-	numlines = sum(1 for line in open("reaction3.txt"))
+	numlines = sum(1 for line in open("tmpfile1"))
 
-	f = open(file,"r")
+	f = open("tmpfile1","r")
+	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 
@@ -31,7 +33,6 @@ def read_reactionfile(file):
 
 		rxn[i]  = reac[i][0] + "_" + rxn_tmp
 
-	os.system('rm reaction2.txt reaction3.txt')
 
 	return reac,rxn,prod
 
