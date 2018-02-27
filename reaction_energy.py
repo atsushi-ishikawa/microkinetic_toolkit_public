@@ -31,9 +31,10 @@ surface = True
 
 if surface:
 	db = connect('surf.db')
-	surf    = db.get_atoms(id=1)
-	lattice = db.get(id=1).data.lattice
-	facet   = db.get(id=1).data.facet
+	surf      = db.get_atoms(id=1)
+	lattice   =  db.get(id=1).data.lattice
+	facet     = db.get(id=1).data.facet
+	surf_name = db.get(id=1).data.formula
 
 	# load site information
 	f = open('site_info.json','r')
@@ -49,7 +50,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_hight = 2.5
+ads_height = 1.8
 # whether to do single point after optimization
 # at different computational level
 
@@ -62,7 +63,7 @@ if "gau" in calculator:
 	basis_name = re.sub("\(", "", basis)
 	basis_name = re.sub("\)", "", basis_name)
 	basis_name = re.sub(",",  "", basis_name)
-	label = method + "-" + basis_name
+	label = method + "_" + basis_name
 
 ## --- VASP ---
 elif "vasp" in calculator:
@@ -74,7 +75,7 @@ elif "vasp" in calculator:
 	ediff  = 1.0e-4
 	ediffg = -0.1
 	kpts   = [1, 1, 1]
-	vacuum = 10.0
+	vacuum = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups = None
 	#setups = {"O" : "_h"}
 
@@ -110,7 +111,7 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(r_ads[irxn]):
 		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 
-		if mol == "surf":
+		if mol == 'surf':
 			tmp = surf
 		else:
 			tmp = methane[mol]
@@ -120,22 +121,37 @@ for irxn in range(rxn_num):
 		try:
 			site_pos = site.split(".")[1]
 		except:
-			site_pos = "x1y1"
+			site_pos = 'x1y1'
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
 			print("lattice:{0},facet{1},site{2},site_pos{3}\n".format(lattice,facet,site,site_pos))
-			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
+			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
 
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())
 		coef    = r_coef[irxn][imol]
-		r_traj  = label + str(irxn) + "-" + str(imol) + "reac.traj"
-		r_label = label + str(irxn) + "-" + str(imol)
-
+		#
+		# set label
+		#
+		r_label = label + "_rxn" + str(irxn) + "_" + mol + "_" + site
+		if site != 'gas':
+			r_label = r_label + "_" + surf_name
+		r_traj  = r_label + "reac.traj"
+		#
+		# set cell
+		# 
+		if mol != 'surf' and site == 'gas':
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
+			tmp.set_cell(cell)
+			tmp = tmp.center()
+		#
+		# set calculator
+		#
 		if "gau" in calculator:
 			tmp.calc = Gaussian(label=r_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=r_traj)
@@ -144,9 +160,6 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			cell = np.array([1, 1, 1])
-			cell = vacuum*cell
-			tmp.cell = cell
 		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
@@ -157,7 +170,7 @@ for irxn in range(rxn_num):
 		en  = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
-			xmlfile = "vasprun" + r_label + ".xml"
+			xmlfile = "vasprun_" + r_label + ".xml"
 			os.system('cp vasprun.xml %s' % xmlfile)
 
 		if ZPE == True and natom != 1:
@@ -178,42 +191,55 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(p_ads[irxn]):
 		print "----- product: molecule No.", imol, " is ", mol, "-----"
 
-		if mol == "surf":
+		if mol == 'surf':
 			tmp = surf
 		else:
 			tmp   = methane[mol]
 
 		site = p_site[irxn][imol]
+
 		try:
 			site_pos = site.split(".")[1]
 		except:
-			site_pos = "x1y1"
+			site_pos = 'x1y1'
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
 			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
-			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
+			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
 
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())
 		coef    = p_coef[irxn][imol]
-		p_traj  = label + str(irxn) + "-" + str(imol) + "prod.traj"
-		p_label = label + str(irxn) + "-" + str(imol)
-
+		#
+		# set label
+		#
+		p_label = label + "_rxn" + str(irxn) + "_" + mol + "_" + site
+		if site != 'gas':
+			p_label = p_label + "_" + surf_name
+		p_traj  = p_label + "prod.traj"
+		#
+		# set cell
+		# 
+		if mol != 'surf' and site == 'gas':
+			cell = np.array([1, 1, 1])
+			cell = vacuum*cell
+			tmp.set_cell(cell)
+			tmp = tmp.center()
+		#
+		# set calculator
+		#
 		if "gau" in calculator:
 			tmp.calc = Gaussian(label=p_label, method=method, basis=basis)
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
-				label = label + "_sp"
-				tmp.calc = Gaussian(method=method_sp, basis=basis)
+				p_label = p_label + "_sp"
+				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			cell = np.array([1, 1, 1])
-			cell = vacuum*cell
-			tmp.cell = cell
 		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
@@ -222,6 +248,10 @@ for irxn in range(rxn_num):
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
+
+		if "vasp" in calculator:
+			xmlfile = "vasprun_" + p_label + ".xml"
+			os.system('cp vasprun.xml %s' % xmlfile)
 
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
