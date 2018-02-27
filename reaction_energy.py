@@ -50,7 +50,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.6
+ads_height = 1.4
 # whether to do single point after optimization
 # at different computational level
 
@@ -121,14 +121,15 @@ for irxn in range(rxn_num):
 		site = r_site[irxn][imol]
 
 		try:
-			site_pos = site.split(".")[1]
+			site,site_pos = site.split(".")
 		except:
 			site_pos = 'x1y1'
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
-			print("lattice:{0},facet{1},site{2},site_pos{3}\n".format(lattice,facet,site,site_pos))
+			offset = np.array(offset)*(3.0/4.0) # MgO only
+			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
@@ -204,19 +205,20 @@ for irxn in range(rxn_num):
 		if mol == 'surf':
 			tmp = surf
 		else:
-			tmp   = methane[mol]
+			tmp = methane[mol]
 
 		site = p_site[irxn][imol]
 
 		try:
-			site_pos = site.split(".")[1]
+			site,site_pos = site.split(".")
 		except:
 			site_pos = 'x1y1'
 
 		if site != 'gas':
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
-			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
+			offset = np.array(offset)*(3.0/4.0) # MgO only
+			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
