@@ -20,14 +20,14 @@ from ase.build import add_adsorbate
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "gaussian"
+calculator   = "vasp"
 calculator = calculator.lower()
 
 #
 # if surface present, provide surface file
 # in ase.db form
 #
-surface = False
+surface = True
 
 if surface:
 	db = connect('surf.db')
@@ -66,13 +66,13 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc     = "pbe"
-	prec   = "normal"
-	encut  = 400.0 # 213.0 or 400.0 or 500.0
+	xc     = "rpbe"
+	prec   = "low"
+	encut  = 350.0 # 213.0 or 400.0 or 500.0
 	potim  = 0.10
-	nsw    = 100
-	ediff  = 1.0e-5
-	ediffg = -0.01
+	nsw    = 10
+	ediff  = 1.0e-4
+	ediffg = -0.1
 	kpts   = [1, 1, 1]
 	vacuum = 10.0
 	setups = None
@@ -125,7 +125,7 @@ for irxn in range(rxn_num):
 		if site != 'gas':
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
-			print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
+			print("lattice:{0},facet{1},site{2},site_pos{3}\n".format(lattice,facet,site,site_pos))
 			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
@@ -155,6 +155,10 @@ for irxn in range(rxn_num):
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		en  = tmp.get_potential_energy()
+
+		if "vasp" in calculator:
+			xmlfile = "vasprun" + r_label + ".xml"
+			os.system('cp vasprun.xml %s' % xmlfile)
 
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
