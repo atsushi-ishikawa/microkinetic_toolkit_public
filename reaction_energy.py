@@ -50,7 +50,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.8
+ads_height = 1.6
 # whether to do single point after optimization
 # at different computational level
 
@@ -67,16 +67,18 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc     = "rpbe"
-	prec   = "low"
-	encut  = 350.0 # 213.0 or 400.0 or 500.0
-	potim  = 0.10
-	nsw    = 10
-	ediff  = 1.0e-4
-	ediffg = -0.1
-	kpts   = [1, 1, 1]
-	vacuum = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
-	setups = None
+	xc          = "rpbe"
+	prec        = "low"
+	encut       = 350.0 # 213.0 or 400.0 or 500.0
+	potim       = 0.10
+	nsw         = 10
+	ediff       = 1.0e-4
+	ediffg      = -0.1
+	kpts_surf   = [1, 1, 1]
+	ismear_surf = 1
+	sigma_surf  = 0.20
+	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
+	setups      = None
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -142,13 +144,20 @@ for irxn in range(rxn_num):
 			r_label = r_label + "_" + surf_name
 		r_traj  = r_label + "reac.traj"
 		#
-		# set cell
+		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas':
+		if mol != 'surf' and site == 'gas': # gas-phase molecule
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.set_cell(cell)
-			tmp = tmp.center()
+			#tmp = tmp.center()
+			ismear = 0 # gaussian smearing
+			sigma  = 0.05
+			kpts = [1,1,1]
+		else: # surface
+			ismear = ismear_surf # Methfessel-Paxton
+			sigma  = sigma_surf
+			kpts = kpts_surf
 		#
 		# set calculator
 		#
@@ -160,7 +169,8 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, 
+					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
@@ -222,13 +232,20 @@ for irxn in range(rxn_num):
 			p_label = p_label + "_" + surf_name
 		p_traj  = p_label + "prod.traj"
 		#
-		# set cell
+		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas':
+		if mol != 'surf' and site == 'gas': # gas-phase molecule
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.set_cell(cell)
-			tmp = tmp.center()
+			#tmp = tmp.center()
+			ismear = 0 # gaussian smearing
+			sigma  = 0.05
+			kpts = [1,1,1]
+		else: # surface
+			ismear = ismear_surf # Methfessel-Paxton
+			sigma  = sigma_surf
+			kpts = kpts_surf
 		#
 		# set calculator
 		#
@@ -240,7 +257,8 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0, setups=setups,
+		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, 
+					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
