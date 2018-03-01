@@ -71,7 +71,8 @@ elif "vasp" in calculator:
 	prec        = "low"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 10
+	nsw         = 20
+	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1
 	kpts_surf   = [1, 1, 1]
@@ -151,11 +152,14 @@ for irxn in range(rxn_num):
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas': # gas-phase molecule
+		if mol != 'surf' and site == 'gas':
+			#
+ 			# gas-phase molecule
+			#
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.set_cell(cell)
-			#tmp = tmp.center()
+			tmp.center()
 			ismear = 0 # gaussian smearing
 			sigma  = 0.05
 			kpts = [1,1,1]
@@ -174,7 +178,7 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, 
+		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin,
 					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
@@ -244,11 +248,14 @@ for irxn in range(rxn_num):
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas': # gas-phase molecule
+		if mol != 'surf' and site == 'gas':
+			#
+ 			# gas-phase molecule
+			#
 			cell = np.array([1, 1, 1])
 			cell = vacuum*cell
 			tmp.set_cell(cell)
-			#tmp = tmp.center()
+			tmp.center()
 			ismear = 0 # gaussian smearing
 			sigma  = 0.05
 			kpts = [1,1,1]
@@ -267,7 +274,7 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, 
+		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin,
 					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
