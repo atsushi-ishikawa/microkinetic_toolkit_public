@@ -129,6 +129,10 @@ for irxn in range(rxn_num):
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
 			offset = np.array(offset)*(3.0/4.0) # MgO only
+			# wrap atoms to prevent adsorbate being on different cell
+			surf_tmp.translate([0,0,2])
+			surf_tmp.wrap(pbc=[0,0,1])
+			surf_tmp.translate([0,0,-1.8])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
@@ -218,6 +222,10 @@ for irxn in range(rxn_num):
 			surf_tmp = surf.copy()
 			offset = site_info[lattice][facet][site][site_pos]
 			offset = np.array(offset)*(3.0/4.0) # MgO only
+			# wrap atoms to prevent adsorbate being on different cell
+			surf_tmp.translate([0,0,2])
+			surf_tmp.wrap(pbc=[0,0,1])
+			surf_tmp.translate([0,0,-1.8])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
