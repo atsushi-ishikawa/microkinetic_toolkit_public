@@ -32,7 +32,7 @@ surface = True
 if surface:
 	db = connect('surf.db')
 	surf      = db.get_atoms(id=1)
-	lattice   =  db.get(id=1).data.lattice
+	lattice   = db.get(id=1).data.lattice
 	facet     = db.get(id=1).data.facet
 	surf_name = db.get(id=1).data.formula
 
@@ -50,7 +50,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.4
+ads_height = 1.6
 # whether to do single point after optimization
 # at different computational level
 
@@ -108,6 +108,8 @@ for irxn in range(rxn_num):
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
 	reac_A  = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_A  = np.array(range(len(r_ads[irxn])),dtype="f")
+
+
 	#
 	# reactants
 	#
@@ -117,7 +119,16 @@ for irxn in range(rxn_num):
 		if mol == 'surf':
 			tmp = surf
 		else:
-			tmp = methane[mol]
+			if "^SIDE" in mol:
+				mol = mol.replace("^SIDE","")
+				tmp = methane[mol]
+				tmp.rotate(90,'y')
+			elif "^FLIP" in mol:
+				mol = mol.replace("^FLIP","")
+				tmp = methane[mol]
+				tmp.rotate(180,'y')
+			else:
+				tmp = methane[mol]
 
 		site = r_site[irxn][imol]
 
@@ -133,8 +144,12 @@ for irxn in range(rxn_num):
 			# wrap atoms to prevent adsorbate being on different cell
 			surf_tmp.translate([0,0,2])
 			surf_tmp.wrap(pbc=[0,0,1])
-			surf_tmp.translate([0,0,-1.8])
+			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+			# shift adsorbate molecule
+			shift = tmp.positions[:,2].min()
+			tmp.translate([0,0,-shift])
+			#
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
@@ -213,7 +228,16 @@ for irxn in range(rxn_num):
 		if mol == 'surf':
 			tmp = surf
 		else:
-			tmp = methane[mol]
+			if "^SIDE" in mol:
+				mol = mol.replace("^SIDE","")
+				tmp = methane[mol]
+				tmp.rotate(90,'y')
+			elif "^FLIP" in mol:
+				mol = mol.replace("^FLIP","")
+				tmp = methane[mol]
+				tmp.rotate(180,'y')
+			else:
+				tmp = methane[mol]
 
 		site = p_site[irxn][imol]
 
@@ -229,8 +253,12 @@ for irxn in range(rxn_num):
 			# wrap atoms to prevent adsorbate being on different cell
 			surf_tmp.translate([0,0,2])
 			surf_tmp.wrap(pbc=[0,0,1])
-			surf_tmp.translate([0,0,-1.8])
+			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+			# shift adsorbate molecule
+			shift = tmp.positions[:,2].min()
+			tmp.translate([0,0,-shift])
+			#
 			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
 			tmp = surf_tmp
 			del surf_tmp
@@ -301,15 +329,26 @@ for irxn in range(rxn_num):
 		prod_en[imol] = coef * prod_en[imol]
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
-	print "deltaE = ",deltaE
+	#
+	# writing reaction
+	#
+	for imol, mol in enumerate(r_ads[irxn]):
+		fbarrier.write("{0}_{1}".format(mol,r_site[irxn][imol]))
+		if imol != len(r_ads[irxn])-1:
+			fbarrier.write(" + ")
+	fbarrier.write(" --> ")
+	for imol, mol in enumerate(p_ads[irxn]):
+		fbarrier.write("{0}_{1}".format(mol,p_site[irxn][imol]))
+		if imol != len(p_ads[irxn])-1:
+			fbarrier.write(" + ")
+	#
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
-	fbarrier.write("{0:<16.8f} {1:<16.8f}\n".format(Eafor, Earev))
+	fbarrier.write("{0:>14.8f} {1:>14.8f}\n".format(Eafor, Earev))
 	fbarrier.close()
 	#
 	# loop over reaction
 	#
-
 remove_parentheses(barrierfile)
 
