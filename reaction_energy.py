@@ -80,6 +80,7 @@ elif "vasp" in calculator:
 	sigma_surf  = 0.20
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
+	ivdw        = 10
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -193,7 +194,7 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin,
+		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
@@ -302,7 +303,7 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin,
+		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
