@@ -332,16 +332,23 @@ for irxn in range(rxn_num):
 	#
 	# writing reaction
 	#
+	string = ""
 	for imol, mol in enumerate(r_ads[irxn]):
-		fbarrier.write("{0}_{1}".format(mol,r_site[irxn][imol]))
+		string = string + "{0}_{1}".format(mol, r_site[irxn][imol])
+		#fbarrier.write("{0}_{1}".format(mol,r_site[irxn][imol]))
 		if imol != len(r_ads[irxn])-1:
-			fbarrier.write(" + ")
-	fbarrier.write(" --> ")
+			#fbarrier.write(" + ")
+			string = string + " + "
+	string = string + " --> "
+	#fbarrier.write(" --> ")
 	for imol, mol in enumerate(p_ads[irxn]):
-		fbarrier.write("{0}_{1}".format(mol,p_site[irxn][imol]))
+		string = string + "{0}_{1}".format(mol, p_site[irxn][imol])
+		#fbarrier.write("{0}_{1}\t".format(mol,p_site[irxn][imol]))
 		if imol != len(p_ads[irxn])-1:
-			fbarrier.write(" + ")
+			#fbarrier.write(" + ")
+			string = string + " + "
 	#
+	fbarrier.write("{0:<40s}".format(string))
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
