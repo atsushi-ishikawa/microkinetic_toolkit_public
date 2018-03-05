@@ -80,15 +80,14 @@ elif "vasp" in calculator:
 	sigma_surf  = 0.20
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ivdw        = 10
+	ivdw        = 12
 	#setups = {"O" : "_h"}
 
 	method = xc
-	basis = ""
-	label = method
+	basis  = ""
+	label  = method
 
 ## --- EMT --- -> nothing to set
-
 
 if ZPE:
 	label = label + "ZPE"
@@ -187,7 +186,7 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=r_label, method=method, basis=basis)
+			tmp.calc = Gaussian(label=r_label, method=method, basis=basis, scf="xqc")
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
@@ -296,7 +295,7 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=p_label, method=method, basis=basis)
+			tmp.calc = Gaussian(label=p_label, method=method, basis=basis, scf="xqc")
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
@@ -349,7 +348,7 @@ for irxn in range(rxn_num):
 			#fbarrier.write(" + ")
 			string = string + " + "
 	#
-	fbarrier.write("{0:<40s}".format(string))
+	fbarrier.write("{0:<45s}".format(string))
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
