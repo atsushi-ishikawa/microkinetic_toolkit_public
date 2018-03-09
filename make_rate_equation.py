@@ -8,7 +8,7 @@ reactionfile = argvs[1]
 #reactionfile = "reaction.txt"
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
-outputfile = "dtheta_dt.m"
+outputfile = "met001ode_auto.m"
 fout = open(outputfile,"w")
 
 # remove "surf" from the list
@@ -23,73 +23,116 @@ for i in p_ads:
 	except:
 		i = i
 
-fout.write("function dtheta_dt = f(t,theta,kfor,krev,P)")
+fout.write("function dydt = met001ode_auto(~,y,yin,tau,A,Ea,deltaH)")
 fout.write("\n\n")
 #
 # template zone - start
 #
-
+template = " \
+\t global T R Pin Ngas rho_b v0; \n \
+\t \n \
+\t R = 8.314; \n \
+\t NA = 6.02*10^23; % Avogadro's number \n \
+\t \n \
+\t Afor = A(:,1); Arev = A(:,2); \n \
+\t \n \
+\t kfor = Afor .* exp(-Ea/R/T); \n \
+\t krev = Arev .* exp(-(Ea-deltaH)/R/T); \n \
+\t \n \
+\t F = y(1:Ngas); \n  \
+\t F_tot = sum(F); \n \
+\t x = F/F_tot; \n \
+\t P = Pin*x; \n \
+\t Theta = y(Ngas+1:end); \n \
+\t \n \
+\t f_act = 1.0e-1; % fraction of active site \n \
+\t MW    = 101.1; % atomic mass of Ru [g/mol] \n \
+\t Natom = NA/MW; % number of atoms in one g-cat [atoms/g] \n \
+\t Nsurf = Natom^(2/3); % number of atoms in surface \n \
+\t Nsite = Nsurf*f_act; % number of active sites \n \
+\t \n \
+\t Fin = yin(1:Ngas);\n"
+fout.write(template)
 #
 # template zone - end
 #
 rxn_num = get_number_of_reaction(reactionfile)
 
-fout.write("Rate = zeros(" + str(rxn_num) + ",1);\n\n")
+fout.write("\t Rate = zeros(" + str(rxn_num+1) + ",1);\n\n")
 
-dict = {}
+dict1 = {}
+dict2 = {}
 for irxn in range(rxn_num):
 	rxn_idx = str(irxn + 1) # MATLAB-index starts from 1
 
-	tmp = "Rate(" + rxn_idx + ") = "
-	#
-	# reactants
-	#
-	tmp = tmp + "kfor(" + rxn_idx + ")"
+	list_r = []
+	list_p = []
+	for imol,mol in enumerate(r_ads[irxn]):
+		spe = get_species_num(mol) + 1 # MATLAB
+		list_r.append(spe)
+		dict1[spe] = mol
 
-	for imol, mol in enumerate(r_ads[irxn]):
-		spe = get_species_num(mol)
-		spe_idx = str(spe + 1)  # MATLAB-index
-		dict[spe+1] = mol
+	for imol,mol in enumerate(p_ads[irxn]):
+		spe = get_species_num(mol) + 1 # MATLAB
+		list_p.append(spe)
+		dict1[spe] = mol
 
+	# forward reaction
+	tmp = "kfor(" + rxn_idx + ")"
+	for imol,mol in enumerate(r_ads[irxn]):
+		spe = get_species_num(mol) + 1 # MATLAB
 		if r_site[irxn][imol] == "gas":
-			theta = "P(" + spe_idx + ")"
+			theta = "P(" + str(spe) + ")"
 		else:
-			theta = "theta(" + spe_idx + ")"
-
+			theta = "theta(" + str(spe) + ")"
 		power = r_coef[irxn][imol]
 		if power != 1:
 			theta = theta + "^" + str(power)
-
 		tmp = tmp + "*" + theta
-	#
-	# products
-	#
-	tmp = tmp + " - krev(" + rxn_idx + ")"
 
-	for imol, mol in enumerate(p_ads[irxn]):
-		rxn_idx = str(irxn + 1) # MATLAB-index
-		spe = get_species_num(mol)
-		spe_idx = str(spe + 1)  # MATLAB-index
-		dict[spe+1] = mol
-
-		if p_site[irxn][imol] == "gas":
-			theta = "P(" + spe_idx + ")"
+	for mem in list_r:
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "-" + tmp
 		else:
-			theta = "theta(" + spe_idx + ")"
+			dict2[mem] = "-" + tmp
+	for mem in list_p:
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "+" + tmp
+		else:
+			dict2[mem] = tmp
 
+	# backword reaction
+	tmp = "krev(" + rxn_idx + ")"
+	for imol,mol in enumerate(p_ads[irxn]):
+		spe = get_species_num(mol) + 1 # MATLAB
+		if p_site[irxn][imol] == "gas":
+			theta = "P(" + str(spe) + ")"
+		else:
+			theta = "theta(" + str(spe) + ")"
 		power = p_coef[irxn][imol]
 		if power != 1:
 			theta = theta + "^" + str(power)
 		tmp = tmp + "*" + theta
 
-	print "for and rev", tmp
-	tmp = tmp + "\n"
-	fout.writelines(tmp)
+	for mem in list_r:
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "+" + tmp
+		else:
+			dict2[mem] = tmp
+	for mem in list_p:
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "-" + tmp
+		else:
+			dict2[mem] = "-" + tmp
 
-comment = "% " + str(dict).replace('\'','').replace('{','').replace('}','')
+for imol,mol in enumerate(dict1):
+	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
+
+comment = "\t % species --- " + str(dict1).replace('\'','').replace('{','').replace('}','')
 fout.write(comment)
 
 fout.write("\nend\n")
 fout.close()
 
+print dict2
 
