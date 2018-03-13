@@ -26,7 +26,8 @@ amu   = units['_amu']
 reac_A = np.array(rxn_num*[range(len(r_ads[0]))],dtype="f")
 prod_A = np.array(rxn_num*[range(len(p_ads[0]))],dtype="f")
 
-Temp = 300.0
+rxn_type = np.array(rxn_num)
+quit()
 
 for irxn in range(rxn_num):
 	#
@@ -38,6 +39,12 @@ for irxn in range(rxn_num):
 		site = r_site[irxn][imol]
 
 		mass = sum(tmp.get_masses())
+
+		try:
+			site,site_pos = site.split(".")
+		except:
+			site_pos = 'x1y1'
+
 		if site=='gas':
 			mass_sum  = mass_sum  + mass
 			mass_prod = mass_prod * mass
@@ -55,6 +62,12 @@ for irxn in range(rxn_num):
 		site = p_site[irxn][imol]
 
 		mass = sum(tmp.get_masses())
+
+		try:
+			site,site_pos = site.split(".")
+		except:
+			site_pos = 'x1y1'
+
 		if site=='gas':
 			mass_sum  = mass_sum  + mass
 			mass_prod = mass_prod * mass
