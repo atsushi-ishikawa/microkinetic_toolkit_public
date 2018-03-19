@@ -1,8 +1,11 @@
+import sys
 from reaction_tools import *
 #
 # count species
 #
-reactionfile = "reaction.txt"
+argvs = sys.argv
+reactionfile = argvs[1]
+
 speciesfile  = "species.txt"
 
 fspecies = open(speciesfile, "w")
@@ -10,10 +13,15 @@ fspecies = open(speciesfile, "w")
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 species = []
+
 for imol in r_ads:
+	if 'surf' in imol: # remove surf
+		imol.remove('surf')
 	species.append(imol)
 
 for imol in p_ads:
+	if 'surf' in imol:
+		imol.remove('surf')
 	species.append(imol)
 
 species = [item for sublist in species for item in sublist]
