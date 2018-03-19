@@ -11,17 +11,13 @@ reactionfile = argvs[1]
 outputfile = "met001ode_auto.m"
 fout = open(outputfile,"w")
 
-# remove "surf" from the list
-for i in r_ads:
-	try:
-		i = i.remove('surf')
-	except:
-		i = i
-for i in p_ads:
-	try:
-		i = i.remove('surf')
-	except:
-		i = i
+# Remove "surf" from the list, because ODE for vacant site is 
+# determined from site balance i.e. sum_i theta_i = 1.
+# Note that not necessary remove from species list.
+for lst in [r_ads, p_ads]:
+	for ads in lst:
+		if 'surf' in ads:
+			ads.remove('surf')
 
 fout.write("function dydt = met001ode_auto(~,y,yin,tau,A,Ea,deltaH)")
 fout.write("\n\n")
@@ -43,7 +39,7 @@ template = " \
 \t F_tot = sum(F); \n \
 \t x = F/F_tot; \n \
 \t P = Pin*x; \n \
-\t Theta = y(Ngas+1:end); \n \
+\t theta = y(Ngas+1:end); \n \
 \t \n \
 \t f_act = 1.0e-1; % fraction of active site \n \
 \t MW    = 101.1; % atomic mass of Ru [g/mol] \n \
@@ -56,9 +52,10 @@ fout.write(template)
 #
 # template zone - end
 #
-rxn_num = get_number_of_reaction(reactionfile)
+rxn_num  = get_number_of_reaction(reactionfile)
+spec_num = get_species_num()
 
-fout.write("\t Rate = zeros(" + str(rxn_num+1) + ",1);\n\n")
+fout.write("\t Rate = zeros(" + str(spec_num+1) + ",1);\n\n")  # add +1 for vacant site
 
 dict1 = {}
 dict2 = {}
@@ -67,24 +64,40 @@ for irxn in range(rxn_num):
 
 	list_r = []
 	list_p = []
+
+	# prepare dict1 -- start
 	for imol,mol in enumerate(r_ads[irxn]):
-		spe = get_species_num(mol) + 1 # MATLAB
+		site = r_site[irxn][imol]
+		if site !='gas':
+			mol = mol + "_surf"
+		spe  = get_species_num(mol) + 1 # MATLAB
 		list_r.append(spe)
 		dict1[spe] = mol
 
 	for imol,mol in enumerate(p_ads[irxn]):
-		spe = get_species_num(mol) + 1 # MATLAB
+		site = p_site[irxn][imol]
+		if site !='gas':
+			mol = mol + "_surf"
+		spe  = get_species_num(mol) + 1 # MATLAB
 		list_p.append(spe)
 		dict1[spe] = mol
+	# prepare dict1 -- end
 
+	#
 	# forward reaction
+	#
 	tmp = "kfor(" + rxn_idx + ")"
 	for imol,mol in enumerate(r_ads[irxn]):
-		spe = get_species_num(mol) + 1 # MATLAB
-		if r_site[irxn][imol] == "gas":
-			theta = "P(" + str(spe) + ")"
-		else:
+		site = r_site[irxn][imol]
+		if site !='gas':
+			mol = mol + "_surf"
+		spe  = get_species_num(mol) + 1 # MATLAB
+
+		if site != 'gas' or mol  == 'surf':
 			theta = "theta(" + str(spe) + ")"
+		else:
+			theta = "P(" + str(spe) + ")"
+
 		power = r_coef[irxn][imol]
 		if power != 1:
 			theta = theta + "^" + str(power)
@@ -104,11 +117,16 @@ for irxn in range(rxn_num):
 	# backword reaction
 	tmp = "krev(" + rxn_idx + ")"
 	for imol,mol in enumerate(p_ads[irxn]):
+		site = p_site[irxn][imol]
+		if site !='gas':
+			mol = mol + "_surf"
 		spe = get_species_num(mol) + 1 # MATLAB
-		if p_site[irxn][imol] == "gas":
-			theta = "P(" + str(spe) + ")"
-		else:
+
+		if site != 'gas' or mol  == 'surf':
 			theta = "theta(" + str(spe) + ")"
+		else:
+			theta = "P(" + str(spe) + ")"
+
 		power = p_coef[irxn][imol]
 		if power != 1:
 			theta = theta + "^" + str(power)
@@ -125,7 +143,8 @@ for irxn in range(rxn_num):
 		else:
 			dict2[mem] = "-" + tmp
 
-for imol,mol in enumerate(dict1):
+
+for imol,mol in enumerate(dict2):
 	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
 
 comment = "\t % species --- " + str(dict1).replace('\'','').replace('{','').replace('}','')
@@ -133,6 +152,4 @@ fout.write(comment)
 
 fout.write("\nend\n")
 fout.close()
-
-print dict2
 

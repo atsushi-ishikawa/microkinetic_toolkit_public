@@ -1,6 +1,5 @@
 def read_reactionfile(file):
 	import os
-	import networkx as nx
 	import re
 
 	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
@@ -36,41 +35,41 @@ def read_reactionfile(file):
 
 	return reac,rxn,prod
 
-def read_speciesfile(file):
-	import os
-	import re
-
-	os.system('grep -v "^#"    %s  > reaction2.txt' % file)
-	os.system('grep -v "^\s*$" reaction2.txt > reaction3.txt')
-
-	numlines = sum(1 for line in open("reaction3.txt"))
-
-	f = open("reaction3.txt","r")
-
-	lines = f.readlines()
-
-	reac = range(numlines)
-	rxn  = range(numlines)
-	prod = range(numlines)
-
-	for i,line in enumerate(lines):
-		#text = line.replace("\n","").replace(">","").replace(" ","").split("--")
-		text = line.replace("\n","").replace(">","").split("--")
-		reac_tmp  = text[0]
-		rxn_tmp   = text[1]
-		prod_tmp  = text[2]
-
-		reac[i] = re.split(" \+ ",reac_tmp) # for cations
-		prod[i] = re.split(" \+ ",prod_tmp) # for cations
-
-		reac = remove_space(reac)
-		prod = remove_space(prod)
-
-		rxn[i]  = reac[i][0] + "_" + rxn_tmp
-
-	os.system('rm reaction2.txt reaction3.txt')
-
-	return reac,rxn,prod
+#def read_speciesfile(file):
+#	import os
+#	import re
+#
+#	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
+#	os.system('grep -v "^#" tmpfile1 > tmpfile2')
+#	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
+#
+#	numlines = sum(1 for line in open("tmpfile1"))
+#
+#	f = open("tmpfile1","r")
+#	os.system('rm tmpfile1 tmpfile2')
+#
+#	lines = f.readlines()
+#
+#	reac = range(numlines)
+#	rxn  = range(numlines)
+#	prod = range(numlines)
+#
+#	for i,line in enumerate(lines):
+#		#text = line.replace("\n","").replace(">","").replace(" ","").split("--")
+#		text = line.replace("\n","").replace(">","").split("--")
+#		reac_tmp  = text[0]
+#		rxn_tmp   = text[1]
+#		prod_tmp  = text[2]
+#
+#		reac[i] = re.split(" \+ ",reac_tmp) # for cations
+#		prod[i] = re.split(" \+ ",prod_tmp) # for cations
+#
+#		reac = remove_space(reac)
+#		prod = remove_space(prod)
+#
+#		rxn[i]  = reac[i][0] + "_" + rxn_tmp
+#
+#	return reac,rxn,prod
 
 def remove_space(obj):
 		newobj = [0]*len(obj)
@@ -264,6 +263,7 @@ def read_speciesfile(speciesfile):
 	species = species.replace('[','')
 	species = species.replace(']','')
 	species = species.replace(' ','')
+	species = species.replace('\n','')
 	species = species.replace('\'','')
 	species = species.split(",")
 
@@ -280,14 +280,21 @@ def remove_parentheses(file):
 	os.system('rm %s' % tmpfile)
 
 
-def get_species_num(species):
+def get_species_num(*species):
+	# Return what is the number of species in speciesfile.
+	# If argument is not present, returns the number of species.
 	from reaction_tools import read_speciesfile
 
 	speciesfile = "species.txt"
 	lst = read_speciesfile(speciesfile)
 
-	return lst.index(species)
-
+	if len(species) == 0:
+		# null argument: number of species
+		return len(lst)
+	else:
+		# return species number
+		spec = species[0]
+		return lst.index(spec)
 
 def get_adsorption_sites(infile):
 	from reaction_tools import remove_space
