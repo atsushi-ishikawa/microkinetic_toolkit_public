@@ -16,6 +16,12 @@ f = open(outfile,"w")
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
 rxn_num = get_number_of_reaction(infile)
+# Remove "surf" from the list
+#for lst in [r_ads, p_ads]:
+#	for ads in lst:
+#		if 'surf' in ads:
+#			ads.remove('surf')
+
 #
 # --- energy calculation ---
 #
@@ -39,42 +45,37 @@ for irxn in range(rxn_num):
 	# reactants
 	#
 	mass_sum = 0; mass_prod = 1;
-	tmplist = []
+	rxntype = []
 	for imol, mol in enumerate(r_ads[irxn]):
 		nmol = len(r_ads[irxn])
-		tmp  = methane[mol]
-		site = r_site[irxn][imol]
-
-		mass = sum(tmp.get_masses())
-
-		try:
-			site,site_pos = site.split(".")
-		except:
-			site_pos = 'x1y1'
-
-		mass_sum  = mass_sum  + mass
-		mass_prod = mass_prod * mass
-
-		if site=='gas':
-			tmplist.append(site)
+		if mol == 'surf':
+			rxntype.append('surf')
 		else:
-			tmplist.append('surf')
+			tmp  = methane[mol]
+			site = r_site[irxn][imol]
 
-	if all(rxn == 'gas' for rxn in tmplist):
-		if nmol == 1:
-			# adsorption
-			type_for[irxn] = "ads"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			fac_for = 1.0 / denom
-		else:
-			# gas reaction
-			type_for[irxn] = "gas"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			fac_for = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
-	elif all(rxn == 'surf' for rxn in tmplist):
+			mass = sum(tmp.get_masses())
+
+			try:
+				site,site_pos = site.split(".")
+			except:
+				site_pos = 'x1y1'
+
+			mass_sum  = mass_sum  + mass
+			mass_prod = mass_prod * mass
+
+			if site=='gas':
+				rxntype.append(site)
+			else:
+				rxntype.append('surf')
+
+	if all(rxn == 'gas' for rxn in rxntype):
+		# gas reaction
+		type_for[irxn] = "gas"
+		red_mass = mass_prod / mass_sum
+		red_mass = red_mass*amu
+		fac_for = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
+	elif all(rxn == 'surf' for rxn in rxntype):
 		if nmol == 1:
 			# desorption
 			type_for[irxn] = "des"
@@ -98,42 +99,37 @@ for irxn in range(rxn_num):
 	# products
 	#
 	mass_sum = 0; mass_prod = 1;
-	tmplist = []
+	rxntype = []
 	for imol, mol in enumerate(p_ads[irxn]):
 		nmol = len(p_ads[irxn])
-		tmp  = methane[mol]
-		site = p_site[irxn][imol]
-
-		mass = sum(tmp.get_masses())
-
-		try:
-			site,site_pos = site.split(".")
-		except:
-			site_pos = 'x1y1'
-
-		mass_sum  = mass_sum  + mass
-		mass_prod = mass_prod * mass
-
-		if site=='gas':
-			tmplist.append(site)
+		if mol == 'surf':
+			rxntype.append('surf')
 		else:
-			tmplist.append('surf')
+			tmp  = methane[mol]
+			site = p_site[irxn][imol]
 
-	if all(rxn == 'gas' for rxn in tmplist):
-		if nmol == 1:
-			# adsorption
-			type_rev[irxn] = "ads"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			fac_rev = 1.0 / denom
-		else:
-			# gas reaction
-			type_rev[irxn] = "gas"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			fac_rev = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
-	elif all(rxn == 'surf' for rxn in tmplist):
+			mass = sum(tmp.get_masses())
+
+			try:
+				site,site_pos = site.split(".")
+			except:
+				site_pos = 'x1y1'
+
+			mass_sum  = mass_sum  + mass
+			mass_prod = mass_prod * mass
+
+			if site=='gas':
+				rxntype.append(site)
+			else:
+				rxntype.append('surf')
+
+	if all(rxn == 'gas' for rxn in rxntype):
+		# gas reaction
+		type_rev[irxn] = "gas"
+		red_mass = mass_prod / mass_sum
+		red_mass = red_mass*amu
+		fac_rev = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
+	elif all(rxn == 'surf' for rxn in rxntype):
 		if nmol == 1:
 			# desorption
 			type_rev[irxn] = "des"

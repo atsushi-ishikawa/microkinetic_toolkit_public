@@ -1,317 +1,149 @@
 """
-Gaussian calculator for ASE written by:
+Read/write functions for Gaussian.
+Written by:
 
-    Glen R. Jenness
-    University of Wisconsin - Madison
-
-Based off of code written by:
-
-    Glen R. Jenness
-    Kuang Yu
-    Torsten Kerber, Ecole normale superieure de Lyon (*)
-    Paul Fleurat-Lessard, Ecole normale superieure de Lyon (*)
-    Martin Krupicka
-
-(*) This work is supported by Award No. UK-C0017, made by King Abdullah
-University of Science and Technology (KAUST), Saudi Arabia.
+   Glen R. Jenness
+   University of Wisconsin - Madison
 
 See accompanying license files for details.
 """
-import os
 
-from ase.calculators.calculator import FileIOCalculator, Parameters, ReadError
+import numpy as np
 
-"""
-Gaussian has two generic classes of keywords:  link0 and route.
-Since both types of keywords have different input styles, we will
-distinguish between both types, dividing each type into str's, int's
-etc.
-
-For more information on the Link0 commands see:
-    http://www.gaussian.com/g_tech/g_ur/k_link0.htm
-For more information on the route section keywords, see:
-    http://www.gaussian.com/g_tech/g_ur/l_keywords09.htm
-"""
-link0_keys = ['chk',
-              'mem',
-              'rwf',
-              'int',
-              'd2e',
-              'lindaworkers',
-              'kjob',
-              'subst',
-              'save',
-              'nosave',
-              'nprocshared',
-              'nproc']
-
-# This one is a little strange.  Gaussian has several keywords where you just
-# specify the keyword, but the keyword itself has several options.
-# Ex:  Opt, Opt=QST2, Opt=Conical, etc.
-# These keywords are given here.
-route_self_keys = ['opt',
-                   'force',
-                   'freq',
-                   'complex',
-                   'fmm',
-                   'genchk',
-                   'polar',
-                   'prop',
-                   'pseudo',
-                   'restart',
-                   'scan',
-                   'scrf',
-                   'sp',
-                   'sparse',
-                   'stable',
-                   'population',
-                   'volume',
-                   'densityfit',
-                   'nodensityfit']
-
-route_keys = [# int keys
-              # Multiplicity and charge are not really route keywords,
-              # but we will put them here anyways
-              'cachesize',
-              'cbsextrapolate',
-              'constants',
-              # str keys
-              'functional',
-              'maxdisk',
-              'cphf',
-              'density',
-              'ept',
-              'field',
-              'geom',
-              'guess',
-              'gvb',
-              'integral',
-              'irc',
-              'ircmax',
-              'name',
-              'nmr',
-              'oniom',
-              'output',
-              'punch',
-              'scf',
-              'symmetry',
-              'td',
-              'units',
-              # Float keys
-              'pressure',
-              'scale',
-              'temperature']
+import ase.units
+from ase.data import chemical_symbols
+from ase.atoms import Atoms
+from ase.atom import Atom
+from ase.calculators.singlepoint import SinglePointCalculator
+from ase.io.gaussian_reader import GaussianReader as GR
+from ase.calculators.gaussian import Gaussian
+from ase.utils import basestring
 
 
-class Gaussian(FileIOCalculator):
-    """
-    Gaussian calculator
-    """
-    name = 'Gaussian'
+# http://www.gaussian.com/g_tech/g_ur/k_dft.htm
+allowed_dft_functionals = ['lsda',  # = 'svwn'
+                           'svwn',
+                           'svwn5',  # != 'svwn'
+                           'blyp',
+                           'b3lyp',
+                           'bp86',
+                           'pbepbe',
+                           'pbe1pbe',  # pbe0
+                           'm06',
+                           'm06hf',
+                           'm062x',
+                           'tpssh',
+                           'tpsstpss',
+                           'wb97xd',
+# ishi-begin
+                           'pw91pw91',
+                           'b3pw91',
+                           'cam-b3lyp',
+                           'lc-blyp',
+                           'hseh1pbe' ]
+# ishi-end
 
-    implemented_properties = ['energy', 'forces', 'dipole']
-#   command = 'g09 < PREFIX.com > PREFIX.log'
-    command = 'g16 < PREFIX.com > PREFIX.log'
 
-    default_parameters = {'charge': 0,
-                          'method': 'hf',
-                          'basis': '6-31g*',
-                          'force': 'force'}
+def read_gaussian_out(filename, index=-1, quantity='atoms'):
+    """"Interface to GaussianReader and returns various quantities"""
+    energy = 0.0
 
-#   def __init__(self, restart=None, ignore_bad_restart_file=False,
-#                label='g09', atoms=None, scratch=None, ioplist=list(),
-#                basisfile=None, extra=None, addsec=None, **kwargs):
-    def __init__(self, restart=None, ignore_bad_restart_file=False,
-                 label='g16', atoms=None, scratch=None, ioplist=list(),
-                 basisfile=None, extra=None, addsec=None, **kwargs):
+    data = GR(filename)[index]
+    if isinstance(data, list):
+        msg = 'Cannot parse multiple images from Gaussian out files at this'
+        msg += ' time.  Please select a single image.'
+        raise RuntimeError(msg)
 
-        """Constructs a Gaussian-calculator object.
+    atomic_numbers = data['Atomic_numbers']
+    formula = str()
+    for number in atomic_numbers:
+        formula += chemical_symbols[number]
 
-        extra: any extra text to be included in the input card
-        addsec: a list of strings to be included as "additional sections"
+    positions = np.array(data['Positions'])
+    method  = data['Method']
+    version = data['Version']
+    charge  = data['Charge']
+    multiplicity = data['Multiplicity']
 
-        """
+    if 'ccsd(t)' in method.lower()[1:]:
+        method = 'CCSD(T)'
 
-        FileIOCalculator.__init__(self, restart, ignore_bad_restart_file,
-                                  label, atoms, **kwargs)
+    if method.lower()[1:] in allowed_dft_functionals: # delete 1st character since it is R or U
+        method = 'HF'
 
-        if restart is not None:
-            try:
-                self.read(restart)
-            except ReadError:
-                if ignore_bad_restart_file:
-                    self.reset()
-                else:
-                    raise
+    atoms = Atoms(formula, positions=positions)
 
-        self.ioplist = ioplist
-        self.scratch = scratch
-        self.basisfile = basisfile
+    for key, value in data.items():
+        if (key in method):
+            energy = value
 
-        # store extra parameters
-        self.extra = extra
-        self.addsec = addsec
-
-    def set(self, **kwargs):
-        changed_parameters = FileIOCalculator.set(self, **kwargs)
-        if changed_parameters:
-            self.reset()
-        return changed_parameters
-
-    def check_state(self, atoms):
-        system_changes = FileIOCalculator.check_state(self, atoms)
-
-        ignore = ['cell', 'pbc']
-        for change in system_changes:
-            if change in ignore:
-                system_changes.remove(change)
-
-        return system_changes
-
-    def write_input(self, atoms, properties=None, system_changes=None):
-        """Writes the input file"""
-
-        FileIOCalculator.write_input(self, atoms, properties, system_changes)
-
-        magmoms = atoms.get_initial_magnetic_moments().tolist()
-        self.parameters.initial_magmoms = magmoms
-        self.parameters.write(self.label + '.ase')
-
-        # Set default behavior
-        if ('multiplicity' not in self.parameters):
-            tot_magmom = atoms.get_initial_magnetic_moments().sum()
-            mult = tot_magmom + 1
+    try:
+        if isinstance(filename, basestring):
+            fileobj = open(filename, 'r')
         else:
-            mult = self.parameters['multiplicity']
+            fileobj = filename
+            # Re-wind the file in case it was previously read.
+            fileobj.seek(0)
 
-        filename = self.label + '.com'
-        inputfile = open(filename, 'w')
-#ishi
-        if self.parameters['force'] is None:
-             del self.parameters['force']
-#ishi
-        link0 = str()
-        route = '#p %s/%s' % (self.parameters['method'],
-                              self.parameters['basis'])
+        lines = fileobj.readlines()
+        iforces = list()
+        for n, line in enumerate(lines):
+            if ('Forces (Hartrees/Bohr)' in line):
+                forces = list()
+                for j in range(len(atoms)):
+                    forces += [[float(lines[n + j + 3].split()[2]),
+                                float(lines[n + j + 3].split()[3]),
+                                float(lines[n + j + 3].split()[4])]]
+                iforces.append(np.array(forces))
+        convert = ase.units.Hartree / ase.units.Bohr
+        forces = np.array(iforces) * convert
+    except:
+        forces = None
 
-        for key, val in self.parameters.items():
-            if key.lower() in link0_keys:
-                link0 += ('%%%s=%s\n' % (key, val))
-            elif key.lower() in route_self_keys:
-                if (val.lower() == key.lower()):
-                    route += (' ' + val)
-                else:
-                    if ',' in val:
-                        route += ' %s(%s)' % (key, val)
-                    else:
-                        route += ' %s=%s' % (key, val)
+    energy *= ase.units.Hartree  # Convert the energy from a.u. to eV
+    calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
+    atoms.set_calculator(calc)
 
-            elif key.lower() in route_keys:
-                route += ' %s=%s' % (key, val)
+    if (quantity == 'energy'):
+        return energy
+    elif (quantity == 'forces'):
+        return forces[index]
+    elif (quantity == 'dipole'):
+        return np.array(data['Dipole'])
+    elif (quantity == 'atoms'):
+        return atoms
+    elif (quantity == 'version'):
+        return version
+    elif (quantity == 'multiplicity'):
+        return multiplicity
+    elif (quantity == 'charge'):
+        return charge
 
-        # include any other keyword(s)
-        if self.extra is not None:
-            route += ' ' + self.extra
 
-        if self.ioplist:
-            route += ' IOp('
-            route += ', '.join(self.ioplist)
-            route += ')'
+def read_gaussian(filename):
+    """Reads a Gaussian input file"""
+    f = open(filename, 'r')
+    lines = f.readlines()
+    f.close()
 
-        inputfile.write(link0)
-        inputfile.write(route)
-        inputfile.write(' \n\n')
-        inputfile.write('Gaussian input prepared by ASE\n\n')
-        inputfile.write('%i %i\n' % (self.parameters['charge'],
-                                     mult))
+    atoms = Atoms()
+    for n, line in enumerate(lines):
+        if ('#' in line):
+            i = 0
+            while (lines[n + i + 5] != '\n'):
+                info = lines[n + i + 5].split()
+                symbol = info[0]
+                position = [float(info[1]), float(info[2]), float(info[3])]
+                atoms += Atom(symbol, position=position)
+                i += 1
+    return atoms
 
-        symbols = atoms.get_chemical_symbols()
-        coordinates = atoms.get_positions()
-        for i in range(len(atoms)):
-            inputfile.write('%-10s' % symbols[i])
-            for j in range(3):
-                inputfile.write('%20.10f' % coordinates[i, j])
-            inputfile.write('\n')
 
-        inputfile.write('\n')
-
-        if 'gen' in self.parameters['basis'].lower():
-            if self.basisfile is None:
-                raise RuntimeError('Please set basisfile.')
-            elif not os.path.isfile(self.basisfile.rstrip('/N').lstrip('@')):
-                error = 'Basis file %s does not exist.' % self.basisfile
-                raise RuntimeError(error)
-            elif self.basisfile[0] == '@':
-                inputfile.write(self.basisfile + '\n\n')
-            else:
-                f2 = open(self.basisfile, 'r')
-                inputfile.write(f2.read())
-                f2.close()
-
-        if atoms.get_pbc().any():
-            cell = atoms.get_cell()
-            line = str()
-            for v in cell:
-                line += 'TV %20.10f%20.10f%20.10f\n' % (v[0], v[1], v[2])
-            inputfile.write(line)
-
-        # include optional additional sections
-        if self.addsec is not None:
-            inputfile.write('\n\n'.join(self.addsec))
-
-        inputfile.write('\n\n')
-
-        inputfile.close()
-
-    def read(self, label):
-        """Used to read the results of a previous calculation if restarting"""
-        FileIOCalculator.read(self, label)
-
-        from ase.io.gaussian import read_gaussian_out
-        filename = self.label + '.log'
-
-        if not os.path.isfile(filename):
-            raise ReadError
-
-        self.atoms = read_gaussian_out(filename, quantity='atoms')
-        self.parameters = Parameters.read(self.label + '.ase')
-        initial_magmoms = self.parameters.pop('initial_magmoms')
-        self.atoms.set_initial_magnetic_moments(initial_magmoms)
-        self.read_results()
-
-    def read_results(self):
-        """Reads the output file using GaussianReader"""
-        from ase.io.gaussian import read_gaussian_out
-
-        filename = self.label + '.log'
-#ishi
-        if self.parameters.has_key('force'):
-            quantities = ['energy', 'forces', 'dipole']
-        else:
-            quantities = ['energy']
-#ishi
-        with open(filename, 'r') as fileobj:
-            for quant in quantities:
-                self.results[quant] = read_gaussian_out(fileobj,
-                                                        quantity=quant)
-
-            self.results['magmom'] = read_gaussian_out(fileobj,
-                                                       quantity='multiplicity')
-            self.results['magmom'] -= 1
-
-    def clean(self):
-        """Cleans up from a previous run"""
-        extensions = ['.chk', '.com', '.log']
-
-        for ext in extensions:
-            f = self.label + ext
-            try:
-                if (self.directory is not None):
-                    os.remove(os.path.join(self.directory, f))
-                else:
-                    os.remove(f)
-            except OSError:
-                pass
-
-    def get_version(self):
-        return self.read_output(self.label + '.log', 'version')
+def write_gaussian(filename, atoms):
+    """Writes a basic Gaussian input file"""
+# Since Gaussian prints the geometry directly into the input file, we'll just
+# the write_input method from the Gaussian calculator, and just use the
+# default settings
+    calc = Gaussian()
+    calc.initialize(atoms)
+    calc.write_input(filename, atoms)

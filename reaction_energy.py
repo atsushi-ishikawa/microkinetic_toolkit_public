@@ -50,7 +50,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.6
+ads_height = 1.2
 # whether to do single point after optimization
 # at different computational level
 
@@ -68,14 +68,14 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
+	prec        = "normal"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	nsw         = 20
 	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1
-	kpts_surf   = [1, 1, 1]
+	kpts_surf   = [2, 2, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.20
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
@@ -95,20 +95,23 @@ if SP:
 	label = label + "SP"
 
 barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
-fbarrier = open(barrierfile, "w")
+deltaEfile = "deltaE.txt"
+fbarrier = open(barrierfile, 'w')
 fbarrier.close()
+fdeltaE = open(deltaEfile, 'w')
+fdeltaE.close()
 
 print "calculator:" + calculator + " method: " + method + " basis: " + basis
 
 for irxn in range(rxn_num):
-	fbarrier = open(barrierfile, "a")
+	fbarrier = open(barrierfile, 'a')
+	fdeltaE  = open(deltaEfile,  'a')
 	print "--- calculating elementary reaction No. ", irxn, "---"
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
 	reac_A  = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_A  = np.array(range(len(r_ads[irxn])),dtype="f")
-
 
 	#
 	# reactants
@@ -335,25 +338,25 @@ for irxn in range(rxn_num):
 	string = ""
 	for imol, mol in enumerate(r_ads[irxn]):
 		string = string + "{0}_{1}".format(mol, r_site[irxn][imol])
-		#fbarrier.write("{0}_{1}".format(mol,r_site[irxn][imol]))
 		if imol != len(r_ads[irxn])-1:
-			#fbarrier.write(" + ")
 			string = string + " + "
 	string = string + " --> "
-	#fbarrier.write(" --> ")
 	for imol, mol in enumerate(p_ads[irxn]):
 		string = string + "{0}_{1}".format(mol, p_site[irxn][imol])
-		#fbarrier.write("{0}_{1}\t".format(mol,p_site[irxn][imol]))
 		if imol != len(p_ads[irxn])-1:
-			#fbarrier.write(" + ")
 			string = string + " + "
 	#
-	fbarrier.write("{0:<45s}".format(string))
+	fbarrier.write('{0:<50s}'.format(string))
+
 	Eafor  =  deltaE
 	Earev  = -deltaE
 	Ea = [Eafor, Earev]
-	fbarrier.write("{0:>14.8f} {1:>14.8f}\n".format(Eafor, Earev))
+
+	fbarrier.write('{0:>14.8f} {1:>14.8f}\n'.format(Eafor, Earev))
 	fbarrier.close()
+
+	fdeltaE.write('{0:>14.8f} {1:>14.8f}\n'.format(Efor, Earev))
+	fdeltaE.close()
 	#
 	# loop over reaction
 	#

@@ -3,7 +3,7 @@ from reaction_tools import read_speciesfile
 from reaction_tools import remove_parentheses
 from ase.collections import methane
 
-massfile = "mass.txt"
+massfile = "mass.txt" # write
 species = read_speciesfile("species.txt")
 fmass   = open(massfile, "w")
 
