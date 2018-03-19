@@ -13,10 +13,10 @@ fspecies = open(speciesfile, "w")
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 # remove 'surf' from adsorbate list
-for lst in [r_ads, p_ads]:
-	for ads in lst:
-		if 'surf' in ads:
-			ads.remove('surf')
+#for lst in [r_ads, p_ads]:
+#	for ads in lst:
+#		if 'surf' in ads:
+#			ads.remove('surf')
 
 species = []
 rxnnum = len(r_ads)
@@ -48,6 +48,7 @@ for irxn in range(rxnnum):
 
 # species = [item for sublist in species for item in sublist]
 species = list(set(species)) # remove duplication
+species.sort()
 
 fspecies.write(str(species))
 fspecies.close()

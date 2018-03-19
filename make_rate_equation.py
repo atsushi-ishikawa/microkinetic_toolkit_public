@@ -14,10 +14,10 @@ fout = open(outputfile,"w")
 # Remove "surf" from the list, because ODE for vacant site is 
 # determined from site balance i.e. sum_i theta_i = 1.
 # Note that not necessary remove from species list.
-for lst in [r_ads, p_ads]:
-	for ads in lst:
-		if 'surf' in ads:
-			ads.remove('surf')
+#for lst in [r_ads, p_ads]:
+#	for ads in lst:
+#		if 'surf' in ads:
+#			ads.remove('surf')
 
 fout.write("function dydt = met001ode_auto(~,y,yin,tau,A,Ea,deltaH)")
 fout.write("\n\n")
@@ -143,6 +143,15 @@ for irxn in range(rxn_num):
 		else:
 			dict2[mem] = "-" + tmp
 
+# vacancy site
+if 'surf' in dict1.values(): # only when surface is involved
+	tmp = ""
+	for imol,mol in enumerate(dict1):
+		comp = dict1[imol+1]
+		if 'surf' in comp and comp != 'surf':
+			tmp = tmp + "-theta(" + str(imol+1) + ")"
+
+	dict2[len(dict2)] = tmp
 
 for imol,mol in enumerate(dict2):
 	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
