@@ -8,54 +8,50 @@ reactionfile = argvs[1]
 #reactionfile = "reaction.txt"
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
-outputfile = "met001ode_auto.m"
+outputfile = "met001ode.m"
 fout = open(outputfile,"w")
 
-# Remove "surf" from the list, because ODE for vacant site is 
-# determined from site balance i.e. sum_i theta_i = 1.
-# Note that not necessary remove from species list.
-#for lst in [r_ads, p_ads]:
-#	for ads in lst:
-#		if 'surf' in ads:
-#			ads.remove('surf')
-
-fout.write("function dydt = met001ode_auto(~,y,yin,tau,A,Ea,deltaH)")
+fout.write('function dydt = ' + outputfile.replace('.m','') + '(~,y,yin,tau,A,Ea,deltaH,Wcat,Vr)')
 fout.write("\n\n")
 #
-# template zone - start
+# template - start
 #
 template = " \
-\t global T R Pin Ngas rho_b v0; \n \
+\t global T R Pin Ngas Ncomp rho_b v0; \n \
 \t \n \
 \t R = 8.314; \n \
 \t NA = 6.02*10^23; % Avogadro's number \n \
-\t \n \
+\n \
 \t Afor = A(:,1); Arev = A(:,2); \n \
-\t \n \
+\n \
 \t kfor = Afor .* exp(-Ea/R/T); \n \
 \t krev = Arev .* exp(-(Ea-deltaH)/R/T); \n \
-\t \n \
-\t F = y(1:Ngas); \n  \
-\t F_tot = sum(F); \n \
-\t x = F/F_tot; \n \
-\t P = Pin*x; \n \
-\t theta = y(Ngas+1:end); \n \
-\t \n \
-\t f_act = 1.0e-1; % fraction of active site \n \
-\t MW    = 101.1; % atomic mass of Ru [g/mol] \n \
-\t Natom = NA/MW; % number of atoms in one g-cat [atoms/g] \n \
-\t Nsurf = Natom^(2/3); % number of atoms in surface \n \
-\t Nsite = Nsurf*f_act; % number of active sites \n \
-\t \n \
-\t Fin = yin(1:Ngas);\n"
+\n \
+\t F = y(1:Ngas);\n  \
+\t F_tot = sum(F);\n \
+\t x = F/F_tot;\n \
+\t P = Pin*x;\n \
+\t theta = y(1:Ncomp);\n \
+\t theta(1:Ngas) = 0;\n \
+\n \
+\t f_act = 1.0*10^-2; % fraction of active site\n \
+\t MW    = 101.1; % atomic mass of Ru [g/mol]\n \
+\t Natom = NA/MW; % number of atoms in one g-cat [atoms/g]\n \
+\t Nsurf = Natom^(2/3); % number of atoms in surface\n \
+\t Nsite = Nsurf*f_act; % number of active sites\n \
+\n \
+\t Fin = yin(1:Ngas);\n \
+\t theta = theta * Nsite;\n \
+\t theta = theta * (Wcat/Vr);\n"
+
 fout.write(template)
 #
-# template zone - end
+# template - end
 #
 rxn_num  = get_number_of_reaction(reactionfile)
 spec_num = get_species_num()
 
-fout.write("\t Rate = zeros(" + str(spec_num+1) + ",1);\n\n")  # add +1 for vacant site
+fout.write("\t Rate = zeros(" + str(spec_num) + ",1);\n\n")
 
 dict1 = {}
 dict2 = {}
@@ -149,15 +145,51 @@ if 'surf' in dict1.values(): # only when surface is involved
 	for imol,mol in enumerate(dict1):
 		comp = dict1[imol+1]
 		if 'surf' in comp and comp != 'surf':
-			tmp = tmp + "-theta(" + str(imol+1) + ")"
+			tmp = tmp + "-Rate(" + str(imol+1) + ")"
 
 	dict2[len(dict2)] = tmp
 
 for imol,mol in enumerate(dict2):
 	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
 
-comment = "\t % species --- " + str(dict1).replace('\'','').replace('{','').replace('}','')
+comment = "\t % species --- " + str(dict1).replace('\'','').replace('{','').replace('}','') + "\n"
 fout.write(comment)
+#
+# tempelate - start
+#
+template = "\
+\t Rate = Rate/NA * Vr;\n \
+\t %Rate(1:Ngas)       = Rate(1:Ngas)*(1/NA)*Vr; % [molecule/site/s] --> [mol/s]\n \
+\t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(Nsite/NA)*Wcat; % [molecule/site/s] --> [mol/s]\n \
+\t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*rho_b*v0; % [mol/s] --> [mol/s]*[g/m^3]*[m^3/s]=[mol/s^2]\n \
+\n \
+\t fprintf('------------\\n');\n \
+\t fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
+\t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', P(1),P(2),P(3),theta(4),theta(5));\n \
+\n \
+\t dydt = 1/tau*(F - Fin) + Rate(1:Ngas); % gas\n \
+\t dydt(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp); % species\n \
+"
+#
+# tempelate - end
+#
+fout.write(template)
+
+string = ''
+for mol in dict1.values():
+	if mol == 'surf':
+		string = string + "'{0}'".format('\\theta_{vac}')
+	elif 'surf' in mol:
+		string = string + "'{0}'".format('\\theta_{' + mol.replace('_surf','') + '}')
+		#string = string + '\theta_{' + mol.replace('_surf','') + '}'
+	else:
+		string = string + "'{0}'".format(mol)
+		#string = string + ' + mol
+
+	string = string + ","
+
+fout.write("\t % legend in plot \n")
+fout.write("\t % legend({0})\n".format(string[:-1]))
 
 fout.write("\nend\n")
 fout.close()
