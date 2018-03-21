@@ -168,7 +168,9 @@ template = "\
 \t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', P(1),P(2),P(3),theta(4),theta(5));\n \
 \n \
 \t dydt = 1/tau*(F - Fin) + Rate(1:Ngas); % gas\n \
-\t dydt(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp); % species\n \
+\t if Ncomp > Ngas+1\n \
+\t\t dydt(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp); % species\n \
+\t end \n \
 "
 #
 # tempelate - end
