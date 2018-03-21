@@ -355,7 +355,7 @@ for irxn in range(rxn_num):
 	fbarrier.write('{0:>14.8f} {1:>14.8f}\n'.format(Eafor, Earev))
 	fbarrier.close()
 
-	fdeltaE.write('{0:>14.8f} {1:>14.8f}\n'.format(Efor, Earev))
+	fdeltaE.write('{0:>14.8f} {1:>14.8f}\n'.format(Eafor, Earev))
 	fdeltaE.close()
 	#
 	# loop over reaction
