@@ -75,7 +75,7 @@ f2.close()
 
 for iline, line in enumerate(lines):
 	text = line.replace('\n','')
-	f1.write('{0:<40s} {1:16.8e}\n'.format(text,rate[iline]))
+	f1.write('{0:<40s}:{1:16.8e}\n'.format(text,rate[iline]))
 
 f1.close()
 

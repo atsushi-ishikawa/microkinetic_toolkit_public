@@ -2,6 +2,7 @@ import os, sys
 import matplotlib.pyplot as plt
 import networkx as nx
 from math import log10
+from reaction_tools import *
 
 argvs = sys.argv
 
@@ -61,17 +62,17 @@ if coverage:
 	cov_dict = {}
 	fcov = open(cov_file,"r")
 	lines = fcov.readlines()
-	for line in lines:
-		comp,cov = line.split(':')
-		comp = comp.replace(' ','').replace('\n','')
-		cov  =  cov.replace(' ','').replace('\n','')
-		cov_dict[comp] = float(cov)*cov_scale
+	for iline,line in enumerate(lines):
+		cov = line.replace(' ','').replace('\n','')
+		cov_dict[iline] = float(cov)*cov_scale
 
 for i,j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ="rxn")
  	for ireac,j1 in enumerate(reac[i]):
 		if coverage:
-			size = cov_dict[reac[i][ireac]]
+			mol = reac[i][ireac]
+			spe = get_species_num(mol)
+			size = cov_dict[spe]
 		else:
 			size = c_siz
  		G.add_node(reac[i][ireac], size=size, color=c_col, typ="comp")
@@ -79,7 +80,9 @@ for i,j in enumerate(rxn):
  
  	for iprod,j2 in enumerate(prod[i]):
 		if coverage:
-			size = cov_dict[prod[i][iprod]]
+			mol = reac[i][ireac]
+			spe = get_species_num(mol)
+			size = cov_dict[spe]
 		else:
 			size = c_siz
  		G.add_node(prod[i][iprod], size=size, color=c_col, typ="comp")
