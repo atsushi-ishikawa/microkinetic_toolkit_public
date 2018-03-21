@@ -22,3 +22,18 @@ python pre_exponential.py input.txt
 ```bash
 python make_rate_equation.py input.txt
 ```
+
+#### 5. Run MATLAB
+* `coverage.txt` and `rateconst.txt` are generated
+
+#### 6. Add rate to reactionfile
+```bash
+python rate_for_graph.py input.txt coverage.txt rateconst.txt
+```
+* `input_val.txt` is generated
+
+#### 7. Draw graph
+```bash
+python draw_chemical_graph.py input_val.txt coverage.txt
+```
+
