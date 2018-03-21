@@ -2,8 +2,8 @@ import numpy as np
 import os,sys
 from reaction_tools import *
 from ase import Atoms, Atom
-#from ase.calculators.gaussian import Gaussian
-#from ase.calculators.vasp import Vasp
+from ase.calculators.gaussian import Gaussian
+from ase.calculators.vasp import Vasp
 from ase.calculators.nwchem import NWChem
 from ase.calculators.emt import EMT
 from ase.collections import methane
@@ -15,7 +15,7 @@ from ase.db import connect
 # molecule's data should be stored in "methane.json"
 #
 mol = sys.argv[1]
-calculator = "nwchem" ; calculator = calculator.lower()
+calculator = "gau" ; calculator = calculator.lower()
 db = connect("tmp.json")
 ###
 ## --- Gaussian ---
@@ -38,7 +38,6 @@ elif "vasp" in calculator:
 	kpts = [1, 1, 1]
 ## --- EMT --- -> nothing to set
 
-#mol = "CH4"
 print "now optimize ",mol
 tmp    = methane[mol]
 magmom = tmp.get_initial_magnetic_moments()
@@ -57,8 +56,10 @@ elif "vasp" in calculator:
 	cell = [10.0, 10.0, 10.0]
 	tmp.cell = cell
 	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
-			ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
-			kpts=kpts )
+					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
+					kpts=kpts )
+	#tmp.center()
+	tmp.get_potential_energy()
 elif "emt" in calculator:
 	tmp.calc = EMT()
 	opt = BFGS(tmp)
