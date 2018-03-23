@@ -5,6 +5,7 @@ from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
 from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT
+from ase.constraints import FixAtoms
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
@@ -41,6 +42,10 @@ if surface:
 	site_info = json.load(f)
 	f.close()
 
+# fix atoms
+c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
+surf.set_constraint(c)
+
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 rxn_num = get_number_of_reaction(reactionfile)
@@ -68,7 +73,7 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
+	prec        = "low"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	nsw         = 20
