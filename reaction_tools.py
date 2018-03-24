@@ -314,3 +314,21 @@ def get_adsorption_sites(infile):
 
 	return mol,site
 
+def find_closest_atom(surf,offset=(0,0)):
+	from ase import Atoms, Atom
+	from ase.build import add_adsorbate
+	from ase.visualize import view
+	import numpy as np
+
+	dummy = Atom('H',(0,0,0))
+	ads_height = 0.1
+	add_adsorbate(surf, dummy, ads_height, position=(0,0), offset=offset)
+	natoms  = len(surf.get_atomic_numbers())
+	last    = natoms-1
+	ads_pos = surf.get_positions(last)
+	dist = surf.get_distances(last,[range(natoms)],vector=False)
+	dist = np.array(dist)
+	dist = np.delete(dist,last) # delete adsorbate itself
+	clothest = np.argmin(dist)
+
+	return clothest

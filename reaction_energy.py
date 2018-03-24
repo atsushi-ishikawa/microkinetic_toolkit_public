@@ -12,6 +12,7 @@ from ase.vibrations import Vibrations
 from ase.db import connect
 from ase.io import read
 from ase.build import add_adsorbate
+from ase.visualize import view
 # -------------------------------------------------
 # calculate reaction energy.
 # molecule's data should be stored in "methane.json"
@@ -45,6 +46,7 @@ if surface:
 # fix atoms
 c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
 surf.set_constraint(c)
+
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
@@ -117,7 +119,6 @@ for irxn in range(rxn_num):
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
 	reac_A  = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_A  = np.array(range(len(r_ads[irxn])),dtype="f")
-
 	#
 	# reactants
 	#
@@ -126,6 +127,8 @@ for irxn in range(rxn_num):
 
 		if mol == 'surf':
 			tmp = surf
+		elif mol == 'vac':
+			tmp = 'vac'
 		else:
 			if "^SIDE" in mol:
 				mol = mol.replace("^SIDE","")
@@ -154,12 +157,21 @@ for irxn in range(rxn_num):
 			surf_tmp.wrap(pbc=[0,0,1])
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
-			# shift adsorbate molecule
-			shift = tmp.positions[:,2].min()
-			tmp.translate([0,0,-shift])
-			#
-			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
-			tmp = surf_tmp
+			if tmp == 'vac':
+				vacancy = find_closest_atom(surf_tmp,offset=offset)
+				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
+				del surf_tmp[vacancy] # vacancy
+				tmp = surf_tmp
+				view(tmp)
+			else:
+				#
+				# shift adsorbate molecule
+				#
+				shift = tmp.positions[:,2].min()
+				tmp.translate([0,0,-shift])
+				#
+				add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
+				tmp = surf_tmp
 			del surf_tmp
 
 		magmom  = tmp.get_initial_magnetic_moments()
