@@ -127,3 +127,4 @@ plt.yticks([])
 plt.savefig("oxidative_coupling.eps", format="eps")
 plt.show()
 
+nx.write_gexf(G,'test.gexf')
