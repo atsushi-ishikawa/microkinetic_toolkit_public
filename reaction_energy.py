@@ -57,7 +57,8 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.2
+ads_height = 1.5
+ads_pos = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
 
@@ -75,7 +76,7 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
+	prec        = "normal"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	nsw         = 20
@@ -119,6 +120,7 @@ for irxn in range(rxn_num):
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
 	reac_A  = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_A  = np.array(range(len(r_ads[irxn])),dtype="f")
+
 	#
 	# reactants
 	#
@@ -134,6 +136,8 @@ for irxn in range(rxn_num):
 				mol = mol.replace("^SIDE","")
 				tmp = methane[mol]
 				tmp.rotate(90,'y')
+				tmp.center()
+				ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
 			elif "^FLIP" in mol:
 				mol = mol.replace("^FLIP","")
 				tmp = methane[mol]
@@ -168,11 +172,10 @@ for irxn in range(rxn_num):
 				# shift adsorbate molecule
 				#
 				shift = tmp.positions[:,2].min()
-				tmp.translate([0,0,-shift])
-				#
-				add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
+				ads_height = ads_height - shift
+				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 				tmp = surf_tmp
-			del surf_tmp
+				del surf_tmp
 
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())
@@ -247,11 +250,14 @@ for irxn in range(rxn_num):
 
 		if mol == 'surf':
 			tmp = surf
+		elif mol == 'vac':
+			tmp = 'vac'
 		else:
 			if "^SIDE" in mol:
 				mol = mol.replace("^SIDE","")
 				tmp = methane[mol]
 				tmp.rotate(90,'y')
+				ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
 			elif "^FLIP" in mol:
 				mol = mol.replace("^FLIP","")
 				tmp = methane[mol]
@@ -275,13 +281,21 @@ for irxn in range(rxn_num):
 			surf_tmp.wrap(pbc=[0,0,1])
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
-			# shift adsorbate molecule
-			shift = tmp.positions[:,2].min()
-			tmp.translate([0,0,-shift])
-			#
-			add_adsorbate(surf_tmp, tmp, ads_height, position=(0,0), offset=offset)
-			tmp = surf_tmp
-			del surf_tmp
+			if tmp == 'vac':
+				vacancy = find_closest_atom(surf_tmp,offset=offset)
+				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
+				del surf_tmp[vacancy] # vacancy
+				tmp = surf_tmp
+				view(tmp)
+			else:
+				#
+				# shift adsorbate molecule
+				#
+				shift = tmp.positions[:,2].min()
+				ads_height = ads_height - shift
+				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+				tmp = surf_tmp
+				del surf_tmp
 
 		magmom  = tmp.get_initial_magnetic_moments()
 		natom   = len(tmp.get_atomic_numbers())

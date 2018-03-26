@@ -3,10 +3,12 @@ from ase.calculators.emt import EMT
 from ase.db import connect
 from ase.io import read,write
 from ase.visualize import view
+from ase import Atoms, Atom
 import os
 import numpy as np
 
 vacuum = 10.0
+doping = False
 
 os.system('rm surf.db')
 
@@ -21,14 +23,24 @@ surf = sort(surf)
 
 formula = surf.get_chemical_formula()
 
+#
+# doping e.g.) Mg by Li
+#
+if doping:
+	symbols =  np.array(surf.get_chemical_symbols())
+	#rep_atom = np.max( np.where(symbols == 'Mg') )
+	rep_atom = 2
+	symbols[rep_atom] = 'Li'
+	surf.set_chemical_symbols(symbols)
+
 surf.translate([0,0,-vacuum+1])
 
 lattice = "fcc"
 facet   = "100"
 
 pos = {	'lattice' : lattice, 
-	'facet'   : facet  ,
-	'formula' : formula
+		'facet'   : facet  ,
+		'formula' : formula
       }
 
 natoms = len(surf.get_atomic_numbers())
