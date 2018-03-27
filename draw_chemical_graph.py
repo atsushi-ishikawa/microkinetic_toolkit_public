@@ -15,6 +15,7 @@ else:
 inp = argvs[1]
 
 label_rxn = False
+directed  = True
 
 os.system('grep -v "^#" %s > reaction2.txt' % inp )
 os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')
@@ -38,8 +39,13 @@ for i,line in enumerate(lines):
 		comp,value = line.split(':')
 		value = value.replace('\n','')
 		value = float(value)
-		value = value if value > thre else 20.0
-		value = log10(float(value))
+		if value > 0.0:
+			value = log10(value)
+		else:
+			value = -1.0*log10(abs(value))
+			
+		#value = value if value > thre else 20.0
+		#value = log10(float(value))
 	else:
 	 	comp  = line
 	 	value = 1.0
@@ -69,7 +75,11 @@ if coverage:
 nodeA = 200.0
 nodeB = 20.0
 
-G = nx.Graph()
+if directed:
+	G = nx.DiGraph()
+else:
+	G = nx.Graph()
+
 for i,j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
  	for ireac,j1 in enumerate(reac[i]):
@@ -83,7 +93,11 @@ for i,j in enumerate(rxn):
 			size = c_siz
 
  		G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
- 		G.add_edge(reac[i][ireac], rxn[i], weight=values[i])
+
+		if directed and values[i] < 0:
+ 			G.add_edge(rxn[i], reac[i][ireac], weight=abs(values[i]))
+		else:
+ 			G.add_edge(reac[i][ireac], rxn[i], weight=abs(values[i]))
  
  	for iprod,j2 in enumerate(prod[i]):
 		if coverage:
@@ -96,7 +110,11 @@ for i,j in enumerate(rxn):
 			size = c_siz
 
  		G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
- 		G.add_edge(prod[i][iprod], rxn[i], weight=values[i])
+
+		if directed and values[i] < 0:
+ 			G.add_edge(prod[i][iprod], rxn[i], weight=abs(values[i]))
+		else:
+ 			G.add_edge(rxn[i], prod[i][iprod], weight=abs(values[i]))
 
 #
 # drawing 
@@ -112,7 +130,11 @@ weights = [G[u][v]['weight'] for u,v in edges]
 nx.draw_networkx_edges(G, pos, edge_color='gray', alpha=0.6, width=weights)
 
 # compound labels
-Gcomp = nx.Graph()
+if directed:
+	Gcomp = nx.DiGraph()
+else:
+	Gcomp = nx.Graph()
+
 for n,typ in G.nodes.data('typ'):
 	if typ == 'comp':
 		Gcomp.add_node(n)
@@ -121,7 +143,11 @@ nx.draw_networkx_labels(Gcomp, pos, font_size=14, font_family='Gill Sans MT')
 
 # reaction labels
 if label_rxn:
-	Grxn = nx.Graph()
+	if directed:
+		Grxn = nx.DiGraph()
+	else:
+		Grxn = nx.Graph()
+	#
 	for n,typ in G.nodes.data('typ'):
 		if typ == 'rxn':
 			Grxn.add_node(n)
