@@ -129,8 +129,8 @@ for irxn in range(rxn_num):
 
 		if mol == 'surf':
 			tmp = surf
-		elif mol == 'vac':
-			tmp = 'vac'
+		elif mol == 'def':
+			tmp = 'def'
 		else:
 			if "^SIDE" in mol:
 				mol = mol.replace("^SIDE","")
@@ -161,10 +161,10 @@ for irxn in range(rxn_num):
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			#
-			if tmp == 'vac':
-				vacancy = find_closest_atom(surf_tmp,offset=offset)
+			if tmp == 'def':
+				defect = find_closest_atom(surf_tmp,offset=offset)
 				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
-				del surf_tmp[vacancy] # vacancy
+				del surf_tmp[defect] # defect
 				tmp = surf_tmp
 			else:
 				#
@@ -218,8 +218,8 @@ for irxn in range(rxn_num):
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
 		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+							ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=r_traj)
@@ -251,8 +251,8 @@ for irxn in range(rxn_num):
 
 		if mol == 'surf':
 			tmp = surf
-		elif mol == 'vac':
-			tmp = 'vac'
+		elif mol == 'def':
+			tmp = 'def'
 		else:
 			if "^SIDE" in mol:
 				mol = mol.replace("^SIDE","")
@@ -283,10 +283,10 @@ for irxn in range(rxn_num):
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 			#
-			if tmp == 'vac':
-				vacancy = find_closest_atom(surf_tmp,offset=offset)
+			if tmp == 'def':
+				defect = find_closest_atom(surf_tmp,offset=offset)
 				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
-				del surf_tmp[vacancy] # vacancy
+				del surf_tmp[defect] # defect
 				tmp = surf_tmp
 			else:
 				#
@@ -340,8 +340,8 @@ for irxn in range(rxn_num):
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
 		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-					encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+							ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=p_traj)
