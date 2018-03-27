@@ -76,7 +76,7 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
+	prec        = "low"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	nsw         = 20
@@ -136,7 +136,6 @@ for irxn in range(rxn_num):
 				mol = mol.replace("^SIDE","")
 				tmp = methane[mol]
 				tmp.rotate(90,'y')
-				tmp.center()
 				ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
 			elif "^FLIP" in mol:
 				mol = mol.replace("^FLIP","")
@@ -161,25 +160,27 @@ for irxn in range(rxn_num):
 			surf_tmp.wrap(pbc=[0,0,1])
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+			#
 			if tmp == 'vac':
 				vacancy = find_closest_atom(surf_tmp,offset=offset)
 				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 				del surf_tmp[vacancy] # vacancy
 				tmp = surf_tmp
-				view(tmp)
 			else:
 				#
 				# shift adsorbate molecule
 				#
+				if tmp.get_chemical_formula()  == 'H': # special attention to H
+					ads_height = 0.9
 				shift = tmp.positions[:,2].min()
 				ads_height = ads_height - shift
 				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 				tmp = surf_tmp
 				del surf_tmp
 
-		magmom  = tmp.get_initial_magnetic_moments()
-		natom   = len(tmp.get_atomic_numbers())
-		coef    = r_coef[irxn][imol]
+		magmom = tmp.get_initial_magnetic_moments()
+		natom  = len(tmp.get_atomic_numbers())
+		coef   = r_coef[irxn][imol]
 		#
 		# set label
 		#
@@ -281,25 +282,27 @@ for irxn in range(rxn_num):
 			surf_tmp.wrap(pbc=[0,0,1])
 			surf_tmp.translate([0,0,-2])
 			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+			#
 			if tmp == 'vac':
 				vacancy = find_closest_atom(surf_tmp,offset=offset)
 				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 				del surf_tmp[vacancy] # vacancy
 				tmp = surf_tmp
-				view(tmp)
 			else:
 				#
 				# shift adsorbate molecule
 				#
+				if tmp.get_chemical_formula()  == 'H': # special attention to H
+					ads_height = 0.9
 				shift = tmp.positions[:,2].min()
 				ads_height = ads_height - shift
 				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 				tmp = surf_tmp
 				del surf_tmp
 
-		magmom  = tmp.get_initial_magnetic_moments()
-		natom   = len(tmp.get_atomic_numbers())
-		coef    = p_coef[irxn][imol]
+		magmom = tmp.get_initial_magnetic_moments()
+		natom  = len(tmp.get_atomic_numbers())
+		coef   = p_coef[irxn][imol]
 		#
 		# set label
 		#
