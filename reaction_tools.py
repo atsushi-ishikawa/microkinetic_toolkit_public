@@ -18,7 +18,6 @@ def read_reactionfile(file):
 	prod = range(numlines)
 
 	for i,line in enumerate(lines):
-		#text = line.replace("\n","").replace(">","").replace(" ","").split("--")
 		text = line.replace("\n","").replace(">","").split("--")
 		reac_tmp  = text[0]
 		rxn_tmp   = text[1]
@@ -32,44 +31,7 @@ def read_reactionfile(file):
 
 		rxn[i]  = reac[i][0] + "_" + rxn_tmp
 
-
 	return reac,rxn,prod
-
-#def read_speciesfile(file):
-#	import os
-#	import re
-#
-#	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
-#	os.system('grep -v "^#" tmpfile1 > tmpfile2')
-#	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
-#
-#	numlines = sum(1 for line in open("tmpfile1"))
-#
-#	f = open("tmpfile1","r")
-#	os.system('rm tmpfile1 tmpfile2')
-#
-#	lines = f.readlines()
-#
-#	reac = range(numlines)
-#	rxn  = range(numlines)
-#	prod = range(numlines)
-#
-#	for i,line in enumerate(lines):
-#		#text = line.replace("\n","").replace(">","").replace(" ","").split("--")
-#		text = line.replace("\n","").replace(">","").split("--")
-#		reac_tmp  = text[0]
-#		rxn_tmp   = text[1]
-#		prod_tmp  = text[2]
-#
-#		reac[i] = re.split(" \+ ",reac_tmp) # for cations
-#		prod[i] = re.split(" \+ ",prod_tmp) # for cations
-#
-#		reac = remove_space(reac)
-#		prod = remove_space(prod)
-#
-#		rxn[i]  = reac[i][0] + "_" + rxn_tmp
-#
-#	return reac,rxn,prod
 
 def remove_space(obj):
 		newobj = [0]*len(obj)
@@ -118,14 +80,13 @@ def get_reac_and_prod(reactionfile):
 
 	rxn_num = len(rxn)
 
-	r_ads  = [ [] for i in range(rxn_num) ]
+	r_ads  = range(rxn_num)
 	r_site = [ [] for i in range(rxn_num) ]
 	r_coef = [ [] for i in range(rxn_num) ]
 
-	p_ads  = [ [] for i in range(rxn_num) ]
-	p_site = [ [] for i in range(rxn_num) ]
-	p_coef = [ [] for i in range(rxn_num) ]
-
+	p_ads  = range(rxn_num)
+	p_site = range(rxn_num)
+	p_coef = range(rxn_num)
 
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
@@ -136,42 +97,67 @@ def get_reac_and_prod(reactionfile):
 		r_ads[irxn]  = range(ireac_num)
 		r_site[irxn] = range(ireac_num)
 		r_coef[irxn] = range(ireac_num)
+		
+		for imol, mol in enumerate(ireac):
+			r_site[irxn][imol] = []
+			r_ads[irxn][imol] = []
+			#
+			# coefficient
+			#
+			if "*" in mol:
+				r_coef[irxn][imol] = int( mol.split("*")[0] )
+				rest = mol.split("*")[1]
+			else:
+				r_coef[irxn][imol] = 1
+				rest = mol
 
-		for i,j in enumerate(ireac):
-			if "*" in j:
-				r_coef[irxn][i] = int( j.split("*")[0] )
-				rest = j.split("*")[1]
+			# site
+			if ',' in rest:
+				sites = rest.split(',')
+				for isite, site in enumerate(sites):
+					r_site[irxn][imol].append( site.split('_')[1] )
+					r_ads[irxn][imol].append(  site.split('_')[0] )
+			elif '_' in rest:
+				r_site[irxn][imol].append( rest.split('_')[1] )
+				r_ads[irxn][imol].append(  rest.split('_')[0] )
 			else:
-				r_coef[irxn][i] = 1
-				rest = j
-			if "_" in rest:
-				r_site[irxn][i] = rest.split("_")[1]
-				r_ads[irxn][i]  = rest.split("_")[0]
-			else:
-				r_site[irxn][i] = "gas"
-				r_ads[irxn][i]  = rest
+				r_site[irxn][imol].append( 'gas' )
+				r_ads[irxn][imol].append( rest )
 		#
 		# product
 		#
 		p_ads[irxn]  = range(iprod_num)
 		p_site[irxn] = range(iprod_num)
 		p_coef[irxn] = range(iprod_num)
+		
+		for imol, mol in enumerate(iprod):
+			p_site[irxn][imol] = []
+			p_ads[irxn][imol] = []
+			#
+			# coefficient
+			#
+			if "*" in mol:
+				p_coef[irxn][imol] = int( mol.split("*")[0] )
+				rest = mol.split("*")[1]
+			else:
+				p_coef[irxn][imol] = 1
+				rest = mol
 
-		for i,j in enumerate(iprod):
-			if "*" in j:
-				p_coef[irxn][i] = int( j.split("*")[0] )
-				rest = j.split("*")[1]
+			# site
+			if ',' in rest:
+				sites = rest.split(',')
+				for isite, site in enumerate(sites):
+					p_site[irxn][imol].append( site.split('_')[1] )
+					p_ads[irxn][imol].append(  site.split('_')[0] )
+			elif '_' in rest:
+				p_site[irxn][imol].append( rest.split('_')[1] )
+				p_ads[irxn][imol].append(  rest.split('_')[0] )
 			else:
-				p_coef[irxn][i] = 1
-				rest = j
-			if "_" in rest:
-				p_site[irxn][i] = rest.split("_")[1]
-				p_ads[irxn][i]  = rest.split("_")[0]
-			else:
-				p_site[irxn][i] = "gas"
-				p_ads[irxn][i]  = rest
+				p_site[irxn][imol].append( 'gas' )
+				p_ads[irxn][imol].append( rest )
 
 	return (r_ads, r_site, r_coef,  p_ads, p_site, p_coef)
+
 
 def get_number_of_reaction(reactionfile):
 	import numpy as np

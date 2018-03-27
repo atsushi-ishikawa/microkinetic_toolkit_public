@@ -47,7 +47,6 @@ if surface:
 c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
 surf.set_constraint(c)
 
-
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 rxn_num = get_number_of_reaction(reactionfile)
@@ -124,59 +123,64 @@ for irxn in range(rxn_num):
 	#
 	# reactants
 	#
-	for imol, mol in enumerate(r_ads[irxn]):
-		print "----- reactant: molecule No.", imol, " is ", mol, "-----"
+	for imols, mols in enumerate(r_ads[irxn]):
+		surf_tmp = surf.copy()
+		for imol, mol in enumerate(mols):
+			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 
-		if mol == 'surf':
-			tmp = surf
-		elif mol == 'def':
-			tmp = 'def'
-		else:
-			if "^SIDE" in mol:
-				mol = mol.replace("^SIDE","")
-				tmp = methane[mol]
-				tmp.rotate(90,'y')
-				ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
-			elif "^FLIP" in mol:
-				mol = mol.replace("^FLIP","")
-				tmp = methane[mol]
-				tmp.rotate(180,'y')
+			if mol == 'surf':
+				tmp = surf
+			elif mol == 'def':
+				tmp = 'def'
+
 			else:
-				tmp = methane[mol]
+				if "^SIDE" in mol:
+					mol = mol.replace("^SIDE","")
+					tmp = methane[mol]
+					tmp.rotate(90,'y')
+					ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
+				elif "^FLIP" in mol:
+					mol = mol.replace("^FLIP","")
+					tmp = methane[mol]
+					tmp.rotate(180,'y')
+				else:
+					tmp = methane[mol]
 
-		site = r_site[irxn][imol]
+			site = r_site[irxn][imols][imol]
 
-		try:
-			site,site_pos = site.split(".")
-		except:
-			site_pos = 'x1y1'
+			try:
+				site,site_pos = site.split(".")
+			except:
+				site_pos = 'x1y1'
 
-		if site != 'gas':
-			surf_tmp = surf.copy()
-			offset = site_info[lattice][facet][site][site_pos]
-			offset = np.array(offset)*(3.0/4.0) # MgO only
-			# wrap atoms to prevent adsorbate being on different cell
-			surf_tmp.translate([0,0,2])
-			surf_tmp.wrap(pbc=[0,0,1])
-			surf_tmp.translate([0,0,-2])
-			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
-			#
-			if tmp == 'def':
-				defect = find_closest_atom(surf_tmp,offset=offset)
-				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
-				del surf_tmp[defect] # defect
-				tmp = surf_tmp
-			else:
+			if site != 'gas':
+				offset = site_info[lattice][facet][site][site_pos]
+				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# wrap atoms to prevent adsorbate being on different cell
+				surf_tmp.translate([0,0,2])
+				surf_tmp.wrap(pbc=[0,0,1])
+				surf_tmp.translate([0,0,-2])
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 				#
-				# shift adsorbate molecule
-				#
-				if tmp.get_chemical_formula()  == 'H': # special attention to H
-					ads_height = 0.9
-				shift = tmp.positions[:,2].min()
-				ads_height = ads_height - shift
-				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
-				tmp = surf_tmp
-				del surf_tmp
+				if tmp == 'def':
+					defect = find_closest_atom(surf_tmp,offset=offset)
+					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
+					del surf_tmp[defect] # defect
+					tmp = surf_tmp
+				else:
+					#
+					# shift adsorbate molecule
+					#
+					if tmp.get_chemical_formula()  == 'H': # special attention to H
+						ads_height = 0.9
+					shift = tmp.positions[:,2].min()
+					ads_height = ads_height - shift
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					tmp = surf_tmp
+		del surf_tmp
+		#
+		# end adsorbing molecule
+		#
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
