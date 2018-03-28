@@ -132,7 +132,6 @@ for irxn in range(rxn_num):
 				tmp = surf
 			elif mol == 'def':
 				tmp = 'def'
-
 			else:
 				if "^SIDE" in mol:
 					mol = mol.replace("^SIDE","")
@@ -271,7 +270,7 @@ for irxn in range(rxn_num):
 				else:
 					tmp = methane[mol]
 
-			site = p_site[irxn][imol]
+			site = p_site[irxn][imols][imol]
 
 			try:
 				site,site_pos = site.split(".")
@@ -279,7 +278,6 @@ for irxn in range(rxn_num):
 				site_pos = 'x1y1'
 
 			if site != 'gas':
-				surf_tmp = surf.copy()
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
@@ -365,12 +363,12 @@ for irxn in range(rxn_num):
 			vib.run()
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
-			prod_en[imol] = en + zpe
+			prod_en[imols] = en + zpe
 			os.system("rm vib.*")
 		else:
-			prod_en[imol] = en
+			prod_en[imols] = en
 
-		prod_en[imol] = coef * prod_en[imol]
+		prod_en[imols] = coef * prod_en[imols]
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 	#
@@ -378,15 +376,19 @@ for irxn in range(rxn_num):
 	#
 	string = ""
 	for imol, mol in enumerate(r_ads[irxn]):
-		string = string + "{0}_{1}".format(mol, r_site[irxn][imol])
+		mol_join = '-'.join(mol)
+		string = string + "{0}_{1}".format(mol_join, '-'.join(r_site[irxn][imol]))
 		if imol != len(r_ads[irxn])-1:
 			string = string + " + "
+
 	string = string + " --> "
+
 	for imol, mol in enumerate(p_ads[irxn]):
-		string = string + "{0}_{1}".format(mol, p_site[irxn][imol])
+		mol_join = '-'.join(mol)
+		string = string + "{0}_{1}".format(mol_join, '-'.join(p_site[irxn][imol]))
 		if imol != len(p_ads[irxn])-1:
 			string = string + " + "
-	#
+
 	fbarrier.write('{0:<50s}'.format(string))
 
 	Eafor  =  deltaE
