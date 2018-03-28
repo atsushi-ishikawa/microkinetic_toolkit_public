@@ -181,21 +181,20 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
-
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
-		coef   = r_coef[irxn][imol]
+		coef   = r_coef[irxn][imols]
 		#
 		# set label
 		#
-		r_label = label + "_rxn" + str(irxn) + "_" + mol + "_" + site
+		r_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
 		if site != 'gas':
 			r_label = r_label + "_" + surf_name
 		r_traj  = r_label + "reac.traj"
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas':
+		if mols != 'surf' and site == 'gas':
 			#
  			# gas-phase molecule
 			#
@@ -240,84 +239,88 @@ for irxn in range(rxn_num):
 			vib.run()
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
-			reac_en[imol] = en + zpe
+			reac_en[imols] = en + zpe
 			os.system("rm vib.*")
 		else:
-			reac_en[imol] = en
+			reac_en[imols] = en
 
-		reac_en[imol] = coef * reac_en[imol]
+		reac_en[imols] = coef * reac_en[imols]
 
 	#
 	# products
 	#
-	for imol, mol in enumerate(p_ads[irxn]):
-		print "----- product: molecule No.", imol, " is ", mol, "-----"
+	for imols, mols in enumerate(p_ads[irxn]):
+		surf_tmp = surf.copy()
+		for imol, mol in enumerate(mols):
+			print "----- product: molecule No.", imol, " is ", mol, "-----"
 
-		if mol == 'surf':
-			tmp = surf
-		elif mol == 'def':
-			tmp = 'def'
-		else:
-			if "^SIDE" in mol:
-				mol = mol.replace("^SIDE","")
-				tmp = methane[mol]
-				tmp.rotate(90,'y')
-				ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
-			elif "^FLIP" in mol:
-				mol = mol.replace("^FLIP","")
-				tmp = methane[mol]
-				tmp.rotate(180,'y')
+			if mol == 'surf':
+				tmp = surf
+			elif mol == 'def':
+				tmp = 'def'
 			else:
-				tmp = methane[mol]
+				if "^SIDE" in mol:
+					mol = mol.replace("^SIDE","")
+					tmp = methane[mol]
+					tmp.rotate(90,'y')
+					ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
+				elif "^FLIP" in mol:
+					mol = mol.replace("^FLIP","")
+					tmp = methane[mol]
+					tmp.rotate(180,'y')
+				else:
+					tmp = methane[mol]
 
-		site = p_site[irxn][imol]
+			site = p_site[irxn][imol]
 
-		try:
-			site,site_pos = site.split(".")
-		except:
-			site_pos = 'x1y1'
+			try:
+				site,site_pos = site.split(".")
+			except:
+				site_pos = 'x1y1'
 
-		if site != 'gas':
-			surf_tmp = surf.copy()
-			offset = site_info[lattice][facet][site][site_pos]
-			offset = np.array(offset)*(3.0/4.0) # MgO only
-			# wrap atoms to prevent adsorbate being on different cell
-			surf_tmp.translate([0,0,2])
-			surf_tmp.wrap(pbc=[0,0,1])
-			surf_tmp.translate([0,0,-2])
-			print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
-			#
-			if tmp == 'def':
-				defect = find_closest_atom(surf_tmp,offset=offset)
-				del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
-				del surf_tmp[defect] # defect
-				tmp = surf_tmp
-			else:
+			if site != 'gas':
+				surf_tmp = surf.copy()
+				offset = site_info[lattice][facet][site][site_pos]
+				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# wrap atoms to prevent adsorbate being on different cell
+				surf_tmp.translate([0,0,2])
+				surf_tmp.wrap(pbc=[0,0,1])
+				surf_tmp.translate([0,0,-2])
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
 				#
-				# shift adsorbate molecule
-				#
-				if tmp.get_chemical_formula()  == 'H': # special attention to H
-					ads_height = 0.9
-				shift = tmp.positions[:,2].min()
-				ads_height = ads_height - shift
-				add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
-				tmp = surf_tmp
-				del surf_tmp
-
+				if tmp == 'def':
+					defect = find_closest_atom(surf_tmp,offset=offset)
+					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
+					del surf_tmp[defect] # defect
+					tmp = surf_tmp
+				else:
+					#
+					# shift adsorbate molecule
+					#
+					if tmp.get_chemical_formula()  == 'H': # special attention to H
+						ads_height = 0.9
+					shift = tmp.positions[:,2].min()
+					ads_height = ads_height - shift
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					tmp = surf_tmp
+		del surf_tmp
+		#
+		# end adsorbing molecule
+		#
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
-		coef   = p_coef[irxn][imol]
+		coef   = p_coef[irxn][imols]
 		#
 		# set label
 		#
-		p_label = label + "_rxn" + str(irxn) + "_" + mol + "_" + site
+		p_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
 		if site != 'gas':
 			p_label = p_label + "_" + surf_name
 		p_traj  = p_label + "prod.traj"
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mol != 'surf' and site == 'gas':
+		if mols != 'surf' and site == 'gas':
 			#
  			# gas-phase molecule
 			#
