@@ -6,7 +6,7 @@ from reaction_tools import *
 
 argvs = sys.argv
 
-if len(argvs)==3: # read coverage
+if len(argvs) == 3: # read coverage
 	coverage = True
 	cov_file = argvs[2]
 else:
@@ -31,32 +31,32 @@ rxn    = range(numlines)
 prod   = range(numlines)
 values = range(numlines)
 
-edge_scale = 1.5
-thre = 1.0
+eps  = 1.0e-10
 
+edge_scale = 0.3
+thre = 1.0
 for i,line in enumerate(lines):
 	if ':' in line:
 		comp,value = line.split(':')
 		value = value.replace('\n','')
-		value = float(value)
+		value = float(value)/eps
 		if value > 0.0:
-			value = log10(value)
+			value = log10(value) if value > eps else 1.0
 		else:
 			value = -1.0*log10(abs(value))
 			
-		#value = value if value > thre else 20.0
-		#value = log10(float(value))
 	else:
 	 	comp  = line
 	 	value = 1.0
 
 	comp = comp.replace('\n','').replace('>','').replace(' ','').split('--')
 	reac_tmp = comp[0]
+	reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
 	rxn_tmp  = comp[1]
 	prod_tmp = comp[2]
+	prod_tmp = prod_tmp.split("*")[1] if "*" in prod_tmp else prod_tmp
 
 	reac[i]   = reac_tmp.split("+")
-	#rxn[i]    = reac[i][0] + "_" + rxn_tmp
 	rxn[i]    = 'rxn' + str(i+1)
 	prod[i]   = prod_tmp.split("+")
 	values[i] = value*edge_scale
@@ -73,7 +73,7 @@ if coverage:
 		cov_dict[iline] = float(cov)
 
 nodeA = 200.0
-nodeB = 20.0
+nodeB = 11.0
 
 if directed:
 	G = nx.DiGraph()
@@ -86,7 +86,7 @@ for i,j in enumerate(rxn):
 		if coverage:
 			mol  = reac[i][ireac]
 			spe  = get_species_num(mol)
-			size = cov_dict[spe]
+			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
 			size = int(size)
 		else:
@@ -103,7 +103,7 @@ for i,j in enumerate(rxn):
 		if coverage:
 			mol  = reac[i][ireac]
 			spe  = get_species_num(mol)
-			size = cov_dict[spe]
+			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
 			size = int(size)
 		else:

@@ -16,12 +16,6 @@ f = open(outfile,"w")
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
 rxn_num = get_number_of_reaction(infile)
-# Remove "surf" from the list
-#for lst in [r_ads, p_ads]:
-#	for ads in lst:
-#		if 'surf' in ads:
-#			ads.remove('surf')
-
 #
 # --- energy calculation ---
 #
@@ -47,12 +41,14 @@ for irxn in range(rxn_num):
 	mass_sum = 0; mass_prod = 1;
 	rxntype = []
 	for imol, mol in enumerate(r_ads[irxn]):
+		mol = mol[0]
 		nmol = len(r_ads[irxn])
 		if mol == 'surf':
 			rxntype.append('surf')
 		else:
 			tmp  = methane[mol]
-			site = r_site[irxn][imol]
+			#site = r_site[irxn][imol]
+			site = r_site[irxn][imol][0]
 
 			mass = sum(tmp.get_masses())
 
@@ -101,12 +97,14 @@ for irxn in range(rxn_num):
 	mass_sum = 0; mass_prod = 1;
 	rxntype = []
 	for imol, mol in enumerate(p_ads[irxn]):
+		mol = mol[0]
 		nmol = len(p_ads[irxn])
 		if mol == 'surf':
 			rxntype.append('surf')
 		else:
 			tmp  = methane[mol]
-			site = p_site[irxn][imol]
+			#site = p_site[irxn][imol]
+			site = p_site[irxn][imol][0]
 
 			mass = sum(tmp.get_masses())
 

@@ -22,7 +22,9 @@ species = []
 rxnnum = len(r_ads)
 for irxn in range(rxnnum):
 	for imol,mol in enumerate(r_ads[irxn]):
+		mol  = mol[0]
 		site = r_site[irxn][imol]
+		site = site[0]
 		try:
 			site, site_pos = site.split(".")
 		except:
@@ -34,7 +36,9 @@ for irxn in range(rxnnum):
 		species.append(mol)
 
 	for imol,mol in enumerate(p_ads[irxn]):
+		mol  = mol[0]
 		site = p_site[irxn][imol]
+		site = site[0]
 		try:
 			site, site_pos = site.split(".")
 		except:

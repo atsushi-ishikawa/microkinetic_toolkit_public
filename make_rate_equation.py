@@ -5,7 +5,6 @@ from reaction_tools import *
 #
 argvs = sys.argv
 reactionfile = argvs[1]
-#reactionfile = "reaction.txt"
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 outputfile = "met001ode.m"
@@ -63,7 +62,8 @@ for irxn in range(rxn_num):
 
 	# prepare dict1 -- start
 	for imol,mol in enumerate(r_ads[irxn]):
-		site = r_site[irxn][imol]
+		mol = mol[0]
+		site = r_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
 		spe  = get_species_num(mol) + 1 # MATLAB
@@ -71,7 +71,8 @@ for irxn in range(rxn_num):
 		dict1[spe] = mol
 
 	for imol,mol in enumerate(p_ads[irxn]):
-		site = p_site[irxn][imol]
+		mol = mol[0]
+		site = p_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
 		spe  = get_species_num(mol) + 1 # MATLAB
@@ -84,7 +85,8 @@ for irxn in range(rxn_num):
 	#
 	tmp = "kfor(" + rxn_idx + ")"
 	for imol,mol in enumerate(r_ads[irxn]):
-		site = r_site[irxn][imol]
+		mol = mol[0]
+		site = r_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
 		spe  = get_species_num(mol) + 1 # MATLAB
@@ -113,7 +115,8 @@ for irxn in range(rxn_num):
 	# backword reaction
 	tmp = "krev(" + rxn_idx + ")"
 	for imol,mol in enumerate(p_ads[irxn]):
-		site = p_site[irxn][imol]
+		mol = mol[0]
+		site = p_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
 		spe = get_species_num(mol) + 1 # MATLAB

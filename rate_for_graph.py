@@ -40,6 +40,7 @@ for irxn in range(rxn_num):
 	val = kfor[irxn]
 	conc_all = 1.0
 	for imol,mol in enumerate(r_ads[irxn]):
+		mol   = mol[0]
 		spe   = get_species_num(mol)
 		conc  = cov[spe]
 		power = r_coef[irxn][imol]
@@ -54,6 +55,7 @@ for irxn in range(rxn_num):
 	val = krev[irxn]
 	conc_all = 1.0
 	for imol,mol in enumerate(p_ads[irxn]):
+		mol   = mol[0]
 		spe   = get_species_num(mol)
 		conc  = cov[spe]
 		power = p_coef[irxn][imol]
