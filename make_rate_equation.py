@@ -183,17 +183,15 @@ fout.write(template)
 string = ''
 for mol in dict1.values():
 	if mol == 'surf':
-		string = string + "'{0}'".format('\\theta_{vac}')
+		string = string + '"{0}"'.format('\\theta_{vac}')
 	elif 'surf' in mol:
-		string = string + "'{0}'".format('\\theta_{' + mol.replace('_surf','') + '}')
-		#string = string + '\theta_{' + mol.replace('_surf','') + '}'
+		string = string + '"{0}"'.format('\\theta_{' + mol.replace('_surf','') + '}')
 	else:
-		string = string + "'{0}'".format(mol)
-		#string = string + ' + mol
+		string = string + '"{0}"'.format(mol)
 
 	string = string + ","
 
-fout.write( "\t species = [{0}]\n".format(string[:-1]))
+fout.write( "\t species = [{0}];\n".format(string[:-1]))
 
 fout.write("\nend\n")
 fout.close()
