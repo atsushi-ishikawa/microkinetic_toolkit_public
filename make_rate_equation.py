@@ -16,7 +16,7 @@ fout.write("\n\n")
 # template - start
 #
 template = " \
-\t global T R Pin Ngas Ncomp rho_b v0; \n \
+\t global T R Pin Ngas Ncomp rho_b v0 species; \n \
 \t \n \
 \t R = 8.314; \n \
 \t NA = 6.02*10^23; % Avogadro's number \n \
@@ -193,8 +193,7 @@ for mol in dict1.values():
 
 	string = string + ","
 
-fout.write("\t % legend in plot \n")
-fout.write("\t % legend({0})\n".format(string[:-1]))
+fout.write( "\t species = [{0}]\n".format(string[:-1]))
 
 fout.write("\nend\n")
 fout.close()

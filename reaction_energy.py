@@ -22,7 +22,7 @@ from ase.visualize import view
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator   = "vasp"
+calculator = "gaussian"
 calculator = calculator.lower()
 
 #
@@ -53,7 +53,7 @@ rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
 ## --- parameters
-ZPE = False
+ZPE = True
 SP  = False
 maxoptsteps = 200
 ads_height = 1.5
@@ -64,7 +64,7 @@ ads_pos = (0.0, 0.0)
 ## --- Gaussian ---
 if "gau" in calculator:
 	method = "b3lyp"
-	basis  = "cc-pvtz" # do not use aesterisk for polarization func
+	basis  = "6-31G(d)" # do not use aesterisk for polarization func
 	if SP:
 		method_sp = "ccsd(t)"
 	basis_name = re.sub("\(", "", basis)
@@ -193,17 +193,18 @@ for irxn in range(rxn_num):
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mols != 'surf' and site == 'gas':
+		if site == 'gas' and not 'surf' in mols:
 			#
  			# gas-phase molecule
 			#
-			cell = np.array([1, 1, 1])
-			cell = vacuum*cell
-			tmp.set_cell(cell)
-			tmp.center()
-			ismear = 0 # gaussian smearing
-			sigma  = 0.05
-			kpts = [1,1,1]
+			if 'vasp' in calculator:
+				cell = np.array([1, 1, 1])
+				cell = vacuum*cell
+				tmp.set_cell(cell)
+				tmp.center()
+				ismear = 0 # gaussian smearing
+				sigma  = 0.05
+				kpts = [1,1,1]
 		else: # surface
 			ismear = ismear_surf # Methfessel-Paxton
 			sigma  = sigma_surf
@@ -318,17 +319,18 @@ for irxn in range(rxn_num):
 		#
 		# branch compurational setting by gas or not
 		# 
-		if mols != 'surf' and site == 'gas':
+		if site == 'gas' and not 'surf' in mols:
 			#
  			# gas-phase molecule
 			#
-			cell = np.array([1, 1, 1])
-			cell = vacuum*cell
-			tmp.set_cell(cell)
-			tmp.center()
-			ismear = 0 # gaussian smearing
-			sigma  = 0.05
-			kpts = [1,1,1]
+			if 'vasp' in calculator:
+				cell = np.array([1, 1, 1])
+				cell = vacuum*cell
+				tmp.set_cell(cell)
+				tmp.center()
+				ismear = 0 # gaussian smearing
+				sigma  = 0.05
+				kpts = [1,1,1]
 		else: # surface
 			ismear = ismear_surf # Methfessel-Paxton
 			sigma  = sigma_surf
@@ -352,7 +354,7 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		en  = tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + p_label + ".xml"
