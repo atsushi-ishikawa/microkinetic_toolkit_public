@@ -16,7 +16,7 @@ fout.write("\n\n")
 # template - start
 #
 template = " \
-\t global T R Pin Ngas Ncomp rho_b v0 species; \n \
+\t global T R Pin Ngas Ncomp species; \n \
 \t \n \
 \t R = 8.314; \n \
 \t NA = 6.02*10^23; % Avogadro's number \n \
@@ -166,8 +166,8 @@ template = "\
 \t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(Nsite/NA)*Wcat; % [molecule/site/s] --> [mol/s]\n \
 \t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*rho_b*v0; % [mol/s] --> [mol/s]*[g/m^3]*[m^3/s]=[mol/s^2]\n \
 \n \
-\t fprintf('------------\\n');\n \
-\t fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
+\t %fprintf('------------\\n');\n \
+\t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
 \t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', P(1),P(2),P(3),theta(4),theta(5));\n \
 \n \
 \t dydt = 1/tau*(F - Fin) + Rate(1:Ngas); % gas\n \
