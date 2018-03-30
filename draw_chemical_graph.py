@@ -33,7 +33,7 @@ values = range(numlines)
 
 eps  = 1.0e-10
 
-edge_scale = 0.3
+edge_scale = 0.4
 thre = 1.0
 for i,line in enumerate(lines):
 	if ':' in line:
