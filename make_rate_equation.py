@@ -66,7 +66,7 @@ for irxn in range(rxn_num):
 		site = r_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
-		spe  = get_species_num(mol) + 1 # MATLAB
+		spe = get_species_num(mol) + 1 # MATLAB
 		list_r.append(spe)
 		dict1[spe] = mol
 
@@ -75,13 +75,13 @@ for irxn in range(rxn_num):
 		site = p_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
-		spe  = get_species_num(mol) + 1 # MATLAB
+		spe = get_species_num(mol) + 1 # MATLAB
 		list_p.append(spe)
 		dict1[spe] = mol
 	# prepare dict1 -- end
 
 	#
-	# forward reaction
+	# forward direction
 	#
 	tmp = "kfor(" + rxn_idx + ")"
 	for imol,mol in enumerate(r_ads[irxn]):
@@ -97,22 +97,49 @@ for irxn in range(rxn_num):
 			theta = "P(" + str(spe) + ")"
 
 		power = r_coef[irxn][imol]
+		coefA = r_coef[irxn][imol]
+
 		if power != 1:
 			theta = theta + "^" + str(power)
 		tmp = tmp + "*" + theta
 
 	for mem in list_r:
-		if mem in dict2:
-			dict2[mem] = dict2[mem] + "-" + tmp
-		else:
-			dict2[mem] = "-" + tmp
-	for mem in list_p:
-		if mem in dict2:
-			dict2[mem] = dict2[mem] + "+" + tmp
-		else:
-			dict2[mem] = tmp
+		#
+		# seeking for the coefficient 
+		#
+		for imol, mol in enumerate(r_ads[irxn]):
+			mol = mol[0]
+			if mol == dict1[mem]:
+				coefB = r_coef[irxn][imol]
 
-	# backword reaction
+		sto_coef = float(coefB)/float(coefA)
+		sto_coef = str(sto_coef)
+
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "-" + sto_coef + "*" + tmp
+		else:
+			dict2[mem] = "-" + sto_coef + "*" + tmp
+
+	for mem in list_p:
+		#
+		# seeking for the coefficient 
+		#
+		for imol, mol in enumerate(p_ads[irxn]):
+			mol = mol[0]
+			if mol == dict1[mem]:
+				coefB = p_coef[irxn][imol]
+
+		sto_coef = float(coefB)/float(coefA)
+		sto_coef = str(sto_coef)
+
+		if mem in dict2:
+			dict2[mem] = dict2[mem] + "+" + sto_coef + "*" + tmp
+		else:
+			dict2[mem] = sto_coef + "*" + tmp
+
+	#
+	# reverse direction
+	#
 	tmp = "krev(" + rxn_idx + ")"
 	for imol,mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
@@ -127,20 +154,49 @@ for irxn in range(rxn_num):
 			theta = "P(" + str(spe) + ")"
 
 		power = p_coef[irxn][imol]
+		coefA = p_coef[irxn][imol]
+
 		if power != 1:
 			theta = theta + "^" + str(power)
 		tmp = tmp + "*" + theta
 
 	for mem in list_r:
+		#
+		# seeking for the coefficient 
+		#
+		for imol, mol in enumerate(r_ads[irxn]):
+			mol = mol[0]
+			if mol == dict1[mem]:
+				coefB = r_coef[irxn][imol]
+
+		sto_coef = float(coefB)/float(coefA)
+		sto_coef = str(sto_coef)
+
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "+" + tmp
+			dict2[mem] = dict2[mem] + "+" + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = tmp
+			dict2[mem] = sto_coef + "*" + tmp
+
 	for mem in list_p:
+		#
+		# seeking for the coefficient 
+		#
+		for imol, mol in enumerate(p_ads[irxn]):
+			mol = mol[0]
+			if mol == dict1[mem]:
+				coefB = p_coef[irxn][imol]
+
+		sto_coef = float(coefB)/float(coefA)
+		sto_coef = str(sto_coef)
+
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "-" + tmp
+			dict2[mem] = dict2[mem] + "-" + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = "-" + tmp
+			dict2[mem] = "-" + sto_coef + "*" + tmp
+
+#
+# end loop for reaction
+#
 
 # vacancy site
 if 'surf' in dict1.values(): # only when surface is involved
