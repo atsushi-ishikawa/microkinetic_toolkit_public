@@ -33,9 +33,11 @@ values = range(numlines)
 
 eps  = 1.0e-10
 
-edge_scale = 0.4
+edge_scale = 0.5
 thre = 1.0
+
 for i,line in enumerate(lines):
+	# rate
 	if ':' in line:
 		comp,value = line.split(':')
 		value = value.replace('\n','')
@@ -65,6 +67,7 @@ c_siz = 200; c_col = "blue"
 r_siz = 20;  r_col = "black"
 
 if coverage:
+	# coverage
 	cov_dict = {}
 	fcov = open(cov_file,"r")
 	lines = fcov.readlines()
@@ -84,6 +87,7 @@ for i,j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
  	for ireac,j1 in enumerate(reac[i]):
 		if coverage:
+			# node size
 			mol  = reac[i][ireac]
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
@@ -101,7 +105,8 @@ for i,j in enumerate(rxn):
  
  	for iprod,j2 in enumerate(prod[i]):
 		if coverage:
-			mol  = reac[i][ireac]
+			# node size
+			mol  = prod[i][iprod]
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
