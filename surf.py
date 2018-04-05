@@ -6,20 +6,21 @@ from ase.visualize import view
 from ase import Atoms, Atom
 import os
 import numpy as np
+from reaction_tools import *
 
 vacuum = 10.0
-doping = False
+doping = True
 
 os.system('rm surf.db')
 
-#surf =  fcc111(symbol="Cu", size=[3,3,4], a=3.6, vacuum=vacuum)
-nlayer = 1
-nrelax = 0
+nlayer = 2
+nrelax = 2
 
 bulk = read("mgo.cif")
 surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum)
 surf = surf*[2,2,1]
-surf = sort(surf)
+#surf = sort(surf)
+surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
 
@@ -29,7 +30,7 @@ formula = surf.get_chemical_formula()
 if doping:
 	symbols =  np.array(surf.get_chemical_symbols())
 	#rep_atom = np.max( np.where(symbols == 'Mg') )
-	rep_atom = 2
+	rep_atom = 48  # 2 for single layer
 	symbols[rep_atom] = 'Li'
 	surf.set_chemical_symbols(symbols)
 

@@ -22,7 +22,7 @@ from ase.visualize import view
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator = "gaussian"
+calculator = "vasp"
 calculator = calculator.lower()
 
 #
@@ -53,7 +53,7 @@ rxn_num = get_number_of_reaction(reactionfile)
 Ea = np.array(2, dtype="f")
 
 ## --- parameters
-ZPE = True
+ZPE = False
 SP  = False
 maxoptsteps = 200
 ads_height = 1.5
@@ -78,7 +78,7 @@ elif "vasp" in calculator:
 	prec        = "low"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 20
+	nsw         = 40
 	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1

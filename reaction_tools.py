@@ -318,3 +318,37 @@ def find_closest_atom(surf,offset=(0,0)):
 	clothest = np.argmin(dist)
 
 	return clothest
+
+def sort_atoms_by_z(atoms):
+	from ase import Atoms, Atom
+	import numpy as np
+	#
+	# keep information for original Atoms
+	#
+	tags = atoms.get_tags()
+	pbc  = atoms.get_pbc()
+	cell = atoms.get_cell()
+
+	dtype = [("idx",int), ("z",float)]
+	zlist = np.array([], dtype=dtype)
+
+	for idx, atom in enumerate(atoms):
+		tmp = np.array([(idx,atom.z)],dtype=dtype)
+		zlist = np.append(zlist, tmp)
+
+	zlist = np.sort(zlist, order="z")
+
+	newatoms = Atoms()
+
+	for i in zlist:
+		idx = i[0]
+		newatoms.append(atoms[idx])
+	#
+	# restore
+	#
+	newatoms.set_tags(tags)
+	newatoms.set_pbc(pbc)
+	newatoms.set_cell(cell)
+
+	return newatoms
+
