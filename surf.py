@@ -17,7 +17,8 @@ nlayer = 1
 nrelax = 1
 
 bulk = read("mgo.cif")
-surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum)
+#bulk = read("La2O3.cif")
+surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 surf = surf*[2,2,1]
 #surf = sort(surf)
 surf = sort_atoms_by_z(surf)
