@@ -13,8 +13,8 @@ doping = True
 
 os.system('rm surf.db')
 
-nlayer = 2
-nrelax = 2
+nlayer = 1
+nrelax = 1
 
 bulk = read("mgo.cif")
 surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum)
@@ -30,7 +30,7 @@ formula = surf.get_chemical_formula()
 if doping:
 	symbols =  np.array(surf.get_chemical_symbols())
 	#rep_atom = np.max( np.where(symbols == 'Mg') )
-	rep_atom = 48  # 2 for single layer
+	rep_atom = 48  # 16 for layer=1, 48 for layer=2
 	symbols[rep_atom] = 'Li'
 	surf.set_chemical_symbols(symbols)
 
