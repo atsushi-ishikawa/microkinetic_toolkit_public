@@ -94,6 +94,11 @@ elif "vasp" in calculator:
 	basis  = ""
 	label  = method
 
+	# electric field
+	efield = False
+	if efield:
+		nelect = 456 # set by yourself
+
 ## --- EMT --- -> nothing to set
 
 if ZPE:
@@ -205,10 +210,12 @@ for irxn in range(rxn_num):
 				ismear = 0 # gaussian smearing
 				sigma  = 0.05
 				kpts = [1,1,1]
+				gas_mol = True
 		else: # surface
 			ismear = ismear_surf # Methfessel-Paxton
 			sigma  = sigma_surf
 			kpts = kpts_surf
+			gas_mol = False
 		#
 		# set calculator
 		#
@@ -220,15 +227,21 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-							ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+			if not gas_mol and efield:
+		 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+								nelect=nelect, lmono="true" )
+			else:
+		 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		en  = tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + r_label + ".xml"
@@ -346,9 +359,15 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-		 	tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-							ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+			if not gas_mol and efield:
+		 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+								nelect=nelect, lmono="true" )
+			else:
+		 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=p_traj)
