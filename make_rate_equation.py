@@ -116,9 +116,9 @@ for irxn in range(rxn_num):
 		sto_coef = str(sto_coef)
 
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "-" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = "-" + sto_coef + "*" + tmp
+			dict2[mem] = " - " + sto_coef + "*" + tmp
 
 	for mem in list_p:
 		#
@@ -133,7 +133,7 @@ for irxn in range(rxn_num):
 		sto_coef = str(sto_coef)
 
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "+" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " + " + sto_coef + "*" + tmp
 		else:
 			dict2[mem] = sto_coef + "*" + tmp
 
@@ -173,7 +173,7 @@ for irxn in range(rxn_num):
 		sto_coef = str(sto_coef)
 
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "+" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " + " + sto_coef + "*" + tmp
 		else:
 			dict2[mem] = sto_coef + "*" + tmp
 
@@ -190,9 +190,9 @@ for irxn in range(rxn_num):
 		sto_coef = str(sto_coef)
 
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + "-" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = "-" + sto_coef + "*" + tmp
+			dict2[mem] = " - " + sto_coef + "*" + tmp
 
 #
 # end loop for reaction
