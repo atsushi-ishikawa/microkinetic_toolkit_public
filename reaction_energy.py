@@ -391,7 +391,7 @@ for irxn in range(rxn_num):
 		if imol != len(p_ads[irxn])-1:
 			string = string + " + "
 
-	fbarrier.write('{0:<50s}'.format(string))
+	fbarrier.write('{0:<70s}'.format(string))
 
 	Eafor  =  deltaE
 	Earev  = -deltaE
