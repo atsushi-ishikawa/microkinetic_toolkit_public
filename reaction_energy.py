@@ -99,6 +99,13 @@ elif "vasp" in calculator:
 	if efield:
 		nelect = 456 # set by yourself
 
+	# DFT+U
+	DFTU = True
+	if DFTU:
+		ldau = "true"
+		ldautype = 2
+		ldau_luj = { 'La':{'L':2, 'U':3.0, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
+
 ## --- EMT --- -> nothing to set
 
 if ZPE:
@@ -227,12 +234,20 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			if not gas_mol and efield:
-		 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-								nelect=nelect, lmono="true" )
+			if not gas_mol and DFTU:
+				# needs special treatment
+				if efield:
+		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+				else:
+			 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
 			else:
+				# normal calculation
 		 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
@@ -359,12 +374,20 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			if not gas_mol and efield:
-		 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-								nelect=nelect, lmono="true" )
+			if not gas_mol and DFTU:
+				# needs special treatment
+				if efield:
+		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+				else:
+			 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
 			else:
+				# normal calculation
 		 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
 								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
