@@ -21,7 +21,7 @@ db = connect("tmp.json")
 ## --- Gaussian ---
 if "gau" in calculator:
 	method = "b3lyp"
-	basis  = "6-311G*"
+	basis  = "6-31G*"
 ## --- NWChem ---
 elif "nw" in calculator:
 	xc = "b3lyp"
