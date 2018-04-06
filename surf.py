@@ -13,14 +13,15 @@ doping = False
 
 os.system('rm surf.db')
 
-nlayer = 2
+nlayer = 1
 nrelax = 1
 
 #cif_file = "mgo.cif"
-cif_file = "La2O3.cif"
+#cif_file = "La2O3.cif"
+cif_file = "Ce2W3O12.cif"
 bulk = read(cif_file)
 #niggli_reduce(bulk)
-surf = surface(lattice=bulk, indices=(0,0,1), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+surf = surface(lattice=bulk, indices=(0,1,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 # 
 if cif_file == "La2O3.cif":
@@ -28,7 +29,7 @@ if cif_file == "La2O3.cif":
 	surf.wrap()
 	surf.center(axis=2) # La2O3, only z-axis
 
-surf = surf*[3,3,1]
+surf = surf*[1,1,1]
 #surf = sort(surf)
 surf = sort_atoms_by_z(surf)
 
@@ -47,8 +48,11 @@ if doping:
 surf.translate([0,0,-vacuum+1])
 
 #lattice = "fcc"
-lattice = "hcp"
-facet   = "001"
+#facet   = "100"
+#lattice = "hcp"
+#facet   = "001"
+lattice = "sp15"
+facet = "010"
 
 pos = {	'lattice' : lattice, 
 		'facet'   : facet  ,
