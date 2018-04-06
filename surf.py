@@ -1,4 +1,4 @@
-from ase.build import fcc111, surface, sort
+from ase.build import fcc111, surface, sort, niggli_reduce
 from ase.calculators.emt import EMT
 from ase.db import connect
 from ase.io import read,write
@@ -9,17 +9,26 @@ import numpy as np
 from reaction_tools import *
 
 vacuum = 10.0
-doping = True
+doping = False
 
 os.system('rm surf.db')
 
-nlayer = 1
+nlayer = 2
 nrelax = 1
 
-bulk = read("mgo.cif")
-#bulk = read("La2O3.cif")
-surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
-surf = surf*[2,2,1]
+#cif_file = "mgo.cif"
+cif_file = "La2O3.cif"
+bulk = read(cif_file)
+#niggli_reduce(bulk)
+surf = surface(lattice=bulk, indices=(0,0,1), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+
+# 
+if cif_file == "La2O3.cif":
+	surf.rotate(180,'y', rotate_cell=False) # La2O3
+	surf.wrap()
+	surf.center(axis=2) # La2O3, only z-axis
+
+surf = surf*[3,3,1]
 #surf = sort(surf)
 surf = sort_atoms_by_z(surf)
 
@@ -37,8 +46,9 @@ if doping:
 
 surf.translate([0,0,-vacuum+1])
 
-lattice = "fcc"
-facet   = "100"
+#lattice = "fcc"
+lattice = "hcp"
+facet   = "001"
 
 pos = {	'lattice' : lattice, 
 		'facet'   : facet  ,
