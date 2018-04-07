@@ -352,3 +352,25 @@ def sort_atoms_by_z(atoms):
 
 	return newatoms
 
+def get_number_of_valence_electrons(atoms):
+	#
+	# Returns number of valence electrons for VASP calculation.
+	# Calls VASP calculation once.
+	# Returned electron numbers should be ++1 or --1 for cations, anions, etc.
+	#
+	from ase.calculators.vasp import Vasp
+	atoms.calc = Vasp(prec="normal",xc="PBE",encut=300.0,nsw=0,nelm=1)
+	nelec = atoms.calc.get_number_of_electrons()
+	return nelec
+
+def read_charge(mol):
+	charge = 0.0 # initial
+	if "^" in mol:
+		neutral = False
+		mol,charge = mol.split('^')
+		charge = float(charge.replace('{','').replace('}','').replace('+',''))
+	else:
+		neutral = True
+
+	return mol,neutral,charge
+

@@ -94,17 +94,14 @@ elif "vasp" in calculator:
 	basis  = ""
 	label  = method
 
-	# electric field
-	efield = False
-	if efield:
-		nelect = 456 # set by yourself
-
 	# DFT+U
 	DFTU = False
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
 		ldau_luj = { 'La':{'L':2, 'U':3.0, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
+	# charge
+	neutral = True
 
 ## --- EMT --- -> nothing to set
 
@@ -140,18 +137,23 @@ for irxn in range(rxn_num):
 		for imol, mol in enumerate(mols):
 			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 
-			if mol == 'surf':
+			if 'surf' in mol:
+				mol,neutral,charge = read_charge(mol)
 				tmp = surf
-			elif mol == 'def':
+			elif 'def' in mol:
+				mol,neutral,charge = read_charge(mol)
 				tmp = 'def'
 			else:
-				if "^SIDE" in mol:
-					mol = mol.replace("^SIDE","")
+				mol,neutral,charge = read_charge(mol)
+
+				# flip or rotate
+				if "-SIDE" in mol:
+					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
 					ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
-				elif "^FLIP" in mol:
-					mol = mol.replace("^FLIP","")
+				elif "-FLIP" in mol:
+					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 				else:
@@ -219,9 +221,9 @@ for irxn in range(rxn_num):
 				kpts = [1,1,1]
 				gas_mol = True
 		else: # surface
-			ismear = ismear_surf # Methfessel-Paxton
-			sigma  = sigma_surf
-			kpts = kpts_surf
+			ismear  = ismear_surf # Methfessel-Paxton
+			sigma   = sigma_surf
+			kpts    = kpts_surf
 			gas_mol = False
 		#
 		# set calculator
@@ -234,23 +236,49 @@ for irxn in range(rxn_num):
 				r_label = r_label + "_sp"
 				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			if not gas_mol and DFTU:
-				# needs special treatment
-				if efield:
+			if gas_mol:
+				#
+				# gas-phase molecules
+				#
+				if neutral:
 		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-									nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
-			 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-									ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
+									nelect=nelect, lmono="true" )
 			else:
-				# normal calculation
-		 		tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+				#
+				# surface
+				#
+				if neutral:
+					if DFTU:
+		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFTU
+					else:
+			 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
+				else:
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+					if DFTU:
+		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFTU
+					else:
+		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										nelect=nelect, lmono="true") # charge
+
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=r_traj)
@@ -273,7 +301,6 @@ for irxn in range(rxn_num):
 			reac_en[imols] = en
 
 		reac_en[imols] = coef * reac_en[imols]
-
 	#
 	# products
 	#
@@ -282,18 +309,23 @@ for irxn in range(rxn_num):
 		for imol, mol in enumerate(mols):
 			print "----- product: molecule No.", imol, " is ", mol, "-----"
 
-			if mol == 'surf':
+			if 'surf' in mol:
+				mol,neutral,charge = read_charge(mol)
 				tmp = surf
-			elif mol == 'def':
+			elif 'def' in mol:
+				mol,neutral,charge = read_charge(mol)
 				tmp = 'def'
 			else:
-				if "^SIDE" in mol:
-					mol = mol.replace("^SIDE","")
+				mol,neutral,charge = read_charge(mol)
+
+				# flip or rotate
+				if "-SIDE" in mol:
+					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
 					ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
-				elif "^FLIP" in mol:
-					mol = mol.replace("^FLIP","")
+				elif "-FLIP" in mol:
+					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 				else:
@@ -359,10 +391,12 @@ for irxn in range(rxn_num):
 				ismear = 0 # gaussian smearing
 				sigma  = 0.05
 				kpts = [1,1,1]
+				gas_mol = True
 		else: # surface
-			ismear = ismear_surf # Methfessel-Paxton
-			sigma  = sigma_surf
-			kpts = kpts_surf
+			ismear  = ismear_surf # Methfessel-Paxton
+			sigma   = sigma_surf
+			kpts    = kpts_surf
+			gas_mol = False
 		#
 		# set calculator
 		#
@@ -374,23 +408,49 @@ for irxn in range(rxn_num):
 				p_label = p_label + "_sp"
 				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
 		elif "vasp" in calculator:
-			if not gas_mol and DFTU:
-				# needs special treatment
-				if efield:
+			if gas_mol:
+				#
+				# gas-phase molecules
+				#
+				if neutral:
 		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-									nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
-			 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-									ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj )
+									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
+									nelect=nelect, lmono="true" )
 			else:
-				# normal calculation
-		 		tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
-								ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+				#
+				# surface
+				#
+				if neutral:
+					if DFTU:
+		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFTU
+					else:
+			 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
+				else:
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+					if DFTU:
+		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFTU
+					else:
+		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										nelect=nelect, lmono="true") # charge
+
 		elif "emt" in calculator:
 			tmp.calc = EMT()
 			opt = BFGS(tmp, trajectory=p_traj)
