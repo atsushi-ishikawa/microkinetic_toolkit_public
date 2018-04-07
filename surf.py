@@ -9,21 +9,21 @@ import numpy as np
 from reaction_tools import *
 
 vacuum = 10.0
-doping = False
+doping = True
 
 os.system('rm surf.db')
 
 nlayer = 1
 nrelax = 1
 
-#cif_file = "mgo.cif"
+cif_file = "mgo.cif"
 #cif_file = "cao.cif"
-cif_file = "La2O3.cif"
+#cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
 bulk = read(cif_file)
 #niggli_reduce(bulk)
-surf = surface(lattice=bulk, indices=(0,0,1), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 # 
 if cif_file == "La2O3.cif":
@@ -31,19 +31,17 @@ if cif_file == "La2O3.cif":
 	surf.wrap()
 	surf.center(axis=2) # La2O3, only z-axis
 
-surf = surf*[3,3,1]
+surf = surf*[2,2,1]
 #surf = sort(surf)
 surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
-
 #
 # doping e.g.) Mg by Li
 #
 if doping:
-	symbols =  np.array(surf.get_chemical_symbols())
-	#rep_atom = np.max( np.where(symbols == 'Mg') )
-	rep_atom = 18
+	symbols  =  np.array(surf.get_chemical_symbols())
+	rep_atom = 16
 	# MgO: 16 for layer=1, 48 for layer=2
 	# CaO: 18 for layer=1
 	symbols[rep_atom] = 'Li'
@@ -51,10 +49,10 @@ if doping:
 
 surf.translate([0,0,-vacuum+1])
 
-#lattice = "fcc"
-#facet   = "100"
-lattice = "hcp"
-facet   = "001"
+lattice = "fcc"
+facet   = "100"
+#lattice = "hcp"
+#facet   = "001"
 #lattice = "sp15"
 #facet = "010"
 

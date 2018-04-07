@@ -100,7 +100,7 @@ elif "vasp" in calculator:
 		nelect = 456 # set by yourself
 
 	# DFT+U
-	DFTU = True
+	DFTU = False
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
