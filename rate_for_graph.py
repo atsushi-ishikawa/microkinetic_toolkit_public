@@ -40,8 +40,13 @@ for irxn in range(rxn_num):
 	val = kfor[irxn]
 	conc_all = 1.0
 	for imol,mol in enumerate(r_ads[irxn]):
-		mol   = mol[0]
-		spe   = get_species_num(mol)
+		mol  = mol[0]
+		site = r_site[irxn][imol]
+		if not 'gas' in site:
+			mol = mol + '_surf'
+			spe = get_species_num(mol)
+		else:
+			spe   = get_species_num(mol)
 		conc  = cov[spe]
 		power = r_coef[irxn][imol]
 		if power != 1:
@@ -56,7 +61,12 @@ for irxn in range(rxn_num):
 	conc_all = 1.0
 	for imol,mol in enumerate(p_ads[irxn]):
 		mol   = mol[0]
-		spe   = get_species_num(mol)
+		site = p_site[irxn][imol]
+		if not 'gas' in site:
+			mol = mol + '_surf'
+			spe = get_species_num(mol)
+		else:
+			spe   = get_species_num(mol)
 		conc  = cov[spe]
 		power = p_coef[irxn][imol]
 		if power != 1:

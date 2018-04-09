@@ -89,6 +89,8 @@ for i,j in enumerate(rxn):
 		if coverage:
 			# node size
 			mol  = reac[i][ireac]
+			if '_' in mol:
+				mol = mol.split('_')[0] + '_surf'
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
@@ -107,6 +109,8 @@ for i,j in enumerate(rxn):
 		if coverage:
 			# node size
 			mol  = prod[i][iprod]
+			if '_' in mol:
+				mol = mol.split('_')[0] + '_surf'
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
