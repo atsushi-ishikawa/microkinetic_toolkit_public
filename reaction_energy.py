@@ -88,6 +88,7 @@ elif "vasp" in calculator:
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ivdw        = 12
+	ialgo       = 48 # normal=38, veryfast=48
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -99,7 +100,8 @@ elif "vasp" in calculator:
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
-		ldau_luj = { 'La':{'L':2, 'U':3.0, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
+		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
+		ialgo = 38
 	# charge
 	neutral = True
 
@@ -242,13 +244,13 @@ for irxn in range(rxn_num):
 				#
 				if neutral:
 		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
@@ -258,24 +260,24 @@ for irxn in range(rxn_num):
 				if neutral:
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFTU
 					else:
 			 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFTU
 					else:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
@@ -289,7 +291,7 @@ for irxn in range(rxn_num):
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + r_label + ".xml"
 			os.system('cp vasprun.xml %s' % xmlfile)
-
+			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
 			vib.run()
@@ -414,13 +416,13 @@ for irxn in range(rxn_num):
 				#
 				if neutral:
 		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
@@ -430,24 +432,24 @@ for irxn in range(rxn_num):
 				if neutral:
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFTU
 					else:
 			 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFTU
 					else:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
@@ -459,16 +461,16 @@ for irxn in range(rxn_num):
 		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
-			xmlfile = "vasprun_" + p_label + ".xml"
+			xmlfile = 'vasprun_' + p_label + '.xml'
 			os.system('cp vasprun.xml %s' % xmlfile)
-
+			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 		if ZPE == True and natom != 1:
 			vib = Vibrations(tmp)
 			vib.run()
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			prod_en[imols] = en + zpe
-			os.system("rm vib.*")
+			os.system('rm vib.*')
 		else:
 			prod_en[imols] = en
 
