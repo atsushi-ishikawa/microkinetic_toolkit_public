@@ -43,7 +43,7 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		nmol = len(r_ads[irxn])
-		if mol == 'surf':
+		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
 			tmp  = methane[mol]
@@ -75,10 +75,11 @@ for irxn in range(rxn_num):
 		if nmol == 1:
 			# desorption
 			type_for[irxn] = "des"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			fac_for = 1.0 / denom
+			#red_mass = mass_prod / mass_sum
+			#red_mass = red_mass*amu
+			#denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
+			#fac_for = 1.0 / denom
+			fac_for = kbolt/hplanck
 		else:
 			# LH
 			type_for[irxn] = "lh"
@@ -99,7 +100,7 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
 		nmol = len(p_ads[irxn])
-		if mol == 'surf':
+		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
 			tmp  = methane[mol]
@@ -131,16 +132,17 @@ for irxn in range(rxn_num):
 		if nmol == 1:
 			# desorption
 			type_rev[irxn] = "des"
-			red_mass = mass_prod / mass_sum
-			red_mass = red_mass*amu
-			denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			fac_rev = 1.0 / denom
+			#red_mass = mass_prod / mass_sum
+			#red_mass = red_mass*amu
+			#denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
+			#fac_rev = 1.0 / denom
+			fac_rev = kbolt/hplanck
 		else:
 			# LH
 			type_rev[irxn] = "lh"
 			fac_rev = kbolt/hplanck
 	else:
-		# adsorption
+		# adsorption : should be reversed from reactant
 		type_rev[irxn] = "ads"
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu

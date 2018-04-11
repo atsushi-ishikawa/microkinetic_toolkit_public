@@ -35,13 +35,13 @@ template = " \
 \n \
 \t f_act = 1.0*10^-2; % fraction of active site\n \
 \t MW    = 101.1; % atomic mass of Ru [g/mol]\n \
-\t Natom = NA/MW; % number of atoms in one g-cat [atoms/g]\n \
+\t Natom = (Wcat/MW)*NA; % number of atoms in one g-cat [atoms/g]\n \
 \t Nsurf = Natom^(2/3); % number of atoms in surface\n \
 \t Nsite = Nsurf*f_act; % number of active sites\n \
 \n \
 \t Fin = yin(1:Ngas);\n \
 \t theta = theta * Nsite;\n \
-\t theta = theta * (Wcat/Vr);\n"
+\t % theta = theta * (Wcat/Vr);\n"
 
 fout.write(template)
 #
@@ -217,7 +217,10 @@ fout.write(comment)
 # tempelate - start
 #
 template = "\
-\t Rate = Rate/NA * Vr;\n \
+\t %Rate = Rate/NA * Vr;\n \
+\t Rate = Rate/NA;\n \
+\t Rate(1:Ngas) = Rate(1:Ngas)*Vr;\n \
+\t Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*10^0;\n \
 \t %Rate(1:Ngas)       = Rate(1:Ngas)*(1/NA)*Vr; % [molecule/site/s] --> [mol/s]\n \
 \t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(Nsite/NA)*Wcat; % [molecule/site/s] --> [mol/s]\n \
 \t %Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*rho_b*v0; % [mol/s] --> [mol/s]*[g/m^3]*[m^3/s]=[mol/s^2]\n \

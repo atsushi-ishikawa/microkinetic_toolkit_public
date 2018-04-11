@@ -48,9 +48,14 @@ for irxn in range(rxnnum):
 species = list(set(species)) # remove duplication
 species.sort()
 
-# put surface species to last
+# put surface species to later part of the list
 for item in species:
 	if 'surf' in item:
+		species.remove(item)
+		species.append(item)
+# put 'surf' to the last
+for item in species:
+	if item == 'surf':
 		species.remove(item)
 		species.append(item)
 
