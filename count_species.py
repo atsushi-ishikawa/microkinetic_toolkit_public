@@ -48,11 +48,11 @@ for irxn in range(rxnnum):
 species = list(set(species)) # remove duplication
 species.sort()
 
-# put surface species to later part of the list
-for item in species:
-	if 'surf' in item:
-		species.remove(item)
-		species.append(item)
+surf = [i for i in species if 'surf' in i]
+gas  = [i for i in species if not 'surf' in i]
+
+species = gas + surf
+
 # put 'surf' to the last
 for item in species:
 	if item == 'surf':
