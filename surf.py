@@ -8,13 +8,13 @@ import os
 import numpy as np
 from reaction_tools import *
 
-vacuum = 10.0
-doping = True
+vacuum = 15.0
+doping = False
 
 os.system('rm surf.db')
 
-nlayer = 1
-nrelax = 1
+nlayer = 2
+nrelax = 2
 
 cif_file = "mgo.cif"
 #cif_file = "cao.cif"
@@ -24,6 +24,13 @@ cif_file = "mgo.cif"
 bulk = read(cif_file)
 #niggli_reduce(bulk)
 surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+
+lattice = "fcc"
+facet   = "100"
+#lattice = "hcp"
+#facet   = "001"
+#lattice = "sp15"
+#facet = "010"
 
 # 
 if cif_file == "La2O3.cif":
@@ -48,19 +55,16 @@ if doping:
 	surf.set_chemical_symbols(symbols)
 
 surf.translate([0,0,-vacuum+1])
-
-lattice = "fcc"
-facet   = "100"
-#lattice = "hcp"
-#facet   = "001"
-#lattice = "sp15"
-#facet = "010"
-
+#
+# information for JSON file
+#
 pos = {	'lattice' : lattice, 
 		'facet'   : facet  ,
 		'formula' : formula
       }
-
+#
+# relaxation issues
+#
 natoms = len(surf.get_atomic_numbers())
 per_layer = natoms / nlayer / 2 # divide by 2 for oxides -- check
 tag = np.ones(natoms, int)
