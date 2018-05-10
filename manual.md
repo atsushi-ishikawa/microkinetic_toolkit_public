@@ -20,7 +20,7 @@ python pre_exponential.py input.txt
 
 #### 4. Make MATLAB ODE file
 ```bash
-python make_rate_equation.py input.txt
+python make_rate_equation.py [input.txt]
 ```
 
 #### 5. Run MATLAB
@@ -28,7 +28,7 @@ python make_rate_equation.py input.txt
 
 #### 6. Add rate to reactionfile
 ```bash
-python rate_for_graph.py input.txt coverage.txt rateconst.txt
+python rate_for_graph.py [input.txt] coverage.txt rateconst.txt
 ```
 * `input_val.txt` is generated
 

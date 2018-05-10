@@ -26,6 +26,7 @@ krev = [0 for i in range(rxn_num)]
 f = open(rateconstfile,'r')
 lines = f.readlines()
 f.close()
+
 for iline, line in enumerate(lines):
 	rxn = iline
 	val1,val2 = line.split(' ')
