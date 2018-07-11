@@ -56,7 +56,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.5
+ads_height = 1.4
 ads_pos = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
@@ -75,14 +75,14 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
+	prec        = "low"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 40
+	nsw         = 10
 	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1
-	kpts_surf   = [2, 2, 1]
+	kpts_surf   = [1, 1, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.20
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
