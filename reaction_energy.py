@@ -56,7 +56,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.4
+ads_height = 1.3
 ads_pos = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
