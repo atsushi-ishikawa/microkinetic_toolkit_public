@@ -56,7 +56,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height = 1.3
+ads_height0 = 1.4
 ads_pos = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
@@ -159,10 +159,6 @@ for irxn in range(rxn_num):
 					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					x_max = max(tmp.get_positions()[:,0])
-					x_min = min(tmp.get_positions()[:,0])
-					x_shift = (x_max - x_min)*0.5
-					ads_pos = (+x_shift, 0.0) # slide a little bit, to center the adsobate on atom
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
@@ -195,10 +191,17 @@ for irxn in range(rxn_num):
 					#
 					# shift adsorbate molecule
 					#
+					x_max = tmp.positions[:,0].max()
+					x_min = tmp.positions[:,0].min()
+					x_shift = (x_max - x_min)*0.5
+					z_shift = tmp.positions[:,2].min()
+					ads_pos = (+x_shift, 0.0)
+
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 0.9
-					shift = tmp.positions[:,2].min()
-					ads_height = ads_height - shift
+
+					ads_height = ads_height0 - z_shift
+					print "ads_height2",ads_height
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
@@ -334,8 +337,8 @@ for irxn in range(rxn_num):
 					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					x_max = max(tmp.get_positions()[:,0])
-					x_min = min(tmp.get_positions()[:,0])
+					x_max = tmp.positions[:,0].max()
+					x_min = tmp.positions[:,0].min()
 					x_shift = (x_max - x_min)*0.5
 					ads_pos = (+x_shift, 0.0) # slide a little bit, to center the adsobate on atom
 				elif "-FLIP" in mol:
@@ -370,10 +373,17 @@ for irxn in range(rxn_num):
 					#
 					# shift adsorbate molecule
 					#
+					x_max = tmp.positions[:,0].max()
+					x_min = tmp.positions[:,0].min()
+					x_shift = (x_max - x_min)*0.5
+					z_shift = tmp.positions[:,2].min()
+					ads_pos = (+x_shift, 0.0)
+
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 0.9
-					shift = tmp.positions[:,2].min()
-					ads_height = ads_height - shift
+
+					ads_height = ads_height0 - z_shift
+					print "ads_height1",ads_height
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
