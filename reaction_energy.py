@@ -22,7 +22,7 @@ from ase.visualize import view
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator = "vasp"
+calculator = "EMT"
 calculator = calculator.lower()
 
 #
@@ -108,6 +108,10 @@ elif "vasp" in calculator:
 	neutral = True
 
 ## --- EMT --- -> nothing to set
+elif "emt" in calculator:
+	method = ""
+	basis  = ""
+	label  = ""
 
 if ZPE:
 	label = label + "ZPE"
@@ -155,7 +159,7 @@ for irxn in range(rxn_num):
 					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
+					# ads_pos = (-0.6, 0.0) # slide a little bit, to center the adsobate on atom
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
