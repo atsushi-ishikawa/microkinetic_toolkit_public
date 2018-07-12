@@ -57,7 +57,7 @@ ZPE = False
 SP  = False
 maxoptsteps = 200
 ads_height0 = 1.4
-ads_pos = (0.0, 0.0)
+ads_pos0 = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
 
@@ -200,7 +200,7 @@ for irxn in range(rxn_num):
 						ads_height = 0.9
 
 					ads_height = ads_height0 - z_shift
-					ads_pos = (-shift[0], -shift[1])
+					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
@@ -377,7 +377,7 @@ for irxn in range(rxn_num):
 						ads_height = 0.9
 
 					ads_height = ads_height0 - z_shift
-					ads_pos = (-shift[0], -shift[1])
+					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
