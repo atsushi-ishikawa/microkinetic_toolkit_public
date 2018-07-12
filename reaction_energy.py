@@ -191,16 +191,16 @@ for irxn in range(rxn_num):
 					#
 					# shift adsorbate molecule
 					#
-					x_max   = tmp.positions[:,0].max()
-					x_min   = tmp.positions[:,0].min()
-					x_shift = (x_max - x_min)*0.5
+					xcom  = tmp.get_center_of_mass()[0]
+					ycom  = tmp.get_center_of_mass()[1]
+					shift = (xcom - tmp.positions[0,0], ycom - tmp.positions[0,1])
 					z_shift = tmp.positions[:,2].min()
-					ads_pos = (-x_shift, 0.0)
 
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 0.9
 
 					ads_height = ads_height0 - z_shift
+					ads_pos = (-shift[0], -shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
@@ -368,16 +368,16 @@ for irxn in range(rxn_num):
 					#
 					# shift adsorbate molecule
 					#
-					x_max   = tmp.positions[:,0].max()
-					x_min   = tmp.positions[:,0].min()
-					x_shift = (x_max - x_min)*0.5
+					xcom  = tmp.get_center_of_mass()[0]
+					ycom  = tmp.get_center_of_mass()[1]
+					shift = (xcom - tmp.positions[0,0], ycom - tmp.positions[0,1])
 					z_shift = tmp.positions[:,2].min()
-					ads_pos = (-x_shift, 0.0)
 
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 0.9
 
 					ads_height = ads_height0 - z_shift
+					ads_pos = (-shift[0], -shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
