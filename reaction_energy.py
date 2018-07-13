@@ -25,6 +25,10 @@ reactionfile = argvs[1]
 calculator = "vasp"
 calculator = calculator.lower()
 
+# temprary database to avoid overlapping calculations
+
+tmpdb = connect('tmp.db')
+
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -159,12 +163,15 @@ for irxn in range(rxn_num):
 					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
+					config = "side"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
+					config = "flip"
 				else:
 					tmp = methane[mol]
+					config = "normal"
 
 			site = r_site[irxn][imols][imol]
 
@@ -172,6 +179,8 @@ for irxn in range(rxn_num):
 				site,site_pos = site.split(".")
 			except:
 				site_pos = 'x1y1'
+
+
 
 			if site != 'gas':
 				offset = site_info[lattice][facet][site][site_pos]
@@ -207,6 +216,23 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
+		###################################################
+		# Identification done. Look for temporary database 
+		# for identical system.
+		#
+		formula  = tmp.get_chemical_formula()
+		try:
+			past = tmpdb.get(formula=formula)
+		except:
+			print "first time"
+		else:
+ 			if site == past.data.site:
+ 				if site_pos == past.data.site_pos:
+ 					if config == past.data.config:
+ 						print "already calculated"
+						tmp = tmpdb.get_atoms(id=past.id)
+		##################################################
+
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
 		coef   = r_coef[irxn][imols]
@@ -313,6 +339,10 @@ for irxn in range(rxn_num):
 		else:
 			reac_en[imols] = en
 
+		######################
+		tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
+		######################
+
 		reac_en[imols] = coef * reac_en[imols]
 	#
 	# products
@@ -384,6 +414,23 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
+		###################################################
+		# Identification done. Look for temporary database 
+		# for identical system.
+		#
+		formula  = tmp.get_chemical_formula()
+		try:
+			past = tmpdb.get(formula=formula)
+		except:
+			print "first time"
+		else:
+ 			if site == past.data.site:
+ 				if site_pos == past.data.site_pos:
+ 					if config == past.data.config:
+ 						print "already calculated"
+						tmp = tmpdb.get_atoms(id=past.id)
+		##################################################
+
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
 		coef   = p_coef[irxn][imols]
@@ -490,6 +537,10 @@ for irxn in range(rxn_num):
 		else:
 			prod_en[imols] = en
 
+		######################
+		tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
+		######################
+
 		prod_en[imols] = coef * prod_en[imols]
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
@@ -526,4 +577,5 @@ for irxn in range(rxn_num):
 	# loop over reaction
 	#
 remove_parentheses(barrierfile)
+os.system("rm tmp.db") # delte temporary database
 
