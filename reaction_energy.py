@@ -79,14 +79,14 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
-	encut       = 350.0 # 213.0 or 400.0 or 500.0
-	potim       = 0.10
-	nsw         = 10
+	prec        = "normal"
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	potim       = 0.15
+	nsw         = 1
 	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1
-	kpts_surf   = [1, 1, 1]
+	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.20
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
@@ -148,14 +148,18 @@ for irxn in range(rxn_num):
 		surf_tmp = surf.copy()
 		for imol, mol in enumerate(mols):
 			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
+			config = "normal"
 
 			if 'surf' in mol:
+				# surface itself
 				mol,neutral,charge = read_charge(mol)
 				tmp = surf
 			elif 'def' in mol:
+				# defected surface
 				mol,neutral,charge = read_charge(mol)
 				tmp = 'def'
 			else:
+				# some adsorbate is present
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
@@ -171,7 +175,6 @@ for irxn in range(rxn_num):
 					config = "flip"
 				else:
 					tmp = methane[mol]
-					config = "normal"
 
 			site = r_site[irxn][imols][imol]
 
@@ -180,8 +183,6 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = 'x1y1'
 
-
-
 			if site != 'gas':
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
@@ -189,7 +190,7 @@ for irxn in range(rxn_num):
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
-				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice,facet,site,site_pos,config))
 				#
 				if tmp == 'def':
 					defect = find_closest_atom(surf_tmp,offset=offset)
@@ -216,22 +217,24 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
-		###################################################
+
+		#
 		# Identification done. Look for temporary database 
 		# for identical system.
 		#
-		formula  = tmp.get_chemical_formula()
+		formula = tmp.get_chemical_formula()
 		try:
 			past = tmpdb.get(formula=formula)
 		except:
 			print "first time"
+			first_time = True
 		else:
  			if site == past.data.site:
  				if site_pos == past.data.site_pos:
  					if config == past.data.config:
  						print "already calculated"
 						tmp = tmpdb.get_atoms(id=past.id)
-		##################################################
+						first_time = False
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
@@ -339,11 +342,12 @@ for irxn in range(rxn_num):
 		else:
 			reac_en[imols] = en
 
-		######################
-		tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
-		######################
-
 		reac_en[imols] = coef * reac_en[imols]
+
+		# recording to database
+		if(first_time):
+			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
+
 	#
 	# products
 	#
@@ -351,14 +355,18 @@ for irxn in range(rxn_num):
 		surf_tmp = surf.copy()
 		for imol, mol in enumerate(mols):
 			print "----- product: molecule No.", imol, " is ", mol, "-----"
+			config = "normal"
 
 			if 'surf' in mol:
+				# surface itself
 				mol,neutral,charge = read_charge(mol)
 				tmp = surf
 			elif 'def' in mol:
+				# defected surface
 				mol,neutral,charge = read_charge(mol)
 				tmp = 'def'
 			else:
+				# some adsorbate is present
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
@@ -366,10 +374,12 @@ for irxn in range(rxn_num):
 					mol = mol.replace("-SIDE","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
+					config = "side"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
+					config = "flip"
 				else:
 					tmp = methane[mol]
 
@@ -387,7 +397,7 @@ for irxn in range(rxn_num):
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
-				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}\n".format(lattice,facet,site,site_pos))
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice,facet,site,site_pos,config))
 				#
 				if tmp == 'def':
 					defect = find_closest_atom(surf_tmp,offset=offset)
@@ -414,22 +424,24 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
-		###################################################
+
+		#
 		# Identification done. Look for temporary database 
 		# for identical system.
 		#
-		formula  = tmp.get_chemical_formula()
+		formula = tmp.get_chemical_formula()
 		try:
 			past = tmpdb.get(formula=formula)
 		except:
 			print "first time"
+			first_time = True
 		else:
  			if site == past.data.site:
  				if site_pos == past.data.site_pos:
  					if config == past.data.config:
  						print "already calculated"
 						tmp = tmpdb.get_atoms(id=past.id)
-		##################################################
+						first_time = False
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
@@ -537,11 +549,11 @@ for irxn in range(rxn_num):
 		else:
 			prod_en[imols] = en
 
-		######################
-		tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
-		######################
-
 		prod_en[imols] = coef * prod_en[imols]
+
+		# recording to database
+		if(first_time):
+			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 	#
