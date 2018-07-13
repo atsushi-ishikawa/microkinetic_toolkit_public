@@ -56,7 +56,7 @@ Ea = np.array(2, dtype="f")
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.5
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do single point after optimization
 # at different computational level
@@ -197,7 +197,7 @@ for irxn in range(rxn_num):
 					z_shift = tmp.positions[:,2].min()
 
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
-						ads_height = 0.9
+						ads_height = 1.2
 
 					ads_height = ads_height0 - z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
@@ -374,7 +374,7 @@ for irxn in range(rxn_num):
 					z_shift = tmp.positions[:,2].min()
 
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
-						ads_height = 0.9
+						ads_height = 1.2
 
 					ads_height = ads_height0 - z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])

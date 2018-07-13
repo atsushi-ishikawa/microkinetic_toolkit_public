@@ -8,13 +8,13 @@ import os
 import numpy as np
 from reaction_tools import *
 
-vacuum = 15.0
-doping = False
+vacuum = 10.0
+doping = True
 
 os.system('rm surf.db')
 
-nlayer = 2
-nrelax = 2
+nlayer = 1
+nrelax = 1
 
 cif_file = "mgo.cif"
 #cif_file = "cao.cif"
