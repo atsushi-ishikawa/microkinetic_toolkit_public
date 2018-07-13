@@ -15,6 +15,9 @@ fspecies = open(speciesfile, "w")
 species = []
 rxnnum = len(r_ads)
 for irxn in range(rxnnum):
+	#
+	# reactant
+	#
 	for imol,mol in enumerate(r_ads[irxn]):
 		mol  = mol[0]
 		site = r_site[irxn][imol]
@@ -27,8 +30,16 @@ for irxn in range(rxnnum):
 		if site != 'gas':
 			mol = mol + "_surf" # Not distinguish different sites. Reconsideration may be needed.
 
+		if '-SIDE' in mol:
+			mol = mol.replace('-SIDE','')
+		if '-FLIP' in mol:
+			mol = mol.replace('-FLIP','')
+
 		species.append(mol)
 
+	#
+	# product
+	#
 	for imol,mol in enumerate(p_ads[irxn]):
 		mol  = mol[0]
 		site = p_site[irxn][imol]
@@ -40,6 +51,11 @@ for irxn in range(rxnnum):
 
 		if site != 'gas':
 			mol = mol + "_surf"
+
+		if '-SIDE' in mol:
+			mol = mol.replace('-SIDE','')
+		if '-FLIP' in mol:
+			mol = mol.replace('-FLIP','')
 
 		species.append(mol)
 
