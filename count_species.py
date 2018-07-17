@@ -63,6 +63,8 @@ gas  = [i for i in species if not 'surf' in i]
 
 species = gas + surf
 
+print "Number of gas species:",len(gas), "Number of surface species:",len(surf)
+
 # put 'surf' to the last
 for item in species:
 	if item == 'surf':
