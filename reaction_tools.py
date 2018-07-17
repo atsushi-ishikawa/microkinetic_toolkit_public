@@ -374,3 +374,14 @@ def read_charge(mol):
 
 	return mol,neutral,charge
 
+def remove_side_and_flip(mol):
+	#
+	# remove SIDE and FLIP in molecule
+	#
+	if '-SIDE' in mol:
+		mol = mol.replace('-SIDE','')
+	if '-FLIP' in mol:
+		mol = mol.replace('-FLIP','')
+
+	return mol
+
