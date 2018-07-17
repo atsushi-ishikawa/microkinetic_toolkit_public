@@ -43,6 +43,12 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		nmol = len(r_ads[irxn])
+
+		if '-SIDE' in mol:
+			mol = mol.replace('-SIDE','')
+		if '-FLIP' in mol:
+			mol = mol.replace('-FLIP','')
+
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
@@ -100,6 +106,12 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
 		nmol = len(p_ads[irxn])
+
+		if '-SIDE' in mol:
+			mol = mol.replace('-SIDE','')
+		if '-FLIP' in mol:
+			mol = mol.replace('-FLIP','')
+
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
