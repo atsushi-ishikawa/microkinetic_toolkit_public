@@ -33,6 +33,22 @@ def read_reactionfile(file):
 
 	return reac,rxn,prod
 
+def return_lines_of_reactionfile(file):
+	import os
+	import re
+
+	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
+	os.system('grep -v "^#" tmpfile1 > tmpfile2')
+	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
+
+	numlines = sum(1 for line in open("tmpfile1"))
+
+	f = open("tmpfile1","r")
+	os.system('rm tmpfile1 tmpfile2')
+
+	lines = f.readlines()
+	return lines
+
 def remove_space(obj):
 		newobj = [0]*len(obj)
 		if isinstance(obj, str):

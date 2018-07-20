@@ -12,7 +12,7 @@ if len(argvs) == 3: # read coverage
 else:
 	coverage = False
 
-inp = argvs[1]
+inp = argvs[1] # elementary reactions with reaction rate
 
 label_rxn = False
 directed  = True
@@ -26,45 +26,63 @@ f = open("reaction3.txt","r")
 lines = f.readlines()
 os.system('rm reaction2.txt reaction3.txt')
 
-reac   = range(numlines)
-rxn    = range(numlines)
-prod   = range(numlines)
-values = range(numlines)
+reac  = [0 for i in range(numlines)]
+rxn   = [0 for i in range(numlines)]
+prod  = [0 for i in range(numlines)]
+value = [0 for i in range(numlines)]
 
 eps  = 1.0e-10
+tiny = 1.0e-50 # Tiny value. Effectively zero.
 
 edge_scale = 0.5
-thre = 1.0
+rate_thre  = 0  # Thre for eaction rate in log scale. Rxn with smallter than this value is discarded.
 
+idx = 0
 for i,line in enumerate(lines):
-	# rate
+	#
+	# find reaction rate
+	#
 	if ':' in line:
-		comp,value = line.split(':')
-		value = value.replace('\n','')
-		value = float(value)/eps
-		if value > 0.0:
-			value = log10(value) if value > eps else 1.0
+		comp,rate = line.split(':')
+		rate = rate.replace('\n','')
+		rate = float(rate)/eps
+		if rate >= 0.0:
+			rate = log10(rate) if rate > eps else 1.0
 		else:
-			value = -1.0*log10(abs(value))
-			
+			rate = -1.0*log10(abs(rate))
 	else:
-	 	comp  = line
-	 	value = 1.0
+	 	comp = line
+	 	rate = 1.0
 
 	comp = comp.replace('\n','').replace('>','').replace(' ','').split('--')
+
 	reac_tmp = comp[0]
 	reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
+	reac_tmp = remove_side_and_flip(reac_tmp)
+	reac_tmp = reac_tmp.split(".")[0] if "." in reac_tmp else reac_tmp
+
 	rxn_tmp  = comp[1]
 	prod_tmp = comp[2]
 	prod_tmp = prod_tmp.split("*")[1] if "*" in prod_tmp else prod_tmp
+	prod_tmp = remove_side_and_flip(prod_tmp)
+	prod_tmp = prod_tmp.split(".")[0] if "." in prod_tmp else prod_tmp
 
-	reac[i]   = reac_tmp.split("+")
-	rxn[i]    = 'rxn' + str(i+1)
-	prod[i]   = prod_tmp.split("+")
-	values[i] = value*edge_scale
+	if rate > rate_thre:
+		reac[i]  = reac_tmp.split("+")
+		rxn[i]   = 'rxn' + str(i+1)
+		prod[i]  = prod_tmp.split("+")
+		value[i] = rate*edge_scale
+
+#
+# drop 0 from list, as these are smaller than rate_thre
+#
+reac  = filter(lambda x: x!=0, reac)
+rxn   = filter(lambda x: x!=0, rxn)
+prod  = filter(lambda x: x!=0, prod)
+value = filter(lambda x: x!=0, value)
 
 c_siz = 200; c_col = "blue"
-r_siz = 20;  r_col = "black"
+r_siz = 10;  r_col = "black"
 
 if coverage:
 	# coverage
@@ -77,11 +95,14 @@ if coverage:
 
 nodeA = 200.0
 nodeB = 11.0
+surf_scale = 0.4
 
 if directed:
 	G = nx.DiGraph()
 else:
 	G = nx.Graph()
+
+print "number of reactions:",len(rxn)
 
 for i,j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
@@ -89,41 +110,47 @@ for i,j in enumerate(rxn):
 		if coverage:
 			# node size
 			mol  = reac[i][ireac]
+			mol  = remove_side_and_flip(mol)
 			if '_' in mol:
 				mol = mol.split('_')[0] + '_surf'
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
+			if '_' in mol:
+				size = size*surf_scale
 			size = int(size)
 		else:
 			size = c_siz
 
  		G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
 
-		if directed and values[i] < 0:
- 			G.add_edge(rxn[i], reac[i][ireac], weight=abs(values[i]))
+		if directed and value[i] < 0:
+ 			G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
 		else:
- 			G.add_edge(reac[i][ireac], rxn[i], weight=abs(values[i]))
+ 			G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
  
  	for iprod,j2 in enumerate(prod[i]):
 		if coverage:
 			# node size
 			mol  = prod[i][iprod]
+			mol  = remove_side_and_flip(mol)
 			if '_' in mol:
 				mol = mol.split('_')[0] + '_surf'
 			spe  = get_species_num(mol)
 			size = cov_dict[spe] if cov_dict[spe] > eps else eps
 			size = nodeA*(nodeB + log10(size))
+			if '_' in mol:
+				size = size*surf_scale
 			size = int(size)
 		else:
 			size = c_siz
 
  		G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
 
-		if directed and values[i] < 0:
- 			G.add_edge(prod[i][iprod], rxn[i], weight=abs(values[i]))
+		if directed and value[i] < 0:
+ 			G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
 		else:
- 			G.add_edge(rxn[i], prod[i][iprod], weight=abs(values[i]))
+ 			G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
 
 #
 # drawing 

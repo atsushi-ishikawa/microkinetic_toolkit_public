@@ -41,7 +41,9 @@ for irxn in range(rxn_num):
 	val = kfor[irxn]
 	conc_all = 1.0
 	for imol,mol in enumerate(r_ads[irxn]):
-		mol  = mol[0]
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+		
 		site = r_site[irxn][imol]
 		if not 'gas' in site:
 			mol = mol + '_surf'
@@ -61,7 +63,9 @@ for irxn in range(rxn_num):
 	val = krev[irxn]
 	conc_all = 1.0
 	for imol,mol in enumerate(p_ads[irxn]):
-		mol   = mol[0]
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = p_site[irxn][imol]
 		if not 'gas' in site:
 			mol = mol + '_surf'
@@ -82,9 +86,7 @@ for irxn in range(rxn_num):
 
 reactionfile_out = reactionfile.split('.')[0] + '_val.txt'
 f1 = open(reactionfile_out,'w')
-f2 = open(reactionfile,'r')
-lines = f2.readlines()
-f2.close()
+lines = return_lines_of_reactionfile(reactionfile)
 
 for iline, line in enumerate(lines):
 	text = line.replace('\n','')
