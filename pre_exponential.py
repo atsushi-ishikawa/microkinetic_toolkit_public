@@ -19,14 +19,13 @@ rxn_num = get_number_of_reaction(infile)
 #
 # --- energy calculation ---
 #
-
 units   = create_units('2014')
 amu     = units['_amu']
 kbolt   = units['_k'] # kB in unit is not eV/K --> do not use
 hplanck = units['_hplanck']
 Nav     = units['_Nav']
 
-sigmaAB = 1.0e-10 # collision radius [m] -- approximate value
+#sigmaAB = 1.0e-10 # collision radius [m] -- approximate value
 
 reac_A = np.array(rxn_num*[range(len(r_ads[0]))],dtype="f")
 prod_A = np.array(rxn_num*[range(len(p_ads[0]))],dtype="f")
@@ -40,10 +39,16 @@ for irxn in range(rxn_num):
 	#
 	mass_sum = 0; mass_prod = 1;
 	rxntype = []
+
+	sigmaAB =  1.0
+
 	for imol, mol in enumerate(r_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
-		nmol = len(r_ads[irxn])
+		mol  = mol[0]
+		mol  = remove_side_and_flip(mol)
+
+		sigmaAB *= 1.0e-10
+
+		print "sigmaAB",sigmaAB
 
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
