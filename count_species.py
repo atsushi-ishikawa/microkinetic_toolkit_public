@@ -19,7 +19,9 @@ for irxn in range(rxnnum):
 	# reactant
 	#
 	for imol,mol in enumerate(r_ads[irxn]):
-		mol  = mol[0]
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = r_site[irxn][imol]
 		site = site[0]
 		try:
@@ -30,18 +32,15 @@ for irxn in range(rxnnum):
 		if site != 'gas':
 			mol = mol + "_surf" # Not distinguish different sites. Reconsideration may be needed.
 
-		if '-SIDE' in mol:
-			mol = mol.replace('-SIDE','')
-		if '-FLIP' in mol:
-			mol = mol.replace('-FLIP','')
-
 		species.append(mol)
 
 	#
 	# product
 	#
 	for imol,mol in enumerate(p_ads[irxn]):
-		mol  = mol[0]
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = p_site[irxn][imol]
 		site = site[0]
 		try:
@@ -51,11 +50,6 @@ for irxn in range(rxnnum):
 
 		if site != 'gas':
 			mol = mol + "_surf"
-
-		if '-SIDE' in mol:
-			mol = mol.replace('-SIDE','')
-		if '-FLIP' in mol:
-			mol = mol.replace('-FLIP','')
 
 		species.append(mol)
 
@@ -68,6 +62,8 @@ surf = [i for i in species if 'surf' in i]
 gas  = [i for i in species if not 'surf' in i]
 
 species = gas + surf
+
+print "Number of gas species:",len(gas), "Number of surface species:",len(surf)
 
 # put 'surf' to the last
 for item in species:

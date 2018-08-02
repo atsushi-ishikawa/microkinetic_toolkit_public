@@ -42,7 +42,9 @@ for irxn in range(rxn_num):
 	rxntype = []
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
 		nmol = len(r_ads[irxn])
+
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
@@ -99,7 +101,9 @@ for irxn in range(rxn_num):
 	rxntype = []
 	for imol, mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
 		nmol = len(p_ads[irxn])
+
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:

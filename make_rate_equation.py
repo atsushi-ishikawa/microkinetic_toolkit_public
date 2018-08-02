@@ -68,6 +68,8 @@ for irxn in range(rxn_num):
 	# making dict1, a dictionary of species with number hash
 	for imol,mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = r_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
@@ -77,6 +79,8 @@ for irxn in range(rxn_num):
 
 	for imol,mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = p_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
@@ -91,6 +95,8 @@ for irxn in range(rxn_num):
 	tmp = "kfor(" + rxn_idx + ")"
 	for imol,mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = r_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
@@ -111,6 +117,8 @@ for irxn in range(rxn_num):
  		coef = 0
   		for imol, mol in enumerate(r_ads[irxn]):
  			mol = mol[0]
+			mol = remove_side_and_flip(mol)
+
 			adsorbate = dict1[mem].split("_")[0]
   			if mol == adsorbate:
   				coef = r_coef[irxn][imol]
@@ -132,6 +140,8 @@ for irxn in range(rxn_num):
  		coef = 0
   		for imol, mol in enumerate(p_ads[irxn]):
  			mol = mol[0]
+			mol = remove_side_and_flip(mol)
+
 			adsorbate = dict1[mem].split("_")[0]
   			if mol == adsorbate:
   				coef = p_coef[irxn][imol]
@@ -155,6 +165,8 @@ for irxn in range(rxn_num):
 	tmp = "krev(" + rxn_idx + ")"
 	for imol,mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+
 		site = p_site[irxn][imol][0]
 		if site !='gas':
 			mol = mol + "_surf"
@@ -175,6 +187,8 @@ for irxn in range(rxn_num):
  		coef = 0
   		for imol, mol in enumerate(r_ads[irxn]):
  			mol = mol[0]
+			mol = remove_side_and_flip(mol)
+
 			adsorbate = dict1[mem].split("_")[0]
   			if mol == adsorbate:
   				coef = r_coef[irxn][imol]
@@ -196,6 +210,8 @@ for irxn in range(rxn_num):
  		coef = 0
   		for imol, mol in enumerate(p_ads[irxn]):
  			mol = mol[0]
+			mol = remove_side_and_flip(mol)
+
 			adsorbate = dict1[mem].split("_")[0]
   			if mol == adsorbate:
   				coef = p_coef[irxn][imol]
