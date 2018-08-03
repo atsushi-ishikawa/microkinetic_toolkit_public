@@ -29,6 +29,7 @@ calculator = calculator.lower()
 
 tmpdb = connect('tmp.db')
 
+
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -46,6 +47,7 @@ if surface:
 	f = open('site_info.json','r')
 	site_info = json.load(f)
 	f.close()
+
 
 # fix atoms
 c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
