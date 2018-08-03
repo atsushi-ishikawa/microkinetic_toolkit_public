@@ -7,9 +7,9 @@ from ase.db import connect
 # calculate reaction energy
 # molecule's data should be stored in "methane.json"
 #
-mol = sys.argv[1]
+# mol = sys.argv[1]
 calculator = "gau" ; calculator = calculator.lower()
-db = connect("methane_test.json")
+db = connect("tmp.json")
 #
 add_volume  = True
 add_entropy = True
@@ -27,12 +27,13 @@ else:
 #
 Nmol = len(db)
 
+newid = 1
 for imol in range(Nmol+10): # add 10 for safety
 	try:
 		id = imol+1
-		name = db.get(id=id)
-		tmp  = db.get_atoms(id=id)
-		print "adding volume and entropy",name
+		mol = db.get(id=id).name
+		tmp = db.get_atoms(id=id)
+		print "adding volume and entropy",mol
 		magmom = tmp.get_initial_magnetic_moments()
 		#
 		# volume and molecular total entropy calculation
@@ -58,14 +59,16 @@ for imol in range(Nmol+10): # add 10 for safety
 		#
 		# now write to database
 		#
+		print "writing to database"
 		if add_volume:
 			if add_entropy:
-				db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy})
+				db.write(tmp, id=newid, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy})
 			else:
-				db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol})
+				db.write(tmp, id=newid, key_value_pairs={'name' : mol, 'molecular_volume' : vol})
 
 		oldid = id
 		db.delete([oldid])
+		newid += 1
 
 	except:
 		print "has nothing --- go to next"
