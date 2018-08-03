@@ -1,7 +1,8 @@
 import numpy as np
 import os,sys
 from ase import Atoms, Atom
-from ase.collections import methane
+# from ase.collections import methane
+from ase.db import connect
 from ase.units import *
 from reaction_tools import *
 #
@@ -12,6 +13,8 @@ argvs   = sys.argv
 infile  = argvs[1]
 outfile = "pre_exp.txt"
 f = open(outfile,"w")
+
+db = connect("methane_test.json")
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
@@ -26,9 +29,6 @@ hplanck = units['_hplanck']
 Nav     = units['_Nav']
 
 #sigmaAB = 1.0e-10 # collision radius [m] -- approximate value
-
-reac_A = np.array(rxn_num*[range(len(r_ads[0]))],dtype="f")
-prod_A = np.array(rxn_num*[range(len(p_ads[0]))],dtype="f")
 
 type_for = ["gas"]*rxn_num
 type_rev = ["gas"]*rxn_num
@@ -46,15 +46,17 @@ for irxn in range(rxn_num):
 		mol  = mol[0]
 		mol  = remove_side_and_flip(mol)
 
-		sigmaAB *= 1.0e-10
-
-		print "sigmaAB",sigmaAB
-
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
-			tmp  = methane[mol]
-			#site = r_site[irxn][imol]
+			# tmp = methane[mol]
+			name = "CH4"
+			tmp = db.get_atoms(name=name)
+
+			vol = db.get(name=name).molecular_volume
+			sigmaAB  = 3.0/4.0/np.pi * np.cbrt(vol) # molecular diagmeter (in Angstrom) calculated from radius
+			sigmaAB *= 10e-10 # Angstrom --> m
+
 			site = r_site[irxn][imol][0]
 
 			mass = sum(tmp.get_masses())
