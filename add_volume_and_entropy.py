@@ -22,35 +22,52 @@ if "gau" in calculator:
 else:
 	raise RuntimeError('molecular volume only implemented in Gaussian')
 
-print "adding volume and entropy",mol
-id  = db.get(name=mol).id
-tmp = db.get_atoms(id=id)
-magmom = tmp.get_initial_magnetic_moments()
-natom  = len(tmp.get_atomic_numbers())
+#
+# add volume and entropy information for all the molecules in database
+#
+Nmol = len(db)
 
-if add_volume:
-	tmp.calc = Gaussian(method=method, basis=basis, volume='tight')
-	tmp.get_potential_energy()
-	vol = tmp.get_molecular_volume()
+for imol in range(Nmol+10): # add 10 for safety
+	try:
+		id = imol+1
+		name = db.get(id=id)
+		tmp  = db.get_atoms(id=id)
+		print "adding volume and entropy",name
+		magmom = tmp.get_initial_magnetic_moments()
+		#
+		# volume and molecular total entropy calculation
+		#
+		if add_volume:
+			tmp.calc = Gaussian(method=method, basis=basis, volume='tight')
+			tmp.get_potential_energy()
+			vol = tmp.get_molecular_volume()
 
-if add_entropy:
-	tmp.calc = Gaussian(method=method, basis=basis, force=None, freq='noraman')
-	tmp.get_potential_energy()
-	entropy = tmp.get_molecular_entropy()
+		if add_entropy:
+			tmp.calc = Gaussian(method=method, basis=basis, force=None, freq='noraman')
+			tmp.get_potential_energy()
+			entropy = tmp.get_molecular_entropy()
+		#
+		# look for magmom
+		#
+		try:
+			magmom = tmp.get_magnetic_moments()
+		except:
+			magmom = tmp.get_initial_magnetic_moments()
 
-try:
-	magmom = tmp.get_magnetic_moments()
-except:
-	magmom = tmp.get_initial_magnetic_moments()
+		tmp.set_initial_magnetic_moments(magmom)
+		#
+		# now write to database
+		#
+		if add_volume:
+			if add_entropy:
+				db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy})
+			else:
+				db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol})
 
-tmp.set_initial_magnetic_moments(magmom)
+		oldid = id
+		db.delete([oldid])
 
-if add_volume:
-	if add_entropy:
-		db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy})
-	else:
-		db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol})
+	except:
+		print "has nothing --- go to next"
 
-oldid = id
-db.delete([oldid])
 
