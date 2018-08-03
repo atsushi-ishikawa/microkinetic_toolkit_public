@@ -4,6 +4,7 @@ from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
 from ase.db import connect
 from ase.optimize import BFGS
+from ase.vibrations import Infrared
 #
 # calculate reaction energy
 # molecule's data should be stored in "methane.json"
@@ -38,21 +39,31 @@ for imol in range(Nmol): # add 10 for safety
 		tmp = db1.get_atoms(id=id)
 		print "adding volume and entropy",mol
 		magmom = tmp.get_initial_magnetic_moments()
+
+		# do geometry optimization first
+		tmp.calc = Gaussian(method=method, basis=basis)
+		BFGS(tmp).run(fmax=0.05)
 		#
 		# volume and molecular total entropy calculation
 		#
-		if add_volume:
-			tmp.calc = Gaussian(method=method, basis=basis)
-			BFGS(tmp).run(fmax=0.05)
+		if add_volume and not add_entropy:
 			tmp.calc = Gaussian(method=method, basis=basis, volume='tight')
 			tmp.get_potential_energy()
 			vol = tmp.get_molecular_volume()
-		if add_entropy:
-			tmp.calc = Gaussian(method=method, basis=basis)
-			BFGS(tmp).run(fmax=0.05)
-			tmp.calc = Gaussian(method=method, basis=basis, volume='tight', force=None, freq='noraman')
+		if not add_volume and add_entropy:
+			tmp.calc = Gaussian(method=method, basis=basis, force=None, freq='noraman')
 			tmp.get_potential_energy()
 			entropy = tmp.get_molecular_entropy()
+		if add_volume and add_entropy:
+			tmp.calc = Gaussian(method=method, basis=basis, volume='tight', force=None, freq='noraman')
+			tmp.get_potential_energy()
+			vol = tmp.get_molecular_volume()
+			entropy = tmp.get_molecular_entropy()
+
+#		tmp.calc = Gaussian(method=method, basis=basis)
+#		ir = Infrared(tmp)
+#		ir.run()
+#		ir.write_spectra(out="tmp.dat",start=1000,end=4000, width=1, normalize=True)
 		#
 		# look for magmom
 		#
@@ -65,12 +76,13 @@ for imol in range(Nmol): # add 10 for safety
 		#
 		# now write to database
 		#
-		print "writing to database with id =", id
-		if add_volume:
-			if add_entropy:
-				db2.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy})
-			else:
-				db.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol})
+		if add_volume and add_entropy:
+			db2.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol, 'molecular_entropy' : entropy} )
+		elif add_volume and not add_entropy:
+			db2.write(tmp, key_value_pairs={'name' : mol, 'molecular_volume' : vol} )
+		elif not add_volume and add_entropy:
+			db2.write(tmp, key_value_pairs={'name' : mol, 'molecular_entropy' : entropy} )
+
 	except:
 		print "has nothing --- go to next"
 
