@@ -565,12 +565,22 @@ for irxn in range(rxn_num):
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 
 		if ZPE or IR:
-			vib = Infrared(tmp) if IR else Vibrations(tmp)
-			vib.run()
-
+			# fix atoms for vibrations
+			c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
+			tmp.set_constraint(c)
+			if ZPE:
+				vib = Vibrations(tmp)
+				vib.run()
+				os.system("rm vib.*")
 			if IR:
+				# setting for IR calculation
+				tmp.calc = Vasp(prec="accurate", ediff=1E-8, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
+								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts )
+				vib = Infrared(tmp)
+				vib.run()
 				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
-			
+				os.system("rm ir-*.pckl")
+
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			prod_en[imols] = en + zpe
