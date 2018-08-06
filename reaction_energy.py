@@ -23,7 +23,7 @@ from ase.visualize import view
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator = "gaussian"
+calculator = "vasp"
 calculator = calculator.lower()
 
 # temprary database to avoid overlapping calculations
@@ -64,8 +64,8 @@ SP  = False
 maxoptsteps = 200
 ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
-# whether to do IR
-IR = True
+# whether to do IR --- ongoing
+IR = False
 
 # whether to do single point after optimization
 # at different computational level
@@ -94,7 +94,7 @@ elif "vasp" in calculator:
 	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.20
-	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
+	vacuum      = 12.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ivdw        = 12
 	ialgo       = 48 # normal=38, veryfast=48

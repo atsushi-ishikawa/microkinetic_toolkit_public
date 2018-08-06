@@ -8,12 +8,12 @@ import os
 import numpy as np
 from reaction_tools import *
 
-vacuum = 10.0
+vacuum = 12.0
 doping = True
 
 os.system('rm surf.db')
 
-nlayer = 1
+nlayer = 2
 nrelax = 1
 
 cif_file = "mgo.cif"
@@ -48,7 +48,7 @@ formula = surf.get_chemical_formula()
 #
 if doping:
 	symbols  =  np.array(surf.get_chemical_symbols())
-	rep_atom = 16
+	rep_atom = 16 if nlayer == 1 else 48
 	# MgO: 16 for layer=1, 48 for layer=2
 	# CaO: 18 for layer=1
 	symbols[rep_atom] = 'Li'
