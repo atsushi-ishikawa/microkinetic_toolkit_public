@@ -9,6 +9,7 @@ from ase.constraints import FixAtoms
 from ase.collections import methane
 from ase.optimize import BFGS
 from ase.vibrations import Vibrations
+from ase.vibrations import Infrared
 from ase.db import connect
 from ase.io import read
 from ase.build import add_adsorbate
@@ -22,13 +23,12 @@ from ase.visualize import view
 argvs = sys.argv
 reactionfile = argvs[1]
 
-calculator = "vasp"
+calculator = "gaussian"
 calculator = calculator.lower()
 
 # temprary database to avoid overlapping calculations
 
 tmpdb = connect('tmp.db')
-
 
 #
 # if surface present, provide surface file
@@ -64,6 +64,9 @@ SP  = False
 maxoptsteps = 200
 ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
+# whether to do IR
+IR = True
+
 # whether to do single point after optimization
 # at different computational level
 
@@ -120,9 +123,9 @@ elif "emt" in calculator:
 	label  = ""
 
 if ZPE:
-	label = label + "ZPE"
+	label = label + "_ZPE"
 if SP:
-	label = label + "SP"
+	label = label + "_SP"
 
 barrierfile  = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
 deltaEfile = "deltaE.txt"
@@ -238,6 +241,9 @@ for irxn in range(rxn_num):
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
 		coef   = r_coef[irxn][imols]
+
+		if natom == 1:
+			ZPE = False; IR = False
 		#
 		# set label
 		#
@@ -331,13 +337,21 @@ for irxn in range(rxn_num):
 			xmlfile = "vasprun_" + r_label + ".xml"
 			os.system('cp vasprun.xml %s' % xmlfile)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
-		if ZPE == True and natom != 1:
-			vib = Vibrations(tmp)
+
+		if ZPE or IR:
+			vib = Infrared(tmp) if IR else Vibrations(tmp)
 			vib.run()
+
+			if IR:
+				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+			
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			reac_en[imols] = en + zpe
-			os.system("rm vib.*")
+			if ZPE:
+				os.system("rm vib.*")
+			if IR:
+				os.system("rm ir-*.pckl")
 		else:
 			reac_en[imols] = en
 
@@ -445,6 +459,9 @@ for irxn in range(rxn_num):
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
 		coef   = p_coef[irxn][imols]
+
+		if natom == 1:
+			ZPE = False; IR = False
 		#
 		# set label
 		#
@@ -538,13 +555,21 @@ for irxn in range(rxn_num):
 			xmlfile = 'vasprun_' + p_label + '.xml'
 			os.system('cp vasprun.xml %s' % xmlfile)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
-		if ZPE == True and natom != 1:
-			vib = Vibrations(tmp)
+
+		if ZPE or IR:
+			vib = Infrared(tmp) if IR else Vibrations(tmp)
 			vib.run()
+
+			if IR:
+				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+			
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			prod_en[imols] = en + zpe
-			os.system('rm vib.*')
+			if ZPE:
+				os.system("rm vib.*")
+			if IR:
+				os.system("rm ir-*.pckl")
 		else:
 			prod_en[imols] = en
 
