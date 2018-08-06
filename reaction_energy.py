@@ -50,7 +50,7 @@ if surface:
 
 
 # fix atoms
-c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
+c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 2])
 surf.set_constraint(c)
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
@@ -341,19 +341,25 @@ for irxn in range(rxn_num):
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 
 		if ZPE or IR:
-			vib = Infrared(tmp) if IR else Vibrations(tmp)
-			vib.run()
-
+			# fix atoms for vibrations
+			c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
+			tmp.set_constraint(c)
+			if ZPE:
+				vib = Vibrations(tmp)
+				vib.run()
+				os.system("rm vib.*")
 			if IR:
+				# setting for IR calculation
+				tmp.calc = Vasp(prec="accurate", ediff=1E-8, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
+								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts )
+				vib = Infrared(tmp)
+				vib.run()
 				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				os.system("rm ir-*.pckl")
 			
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			reac_en[imols] = en + zpe
-			if ZPE:
-				os.system("rm vib.*")
-			if IR:
-				os.system("rm ir-*.pckl")
 		else:
 			reac_en[imols] = en
 

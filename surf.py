@@ -67,13 +67,18 @@ pos = {	'lattice' : lattice,
 #
 natoms = len(surf.get_atomic_numbers())
 per_layer = natoms / nlayer / 2 # divide by 2 for oxides -- check
-tag = np.ones(natoms, int)
+#
+# set tags: 2 = fixed layers, 1 = relaxing layers, 0 = adsorbates
+#
+# constraint will be set in reaction_energy.py
+#
+tag = np.full(natoms, 2, dtype=int)
 if nrelax == 0:
 	for i in range(natoms):
-		tag[i] = 0
+		tag[i] = 1
 else:
 	for i in range(natoms-1, natoms-nrelax*per_layer-1, -1):
-		tag[i] = 0
+		tag[i] = 1
 
 surf.set_tags(tag)
 
