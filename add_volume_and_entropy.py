@@ -59,11 +59,6 @@ for imol in range(Nmol): # add 10 for safety
 			tmp.get_potential_energy()
 			vol = tmp.get_molecular_volume()
 			entropy = tmp.get_molecular_entropy()
-
-#		tmp.calc = Gaussian(method=method, basis=basis)
-#		ir = Infrared(tmp)
-#		ir.run()
-#		ir.write_spectra(out="tmp.dat",start=1000,end=4000, width=1, normalize=True)
 		#
 		# look for magmom
 		#
