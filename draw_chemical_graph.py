@@ -35,7 +35,7 @@ eps  = 1.0e-10
 tiny = 1.0e-50 # Tiny value. Effectively zero.
 
 edge_scale = 0.5
-rate_thre  = 0  # Thre for eaction rate in log scale. Rxn with smallter than this value is discarded.
+rate_thre  = 4  # Thre for eaction rate in log scale. Rxn with smallter than this value is discarded.
 
 idx = 0
 for i,line in enumerate(lines):

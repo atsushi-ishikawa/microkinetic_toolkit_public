@@ -1,7 +1,7 @@
 import numpy as np
 import os,sys
 from ase import Atoms, Atom
-# from ase.collections import methane
+from ase.collections import methane
 from ase.db import connect
 from ase.units import *
 from reaction_tools import *
@@ -14,7 +14,7 @@ infile  = argvs[1]
 outfile = "pre_exp.txt"
 f = open(outfile,"w")
 
-db = connect("methane_test.json")
+# db = connect("methane_test.json")
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
@@ -49,11 +49,9 @@ for irxn in range(rxn_num):
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
-			# tmp = methane[mol]
-			name = "CH4"
-			tmp = db.get_atoms(name=name)
-
-			vol = db.get(name=name).molecular_volume
+			tmp = methane[mol]
+			vol = methane.data[mol]['molecular_volume']
+			# vol = db.get(name=name).molecular_volume
 			sigmaAB  = 3.0/4.0/np.pi * np.cbrt(vol) # molecular diagmeter (in Angstrom) calculated from radius
 			sigmaAB *= 10e-10 # Angstrom --> m
 

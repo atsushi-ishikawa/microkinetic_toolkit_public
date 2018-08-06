@@ -5,6 +5,7 @@ argvs = sys.argv
 reactionfile  = argvs[1]
 coveragefile  = argvs[2] # coverage file from MATLAB
 rateconstfile = argvs[3] # rate constants from MATLAB
+variablefile  = argvs[4] # sden, area, Vr
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 rxn_num  = get_number_of_reaction(reactionfile)
@@ -15,6 +16,7 @@ cov = [0 for i in range(spec_num)]
 f = open(coveragefile,'r')
 lines = f.readlines()
 f.close()
+
 for iline, line in enumerate(lines):
 	spe = iline
 	val = float(line)
@@ -27,6 +29,13 @@ f = open(rateconstfile,'r')
 lines = f.readlines()
 f.close()
 
+# read variables
+f = open(variablefile,'r')
+sden = float(f.readline().replace("\n",""))
+area = float(f.readline().replace("\n",""))
+Vr   = float(f.readline().replace("\n",""))
+f.close()
+
 for iline, line in enumerate(lines):
 	rxn = iline
 	val1,val2 = line.split(' ')
@@ -34,6 +43,9 @@ for iline, line in enumerate(lines):
 	krev[iline] = float(val2)
 
 rate = [0 for i in range(rxn_num)]
+
+AoverV = area/Vr
+
 for irxn in range(rxn_num):
 	#
 	# forward
@@ -46,11 +58,14 @@ for irxn in range(rxn_num):
 		
 		site = r_site[irxn][imol]
 		if not 'gas' in site:
+			# surface species
 			mol = mol + '_surf'
 			spe = get_species_num(mol)
+			conc = cov[spe] * sden * AoverV
 		else:
-			spe   = get_species_num(mol)
-		conc  = cov[spe]
+			spe = get_species_num(mol)
+			conc = cov[spe]
+
 		power = r_coef[irxn][imol]
 		if power != 1:
 			conc = conc**power
@@ -68,11 +83,14 @@ for irxn in range(rxn_num):
 
 		site = p_site[irxn][imol]
 		if not 'gas' in site:
+			# surface species
 			mol = mol + '_surf'
 			spe = get_species_num(mol)
+			conc = cov[spe] * sden * AoverV
 		else:
-			spe   = get_species_num(mol)
-		conc  = cov[spe]
+			spe = get_species_num(mol)
+			conc = cov[spe]
+
 		power = p_coef[irxn][imol]
 		if power != 1:
 			conc = conc**power
