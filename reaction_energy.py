@@ -87,19 +87,21 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.15
-	nsw         = 1
+	nsw         = 200
 	nelmin      = 5
 	ediff       = 1.0e-4
 	ediffg      = -0.1
 	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.20
-	vacuum      = 12.0 # for gas-phase molecules. surface vacuum is set by surf.py
+	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ivdw        = 12
 	ialgo       = 48 # normal=38, veryfast=48
 	npar        = 12
 	nsim        = npar
+	lwave       = False
+	lcharg      = True
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -107,7 +109,7 @@ elif "vasp" in calculator:
 	label  = method
 
 	# DFT+U
-	DFTU = True
+	DFTU = False
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
@@ -289,13 +291,13 @@ for irxn in range(rxn_num):
 				#
 				if neutral:
 		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
@@ -305,24 +307,24 @@ for irxn in range(rxn_num):
 				if neutral:
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFT+U
 					else:
 			 			tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFT+U
 					else:
 		 				tmp.calc = Vasp(output_template=r_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
@@ -507,13 +509,13 @@ for irxn in range(rxn_num):
 				#
 				if neutral:
 		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
@@ -523,24 +525,24 @@ for irxn in range(rxn_num):
 				if neutral:
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFT+U
 					else:
 			 			tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFT+U
 					else:
 		 				tmp.calc = Vasp(output_template=p_label, prec=prec, xc=xc, ispin=2, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo,
+										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
