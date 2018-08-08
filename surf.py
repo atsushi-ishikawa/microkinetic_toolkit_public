@@ -8,7 +8,7 @@ import os
 import numpy as np
 from reaction_tools import *
 
-vacuum = 12.0
+vacuum = 10.0
 doping = True
 
 os.system('rm surf.db')
