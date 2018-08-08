@@ -2,7 +2,6 @@ import numpy as np
 import os,sys
 from ase import Atoms, Atom
 from ase.collections import methane
-from ase.db import connect
 from ase.units import *
 from reaction_tools import *
 #
@@ -13,8 +12,11 @@ argvs   = sys.argv
 infile  = argvs[1]
 outfile = "pre_exp.txt"
 f = open(outfile,"w")
+T = 500.0 # temporary temperature
 
-# db = connect("methane_test.json")
+# Note on revserse reaction
+# Pre-exponential factor for reverse reaction is generally not needed
+# since reverse pre-exponential is calculated from forward one and equilibrium constant
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
@@ -24,14 +26,11 @@ rxn_num = get_number_of_reaction(infile)
 #
 units   = create_units('2014')
 amu     = units['_amu']
-kbolt   = units['_k'] # kB in unit is not eV/K --> do not use
+kbolt   = units['_k'] # kB in unit
 hplanck = units['_hplanck']
 Nav     = units['_Nav']
 
-#sigmaAB = 1.0e-10 # collision radius [m] -- approximate value
-
 type_for = ["gas"]*rxn_num
-type_rev = ["gas"]*rxn_num
 
 for irxn in range(rxn_num):
 	#
@@ -40,25 +39,27 @@ for irxn in range(rxn_num):
 	mass_sum = 0; mass_prod = 1;
 	rxntype = []
 
-	sigmaAB =  1.0
+	sigmaAB = 1.0
 
 	for imol, mol in enumerate(r_ads[irxn]):
-		mol  = mol[0]
-		mol  = remove_side_and_flip(mol)
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
 
 		if mol == 'surf' or mol == 'def':
 			rxntype.append('surf')
 		else:
 			tmp = methane[mol]
 			vol = methane.data[mol]['molecular_volume']
-			# vol = db.get(name=name).molecular_volume
-			sigmaAB  = 3.0/4.0/np.pi * np.cbrt(vol) # molecular diagmeter (in Angstrom) calculated from radius
-			sigmaAB *= 10e-10 # Angstrom --> m
+			sigma  = 3.0/4.0/np.pi * np.cbrt(vol) # molecular diagmeter (in Angstrom) calculated from radius
+			sigma *= 10e-10 					  # Angstrom --> m
+			coef   = r_coef[irxn][imol]
+			sigma  = sigma**coef
 
-			site = r_site[irxn][imol][0]
+			sigmaAB *= sigma
 
 			mass = sum(tmp.get_masses())
 
+			site = r_site[irxn][imol][0]
 			try:
 				site,site_pos = site.split(".")
 			except:
@@ -72,20 +73,24 @@ for irxn in range(rxn_num):
 			else:
 				rxntype.append('surf')
 
+	# end loop over molecule
+
 	if all(rxn == 'gas' for rxn in rxntype):
 		# gas reaction
 		type_for[irxn] = "gas"
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
-		fac_for = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
+		fac_for  = sigmaAB * np.sqrt( kbolt*T/red_mass ) * Nav
+		fac_for  = fac_for * 10**6 # [m^3] --> [cm^3]
+		#
+		# sqrt(kbolt*T/mass) [kg*m^2*s^-2*K^-1 * K * kg^-1]^1/2 = [m*s^-1]
+		# A = [m^2] * [m*s^-1] * Nav = [m^3*s^-1]*[mol^-1] = [mol^-1*m^3*s^-1]
+		# finally A in [mol^-1*cm^3*s^-1]
+		#
 	elif all(rxn == 'surf' for rxn in rxntype):
-		if nmol == 1:
+		if len(r_ads[irxn]) == 1: # number of molecules = 1
 			# desorption
 			type_for[irxn] = "des"
-			#red_mass = mass_prod / mass_sum
-			#red_mass = red_mass*amu
-			#denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			#fac_for = 1.0 / denom
 			fac_for = kbolt/hplanck
 		else:
 			# LH
@@ -96,68 +101,13 @@ for irxn in range(rxn_num):
 		type_for[irxn] = "ads"
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
-		denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-		fac_for = 1.0 / denom
+		denom    = np.sqrt( 2.0*np.pi*red_mass*kbolt*T ) # [kg* kg*m^2*s^-2*K^-1 * K]^1/2 = [kg^2*m^2*s^-2]^1/2 = [kg*m*s^-1]
+		fac_for  = 1.0 / denom # [m^2/mol] / [kg*m*s^-1] = [kg^-1*m*s/mol]
+		# Unit should be [kg^-1*m^-1*s] since Pa = N/m^2 = kg*m^-1*s^-2 comes on numerator afterwords.
+		# Then k = P*fac = [kg*m^-1*s^-2]*[kg^-1*m^-1*s] = [m^-2*s^-1]
+		fac_for *= 10**-2 # [kg^-1*m^-1*s] = [kg^-1*cm^-1*s]
 
-	#
-	# products
-	#
-	mass_sum = 0; mass_prod = 1;
-	rxntype = []
-	for imol, mol in enumerate(p_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
-		nmol = len(p_ads[irxn])
+	f.write("{0:>16.8e}\t{1:>6s}\n".format(fac_for, type_for[irxn]))
 
-		if mol == 'surf' or mol == 'def':
-			rxntype.append('surf')
-		else:
-			tmp  = methane[mol]
-			#site = p_site[irxn][imol]
-			site = p_site[irxn][imol][0]
-
-			mass = sum(tmp.get_masses())
-
-			try:
-				site,site_pos = site.split(".")
-			except:
-				site_pos = 'x1y1'
-
-			mass_sum  = mass_sum  + mass
-			mass_prod = mass_prod * mass
-
-			if site=='gas':
-				rxntype.append(site)
-			else:
-				rxntype.append('surf')
-
-	if all(rxn == 'gas' for rxn in rxntype):
-		# gas reaction
-		type_rev[irxn] = "gas"
-		red_mass = mass_prod / mass_sum
-		red_mass = red_mass*amu
-		fac_rev = np.pi * sigmaAB**2 * kbolt**(-3.0/2.0) * np.sqrt(8.0/np.pi/red_mass)
-	elif all(rxn == 'surf' for rxn in rxntype):
-		if nmol == 1:
-			# desorption
-			type_rev[irxn] = "des"
-			#red_mass = mass_prod / mass_sum
-			#red_mass = red_mass*amu
-			#denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-			#fac_rev = 1.0 / denom
-			fac_rev = kbolt/hplanck
-		else:
-			# LH
-			type_rev[irxn] = "lh"
-			fac_rev = kbolt/hplanck
-	else:
-		# adsorption : should be reversed from reactant
-		type_rev[irxn] = "ads"
-		red_mass = mass_prod / mass_sum
-		red_mass = red_mass*amu
-		denom = np.sqrt( 2.0*np.pi*red_mass*kbolt )
-		fac_rev = 1.0 / denom
-
-	# write to file
-	f.write("{0:>16.8e}\t{1:>16.8e}\t{2:6s}\t{3:6s}\n".format(fac_for,fac_rev,type_for[irxn],type_rev[irxn]))
+f.close()
 

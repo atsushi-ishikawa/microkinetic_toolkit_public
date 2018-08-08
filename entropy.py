@@ -2,8 +2,6 @@ import numpy as np
 import os,sys
 from ase import Atoms, Atom
 from ase.collections import methane
-# from ase.db import connect
-from ase.units import *
 from reaction_tools import *
 #
 # Calculate entropy change along the reaction
@@ -13,40 +11,31 @@ infile  = argvs[1]
 outfile = "deltaS.txt"
 f = open(outfile,"w")
 
-# db = connect("methane_test.json")
-
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
 rxn_num = get_number_of_reaction(infile)
-#
-# --- energy calculation ---
-#
-units   = create_units('2014')
-amu     = units['_amu']
-kbolt   = units['_k'] # kB in unit is not eV/K --> do not use
-hplanck = units['_hplanck']
-Nav     = units['_Nav']
-
-type_for = ["gas"]*rxn_num
-type_rev = ["gas"]*rxn_num
 
 for irxn in range(rxn_num):
+	print "----- irxn = ", irxn, "-----"
 	reac_S = 0.0
 	prod_S = 0.0
 	#
 	# reactants
 	#
 	for imol, mol in enumerate(r_ads[irxn]):
-		mol  = mol[0]
-		mol  = remove_side_and_flip(mol)
+		mol = mol[0]
+		mol = remove_side_and_flip(mol)
+		site = r_site[irxn][imol][0]
 
-		if mol == 'surf' or mol == 'def':
-			rxntype.append('surf')
+		if site != 'gas' or mol == 'surf' or mol == 'def':
+			# surface species
+			entropy = 0.0
+			print "R: molecular entropy for surf = ",entropy, "eV/K"
 		else:
 			tmp = methane[mol]
 			try:
 				entropy = methane.data[mol]['molecular_entropy']
-				print "molecular entropy for",mol," = ",entropy, "eV/K"
+				print "R: molecular entropy for",mol," = ",entropy, "eV/K"
 			except:
 				entropy = 0.0
 
@@ -58,14 +47,16 @@ for irxn in range(rxn_num):
 	for imol, mol in enumerate(p_ads[irxn]):
 		mol  = mol[0]
 		mol  = remove_side_and_flip(mol)
+		site = p_site[irxn][imol][0]
 
-		if mol == 'surf' or mol == 'def':
-			rxntype.append('surf')
+		if site != 'gas' or mol == 'surf' or mol == 'def':
+			entropy = 0.0
+			print "P: molecular entropy for surf = ",entropy, "eV/K"
 		else:
 			tmp = methane[mol]
 			try:
 				entropy = methane.data[mol]['molecular_entropy']
-				print "molecular entropy for",mol," = ",entropy, "eV/K"
+				print "P: molecular entropy for",mol," = ",entropy, "eV/K"
 			except:
 				entropy = 0.0
 
