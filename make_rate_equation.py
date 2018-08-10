@@ -19,7 +19,7 @@ reactionfile = argvs[1]
 outputfile = "met001ode.m"
 fout = open(outputfile,"w")
 
-fout.write('function dydt = ' + outputfile.replace('.m','') + '(~,y,yin,tau,A,Ea,Kci,Wcat,Vr)')
+fout.write('function dydt = ' + outputfile.replace('.m','') + '(~,y,yin,tau,A,Ea,Kci,sden,area,Vr)')
 fout.write("\n\n")
 #
 # template - start
@@ -38,14 +38,9 @@ template = " \
 \t C = y(1:Ngas);\n  \
 \t theta = y(1:Ncomp);\n \
 \t theta(1:Ngas) = 0;\n \
-\n \
-\t area  = 100 * Wcat;  % [cm^2] = [cm^2/g] * [g] \n \
-\t % area  = 1000/Ncstr;  % specify area directly (in cm^2) \n \
-\t % Nsite = Nsurf*f_act; % number of active sites\n \
-\t sden = 2.7*10^-9;   % site density [mol/cm^2]\n \
 \t theta = theta * sden; \n \
 \n \
-\t Cin = yin(1:Ngas);\n"
+\t Cin = yin(1:Ngas); \n"
 
 fout.write(template)
 #
@@ -252,14 +247,16 @@ fout.write(comment)
 # tempelate - start
 #
 template = "\
-\t Rate(1:Ngas) = Rate(1:Ngas)*Vr;\n \
+\t % Rate(1:Ngas) = Rate(1:Ngas)*Vr;\n \
 \t Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(area/Vr);\n \
-\n \
-\t %fprintf('------------\\n');\n \
-\t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
-\t %fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', C(1),C(2),C(3),theta(4),theta(5));\n \
-\n \
-\t dydt = 1/tau*(Cin - C) + Rate(1:Ngas); % gas\n \
+\t % fprintf('------------\\n');\n \
+\t % fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
+\t % fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', C(1),C(2),C(3),theta(4),theta(5));\n \
+\t if Ncstr == 1 \n \
+\t    dydt = Rate(1:Ngas); % gas [mol/m^3]/[sec] = [mol/m^3/sec] \n \
+\t else \n \
+\t    dydt = 1/tau*(Cin - C) + Rate(1:Ngas); % gas [mol/m^3]/[sec] = [mol/m^3/sec] \n \
+\t end \n \
 \t if Ncomp > Ngas+1\n \
 \t\t dydt(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(1/sden)*(Vr/area); % species\n \
 \t end \n \
