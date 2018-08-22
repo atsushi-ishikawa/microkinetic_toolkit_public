@@ -12,7 +12,7 @@ argvs   = sys.argv
 infile  = argvs[1]
 outfile = "pre_exp.txt"
 f = open(outfile,"w")
-T = 300.0 # temporary temperature
+T = 1.0 # temporary temperature
 
 # Note on revserse reaction
 # Pre-exponential factor for reverse reaction is generally not needed
@@ -100,31 +100,31 @@ for irxn in range(rxn_num):
 			# desorption --- transition state theory
 			#
 			type_for[irxn] = "des"
-			fac_for = kbolt/hplanck
+			fac_for = kbolt*T/hplanck * 10**7 # 6 may be ok [s^-1]
 		else:
 			#
 			# LH --- transition state theory
 			#
 			type_for[irxn] = "lh"
-			fac_for = kbolt*T/hplanck # [s^-1]
+			fac_for = kbolt*T/hplanck * 10**7 # [s^-1]
 	else:
 		#
 		# adsorption --- Hertz-Knudsen or Chemkin
 		#
 		type_for[irxn] = "ads"
-		stick = 0.1 # rough !!!
+		stick = 0.1
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
 		# --- Hertz-Knudsen
-		# denom    = np.sqrt( 2.0*np.pi*red_mass*kbolt*T ) # [kg* kg*m^2*s^-2*K^-1 * K]^1/2 = [kg^2*m^2*s^-2]^1/2 = [kg*m*s^-1]
-		# fac_for  = stick / denom # [kg^-1*m^-1*s]
-		# fac_for *= 10**-5        # [g^-1*cm^-1*s]
+		denom    = np.sqrt( 2.0*np.pi*red_mass*kbolt*T ) # [kg* kg*m^2*s^-2*K^-1 * K]^1/2 = [kg^2*m^2*s^-2]^1/2 = [kg*m*s^-1]
+		fac_for  = stick / denom # [kg^-1*m^-1*s]
+		fac_for *= 10**-5        # [g^-1*cm^-1*s]
 		# --- chemkin
-		sden  = 1.0*10**15 # [site/cm^2]
-		sden /= Nav        # [site/cm^2]*[mol/site] = [mol/cm^2]
-		sden *= 10**4      # [mol/cm^2] --> [mol/m^2]
-		fac_for  = ( stick/sden ) * np.sqrt( kbolt*Nav*T / (2.0*np.pi*red_mass*Nav)) # [mol^-1*m^3*s^-1]
-		fac_for *= 10**6 # [mol^-1*cm^3*s^-1]
+		# sden  = 1.0*10**14 # [site/cm^2]
+		# sden /= Nav        # [site/cm^2]*[mol/site] = [mol/cm^2]
+		# sden *= 10**4      # [mol/cm^2] --> [mol/m^2]
+		# fac_for  = ( stick/sden ) * np.sqrt( kbolt*Nav*T / (2.0*np.pi*red_mass*Nav)) # [mol^-1*m^3*s^-1]
+		# fac_for *= 10**6 # [mol^-1*cm^3*s^-1]
 		
 	f.write("{0:>16.8e}\t{1:>6s}\n".format(fac_for, type_for[irxn]))
 
