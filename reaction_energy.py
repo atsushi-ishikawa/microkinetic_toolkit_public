@@ -66,8 +66,8 @@ maxoptsteps = 200
 ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
-IR = False
-TS = True
+IR = True
+TS = False
 
 # whether to do single point after optimization
 # at different computational level
@@ -190,7 +190,11 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = 'x1y1'
 
-			if site != 'gas':
+			gaseous = False
+			if site == 'gas' and not 'surf' in mols:
+				gaseous = True
+
+			if not gaseous:
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
@@ -254,7 +258,7 @@ for irxn in range(rxn_num):
 		# set label
 		#
 		r_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
-		if site != 'gas':
+		if not gaseous:
 			r_label = r_label + "_" + surf_name
 		r_traj  = r_label + "reac.traj"
 		#
@@ -349,16 +353,17 @@ for irxn in range(rxn_num):
 
 		if ZPE or IR:
 			# fix atoms for vibrations
-			c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
-			tmp.set_constraint(c)
+			if not gaseous:
+				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
+				tmp.set_constraint(c)
 			if ZPE:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
 			if IR:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="accurate", ediff=1E-8, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts )
+				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
+								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
 				vib = Infrared(tmp)
 				vib.run()
 				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
@@ -367,6 +372,10 @@ for irxn in range(rxn_num):
 			hnu = vib.get_energies()
 			zpe = vib.get_zero_point_energy()
 			reac_en[imols] = en + zpe
+			if ZPE:
+				os.system("rm vib.*")
+			if IR:
+				os.system("rm ir-*.pckl")
 		else:
 			reac_en[imols] = en
 
@@ -419,7 +428,11 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = 'x1y1'
 
-			if site != 'gas':
+			gaseous = False
+			if site == 'gas' and not 'surf' in mols:
+				gaseous = True
+
+			if not gaseous:
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
@@ -483,7 +496,7 @@ for irxn in range(rxn_num):
 		# set label
 		#
 		p_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
-		if site != 'gas':
+		if not gaseous:
 			p_label = p_label + "_" + surf_name
 		p_traj  = p_label + "prod.traj"
 		#
@@ -578,16 +591,17 @@ for irxn in range(rxn_num):
 
 		if ZPE or IR:
 			# fix atoms for vibrations
-			c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1])
-			tmp.set_constraint(c)
+			if not gaseous:
+				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
+				tmp.set_constraint(c)
 			if ZPE:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
 			if IR:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="accurate", ediff=1E-8, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts )
+				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
+								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
 				vib = Infrared(tmp)
 				vib.run()
 				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
@@ -609,26 +623,24 @@ for irxn in range(rxn_num):
 		if(first_time):
 			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
 
-		#
-		# TS calc -- start
-		#
-###
+		# TS calc
+		nimages = 3
 		if(TS):
 			initial = read(reac_contcar)
 			final   = read(prod_contcar)
 
 			images  = [initial]
-			images += [initial.copy() for i in range(3)]
+			images += [initial.copy() for i in range(nimages)]
 			images += [final]
 
-			for i in range(4):
+			for i in range(nimages+1):
 	 			calc = Vasp(prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 							ibrion=2, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts)
 				images[i].set_calculator(calc) 
 
 			neb = NEB(images)
-			neb.interpolate()
+			neb.interpolate("idpp")
 			qn = MDMin(neb, trajectory='neb.traj')
 			qn.run(fmax=0.1, steps=100)
 
@@ -639,9 +651,7 @@ for irxn in range(rxn_num):
 			Ea,DE = nebtools.get_barrier()
 			print "--------------="
 			print Ea
-			#
-			# TS calc -- end
-			#
+
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 	print "deltaE=",deltaE
 	quit()
