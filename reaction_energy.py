@@ -190,11 +190,15 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = 'x1y1'
 
-			gaseous = False
-			if site == 'gas' and not 'surf' in mols:
-				gaseous = True
-
-			if not gaseous:
+			if site == 'gas':
+				if 'surf' in mols:
+					mol_type = 'surf'
+				else:
+					mol_type = 'gaseous'
+			else:
+				mol_type = 'adsorbed'
+			
+			if mol_type=='adsorbed':
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
@@ -258,7 +262,7 @@ for irxn in range(rxn_num):
 		# set label
 		#
 		r_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
-		if not gaseous:
+		if mol_type=='adsorbed':
 			r_label = r_label + "_" + surf_name
 		r_traj  = r_label + "reac.traj"
 		#
@@ -353,7 +357,7 @@ for irxn in range(rxn_num):
 
 		if ZPE or IR:
 			# fix atoms for vibrations
-			if not gaseous:
+			if mol_type=='surf' or mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE:
@@ -428,11 +432,15 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = 'x1y1'
 
-			gaseous = False
-			if site == 'gas' and not 'surf' in mols:
-				gaseous = True
+			if site == 'gas':
+				if 'surf' in mols:
+					mol_type = 'surf'
+				else:
+					mol_type = 'gaseous'
+			else:
+				mol_type = 'adsorbed'
 
-			if not gaseous:
+			if moltype=='adsorbed':
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
@@ -496,7 +504,7 @@ for irxn in range(rxn_num):
 		# set label
 		#
 		p_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
-		if not gaseous:
+		if mol_type=='adsorbed':
 			p_label = p_label + "_" + surf_name
 		p_traj  = p_label + "prod.traj"
 		#
@@ -591,7 +599,7 @@ for irxn in range(rxn_num):
 
 		if ZPE or IR:
 			# fix atoms for vibrations
-			if not gaseous:
+			if mol_type=='adsorbed' or mol_type=='surf':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE:
