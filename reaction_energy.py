@@ -355,9 +355,9 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 
-		if ZPE or IR:
+		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
 			# fix atoms for vibrations
-			if mol_type=='surf' or mol_type=='adsorbed':
+			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE:
@@ -597,9 +597,9 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT')
 
-		if ZPE or IR:
+		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
 			# fix atoms for vibrations
-			if mol_type=='adsorbed' or mol_type=='surf':
+			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE:
