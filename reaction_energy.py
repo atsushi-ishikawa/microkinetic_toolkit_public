@@ -440,7 +440,7 @@ for irxn in range(rxn_num):
 			else:
 				mol_type = 'adsorbed'
 
-			if moltype=='adsorbed':
+			if mol_type=='adsorbed':
 				offset = site_info[lattice][facet][site][site_pos]
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
