@@ -49,7 +49,6 @@ if surface:
 	site_info = json.load(f)
 	f.close()
 
-
 # fix atoms
 c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 2])
 surf.set_constraint(c)
@@ -200,15 +199,20 @@ for irxn in range(rxn_num):
 			
 			if mol_type=='adsorbed':
 				offset = site_info[lattice][facet][site][site_pos]
+				if len(offset)==3:
+					shift = offset[2] * surf.get_cell()[2][2]
+					ads_height0 = ads_height0 + shift
+					offset = offset[0:2]
+
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
-				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice,facet,site,site_pos,config))
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp,offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -442,15 +446,20 @@ for irxn in range(rxn_num):
 
 			if mol_type=='adsorbed':
 				offset = site_info[lattice][facet][site][site_pos]
+				if len(offset)==3:
+					shift = offset[2] * surf.get_cell()[2][2]
+					ads_height0 = ads_height0 + shift
+					offset = offset[0:2]
+
 				offset = np.array(offset)*(3.0/4.0) # MgO only
 				# wrap atoms to prevent adsorbate being on different cell
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
-				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice,facet,site,site_pos,config))
+				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp,offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
