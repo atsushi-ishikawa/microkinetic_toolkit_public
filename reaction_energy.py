@@ -65,7 +65,7 @@ maxoptsteps = 200
 ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
-IR = True
+IR = False
 TS = False
 
 # whether to do single point after optimization
@@ -671,7 +671,6 @@ for irxn in range(rxn_num):
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 	print "deltaE=",deltaE
-	quit()
 	#
 	# writing reaction
 	#
