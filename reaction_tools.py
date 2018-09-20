@@ -9,7 +9,7 @@ def read_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
+ 	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 
@@ -44,7 +44,7 @@ def return_lines_of_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
+ 	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 	return lines
@@ -279,7 +279,7 @@ def remove_parentheses(file):
 	tmpfile = "ttt.txt"
 	os.system('cat %s | sed "s/\[//g" > %s' % (file, tmpfile) )
 	os.system('cat %s | sed "s/\]//g" > %s' % (tmpfile, file) )
-	os.system('rm %s' % tmpfile)
+ 	os.system('rm %s' % tmpfile)
 
 
 def get_species_num(*species):
@@ -400,4 +400,12 @@ def remove_side_and_flip(mol):
 		mol = mol.replace('-FLIP','')
 
 	return mol
+
+def neb_copy_contcar_to_poscar(nimages):
+	#
+	# copy 0X/CONTCAR to 0X/POSCAR after NEB run
+	#
+	import os
+	for images in range(nimages):
+			os.system('cp %02d/CONTCAR %02d/POSCAR' % (images+1, images+1))
 
