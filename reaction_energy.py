@@ -92,9 +92,9 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.20
-	nsw         = 200
-	nsw_neb     = 50
-	nsw_dimer   = 500
+	nsw         = 100
+	nsw_neb     = 10
+	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
