@@ -90,9 +90,9 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 200
-	nsw_neb     = 50
-	nsw_dimer   = 500
+	nsw         = 5
+	nsw_neb     = 5
+	nsw_dimer   = 10
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -435,6 +435,11 @@ for irxn in range(rxn_num):
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-HIGH" in mol:
+					mol = mol.replace("-HIGH","")
+					tmp = methane[mol]
+					ads_height0 += 1.0
+					config = "high"
 				else:
 					tmp = methane[mol]
 
