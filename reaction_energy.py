@@ -87,14 +87,14 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
+	prec        = "low"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	nsw         = 5
 	nsw_neb     = 5
 	nsw_dimer   = 10
 	nelmin      = 5
-	nelm        = 40 # default:40
+	nelm        = 10 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.1
 	kpts_surf   = [1, 1, 1]
@@ -156,6 +156,8 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(r_ads[irxn]):
 		surf_tmp = surf.copy()
+		ads_height = ads_height0
+
 		for imol, mol in enumerate(mols):
 			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 			config = "normal"
@@ -186,7 +188,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height0 += 1.0
+					ads_height += 1.0
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -210,7 +212,7 @@ for irxn in range(rxn_num):
 				offset = site_info[lattice][facet][site][site_pos]
 				if len(offset)==3:
 					shift = offset[2] * surf.get_cell()[2][2]
-					ads_height0 = ads_height0 + shift
+					ads_height += shift
 					offset = offset[0:2]
 
 				offset = np.array(offset)*(3.0/4.0) # MgO only
@@ -237,7 +239,7 @@ for irxn in range(rxn_num):
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 1.2
 
-					ads_height = ads_height0 - z_shift
+					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
@@ -407,6 +409,7 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(p_ads[irxn]):
 		surf_tmp = surf.copy()
+		ads_height = ads_height0
 
 		for imol, mol in enumerate(mols):
 			print "----- product: molecule No.", imol, " is ", mol, "-----"
@@ -438,7 +441,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height0 += 1.0
+					ads_height += 1.0
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -462,7 +465,7 @@ for irxn in range(rxn_num):
 				offset = site_info[lattice][facet][site][site_pos]
 				if len(offset)==3:
 					shift = offset[2] * surf.get_cell()[2][2]
-					ads_height0 = ads_height0 + shift
+					ads_height += shift
 					offset = offset[0:2]
 
 				offset = np.array(offset)*(3.0/4.0) # MgO only
@@ -489,7 +492,7 @@ for irxn in range(rxn_num):
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
 						ads_height = 1.2
 
-					ads_height = ads_height0 - z_shift
+					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
