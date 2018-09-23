@@ -87,12 +87,12 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
+	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 5
-	nsw_neb     = 5
-	nsw_dimer   = 10
+	nsw         = 100
+	nsw_neb     = 20
+	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 10 # default:40
 	ediff       = 1.0e-5
