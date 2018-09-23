@@ -8,11 +8,10 @@ from ase.calculators.emt import EMT
 from ase.constraints import FixAtoms
 from ase.collections import methane
 from ase.optimize import BFGS, MDMin, FIRE
-from ase.vibrations import Vibrations
-from ase.vibrations import Infrared
+from ase.vibrations import Vibrations, Infrared
 from ase.db import connect
-from ase.io import read
-from ase.build import add_adsorbate
+from ase.io import read, write
+from ase.build import add_adsorbate, sort
 from ase.visualize import view
 from ase.neb import NEB, NEBTools
 # -------------------------------------------------
@@ -26,7 +25,6 @@ reactionfile = argvs[1]
 
 calculator = "vasp"
 calculator = calculator.lower()
-
 #
 # temprary database to avoid overlapping calculations
 #
@@ -69,7 +67,7 @@ ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
-TS = True
+TS = False
 nimages = 6
 
 # whether to do single point after optimization
@@ -91,10 +89,10 @@ elif "vasp" in calculator:
 	xc          = "rpbe"
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
-	potim       = 0.20
-	nsw         = 100
-	nsw_neb     = 10
-	nsw_dimer   = 100
+	potim       = 0.10
+	nsw         = 200
+	nsw_neb     = 50
+	nsw_dimer   = 500
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -185,6 +183,11 @@ for irxn in range(rxn_num):
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-HIGH" in mol:
+					mol = mol.replace("-HIGH","")
+					tmp = methane[mol]
+					ads_height0 += 1.0
+					config = "high"
 				else:
 					tmp = methane[mol]
 
@@ -675,19 +678,26 @@ for irxn in range(rxn_num):
 #			print Ea
 
 			# make different directory and go there
-			try:
+			if not os.path.exists("tsdir"):
 				os.makedirs("tsdir")
-			except FileExistsError:
-				pass
 			os.chdir("tsdir")
 
-			# copy reactant's POSCAR as POSCAR01
+			# copy reactant and product POSCAR as POSCAR01 and POSCAR02
 			contcar1 = "../" + r_label + "/CONTCAR"
 			contcar2 = "../" + p_label + "/CONTCAR"
 			os.system('cp %s ./POSCAR1' % contcar1)
 			os.system('cp %s ./POSCAR2' % contcar2)
 
-			# copy product's  POSCAR as POSCAR02
+			# Swith atomic index in order to make POSCAR1 and POSCAR2 close.
+			# Different ordering cause bad NEB images.
+			atom1 = read('POSCAR1')
+			atom2 = read('POSCAR2')
+			newatom1 = make_it_closer_by_exchange(atom1, atom2) # atom1 is exchanged
+			#write('POSCAR1',sort(newatom1))
+			#write('POSCAR2',sort(atom2))
+			write('POSCAR1',newatom1) # avoid sort because POTCAR does not follow
+			write('POSCAR2',atom2)
+
 			# do "nebmake.pl"
 			nebmake = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebmake.pl"
 			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
@@ -717,11 +727,14 @@ for irxn in range(rxn_num):
 			print "----------- CI NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
 
+			quit()
+
 			nebresults = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebresults.pl"
 			neb2dim    = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/neb2dim.pl"
 			os.system('%s >& /dev/null' % nebresults)
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
+
 
 			# dimer method
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
