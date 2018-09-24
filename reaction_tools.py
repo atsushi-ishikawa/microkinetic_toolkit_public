@@ -9,7 +9,7 @@ def read_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
+ 	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 
@@ -44,7 +44,7 @@ def return_lines_of_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
+ 	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 	return lines
@@ -279,7 +279,7 @@ def remove_parentheses(file):
 	tmpfile = "ttt.txt"
 	os.system('cat %s | sed "s/\[//g" > %s' % (file, tmpfile) )
 	os.system('cat %s | sed "s/\]//g" > %s' % (tmpfile, file) )
-	os.system('rm %s' % tmpfile)
+ 	os.system('rm %s' % tmpfile)
 
 
 def get_species_num(*species):
@@ -401,3 +401,36 @@ def remove_side_and_flip(mol):
 
 	return mol
 
+def neb_copy_contcar_to_poscar(nimages):
+	#
+	# copy 0X/CONTCAR to 0X/POSCAR after NEB run
+	#
+	import os
+	for images in range(nimages):
+			os.system('cp %02d/CONTCAR %02d/POSCAR' % (images+1, images+1))
+
+
+def make_it_closer_by_exchange(atom1, atom2):
+	from ase import Atoms, Atom
+	from ase.geometry import distance
+
+	natoms = len(atom1)
+	thre = 0.05 # when distance is large than this value, do switch
+
+	for i in range(natoms):
+		for j in range(i+1, natoms):
+			if atom1[i].symbol == atom1[j].symbol:
+				dis_bef = distance(atom1, atom2)
+				atom1B = atom1.copy()
+				atom1B.positions[ [i,j] ] = atom1B.positions[ [j,i] ]
+				dis_aft = distance(atom1B, atom2)
+
+				if dis_aft + thre < dis_bef:
+					# switch
+					tmp = atom1B.numbers[i]
+					atom1B.numbers[i] = atom1B.numbers[j]
+					atom1B.numbers[j] = tmp
+
+					atom1 = atom1B.copy()
+
+	return atom1
