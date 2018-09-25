@@ -9,6 +9,10 @@ import numpy as np
 import math
 from reaction_tools import *
 from ase.calculators.vasp import Vasp
+from ase.units import J
+
+dbfile = "data.json"
+db = connect(dbfile)
 
 vacuum = 10.0
 doping = False
@@ -21,11 +25,14 @@ cif_file = "mgo.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
+name = cif_file.split(".")[0]
+
 bulk = read(cif_file)
 surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 lattice = "fcc"
-facet   = "100"
+#facet   = "100"
+facet   = "010"
 #lattice = "hcp"
 #facet   = "001"
 #lattice = "sp15"
@@ -55,13 +62,6 @@ if doping:
 
 surf.translate([0,0,-vacuum+1])
 #
-# information for JSON file
-#
-pos = {	'lattice' : lattice, 
-		'facet'   : facet  ,
-		'formula' : formula
-      }
-#
 # relaxation issues
 #
 natoms = len(surf.get_atomic_numbers())
@@ -82,19 +82,18 @@ else:
 surf.set_tags(tag)
 
 xc     = "pbesol"
-prec   = "normal"
+prec   = "low"
 encut  = 400.0 # 213.0 or 400.0 or 500.0
 potim  = 0.15
-nsw    = 100
+nsw    = 10
 nelmin = 5
-nelm   = 40 # default:40
+nelm   = 20 # default:40
 ediff  = 1.0e-4
 ediffg = -0.3
-kpts_blk = [5, 5, 5]
-kpts_slb = [5, 5, 1]
+kpts_blk = [3, 3, 3]
+kpts_slb = [3, 3, 1]
 ismear = 1
 sigma  = 0.20
-vacuum = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 setups = None
 ivdw   = 12
 ialgo  = 48 # normal=38, veryfast=48
@@ -105,11 +104,13 @@ lcharg = True
 
 bulk = bulk*[2,2,2]
 
-bulk.calc = Vasp(prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+label = name + "_bulk"
+bulk.calc = Vasp(label=label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 				 encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 				 ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts_blk, isif=3)
 
-surf.calc = Vasp(prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+label = name + "_surf"
+surf.calc = Vasp(label=label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 				 encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 				 ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts_slb, isif=4)
 
@@ -122,6 +123,15 @@ area = cell[0]*cell[1] * math.sin(math.radians(cell[3]))
 
 print "bulk energy:",Ebulk
 print "slab energy:",Eslab
-Esurf = (Eslab - len(surf)*Ebulk_perN) / (2*area)
-print "surface energy (per area):", Esurf
+print "area:",area
+Esurf  = (Eslab - len(surf)*Ebulk_perN) / (2*area) # in ev/Ang^2
+Esurf2 = Esurf/J*10**20 # in J/m^2
+print("surface energy :%8.4f (eV/Ang^2),%8.4f (J/m^2):" % (Esurf, Esurf2))
+
+data = {'formula' : formula,
+		'lattice' : lattice,
+		'facet'   : "[" + facet + "]",
+		'Esurf'   : Esurf2	}
+
+db.write(surf, data)
 
