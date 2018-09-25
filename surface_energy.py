@@ -128,8 +128,7 @@ Esurf  = (Eslab - len(surf)*Ebulk_perN) / (2*area) # in ev/Ang^2
 Esurf2 = Esurf/J*10**20 # in J/m^2
 print("surface energy :%8.4f (eV/Ang^2),%8.4f (J/m^2):" % (Esurf, Esurf2))
 
-data = {'formula' : formula,
-		'lattice' : lattice,
+data = {'lattice' : lattice,
 		'facet'   : "[" + facet + "]",
 		'Esurf'   : Esurf2	}
 
