@@ -360,6 +360,11 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
+		tmp.get_potential_energy()
+		ismear_sp = -5
+		tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
@@ -613,6 +618,10 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
+		tmp.get_potential_energy()
+		tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
