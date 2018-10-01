@@ -99,7 +99,7 @@ elif "vasp" in calculator:
 	ediffg      = -0.1
 	kpts_surf   = [3, 3, 1]
 	ismear_surf = 0
-	sigma_surf  = 0.20
+	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ivdw        = 12
@@ -297,7 +297,7 @@ for irxn in range(rxn_num):
 				kpts = [1,1,1]
 				gas_mol = True
 		else: # surface
-			ismear  = ismear_surf # Methfessel-Paxton
+			ismear  = ismear_surf
 			sigma   = sigma_surf
 			kpts    = kpts_surf
 			gas_mol = False
