@@ -97,9 +97,9 @@ elif "vasp" in calculator:
 	nelm        = 10 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.1
-	kpts_surf   = [1, 1, 1]
-	ismear_surf = 1
-	sigma_surf  = 0.20
+	kpts_surf   = [3, 3, 1]
+	ismear_surf = 0
+	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ivdw        = 12
@@ -297,7 +297,7 @@ for irxn in range(rxn_num):
 				kpts = [1,1,1]
 				gas_mol = True
 		else: # surface
-			ismear  = ismear_surf # Methfessel-Paxton
+			ismear  = ismear_surf
 			sigma   = sigma_surf
 			kpts    = kpts_surf
 			gas_mol = False
@@ -360,14 +360,27 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
+		tmp.get_potential_energy()
+
+		# single point
+		if mol_type=='gaseous':
+			ismear_sp = 0
+			kpts_sp   = [1, 1, 1]
+		else:
+			ismear_sp = -5
+			kpts_sp   = [5, 5, 1]
+
+		tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + r_label + ".xml"
 			contcar = "CONTCAR_" + r_label
 			reac_contcar = contcar
-			os.system('cp vasprun.xml %s' % xmlfile)
-			os.system('cp CONTCAR %s' % contcar)
+			os.system('cp vasprun.xml %s >& /dev/null' % xmlfile)
+			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
 		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
@@ -613,14 +626,27 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
+		tmp.get_potential_energy()
+
+		# single point
+		if mol_type=='gaseous':
+			ismear_sp = 0
+			kpts_sp   = [1, 1, 1]
+		else:
+			ismear_sp = -5
+			kpts_sp   = [5, 5, 1]
+
+		tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 		en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + p_label + ".xml"
 			contcar = "CONTCAR_" + p_label
 			prod_contcar = contcar
-			os.system('cp vasprun.xml %s' % xmlfile)
-			os.system('cp CONTCAR %s' % contcar)
+			os.system('cp vasprun.xml %s >& /dev/null' % xmlfile)
+			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
 		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
@@ -735,8 +761,6 @@ for irxn in range(rxn_num):
 			print "----------- CI NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
 
-			quit()
-
 			nebresults = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebresults.pl"
 			neb2dim    = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/neb2dim.pl"
 			os.system('%s >& /dev/null' % nebresults)
@@ -755,8 +779,6 @@ for irxn in range(rxn_num):
 
 			Ea = TSene -reac_en
 			print "Ea = ",Ea
-
-			quit()
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
 	print "deltaE=",deltaE
