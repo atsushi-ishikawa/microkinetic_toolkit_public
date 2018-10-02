@@ -21,9 +21,6 @@ cif_file = "mgo.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
-bulk = read(cif_file)
-#niggli_reduce(bulk)
-surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 lattice = "fcc"
 facet   = "100"
@@ -32,7 +29,12 @@ facet   = "100"
 #lattice = "sp15"
 #facet = "010"
 
-# 
+indices = []
+for c in facet:
+	indices.append(int(c))
+bulk = read(cif_file)
+surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+
 if cif_file == "La2O3.cif":
 	surf.rotate(180,'y', rotate_cell=False) # La2O3
 	surf.wrap()
@@ -48,7 +50,14 @@ formula = surf.get_chemical_formula()
 #
 if doping:
 	symbols  =  np.array(surf.get_chemical_symbols())
-	rep_atom = 16 if nlayer == 1 else 48
+	if nlayer==1:
+		rep_atom = 16
+	elif nlayer==2:
+		rep_atom = 48
+	elif nlayer==3:
+		rep_atom = 80
+	elif nlayer==4:
+		rep_atom = 112
 	# MgO: 16 for layer=1, 48 for layer=2
 	# CaO: 18 for layer=1
 	symbols[rep_atom] = 'Li'
