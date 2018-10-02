@@ -28,7 +28,7 @@ python make_rate_equation.py input.txt
 
 #### 6. Add rate to reactionfile
 ```bash
-python rate_for_graph.py [input.txt] coverage.txt rateconst.txt
+python rate_for_graph.py [input.txt] coverage.txt rateconst.txt variable.txt
 ```
 * `input_val.txt` is generated
 
