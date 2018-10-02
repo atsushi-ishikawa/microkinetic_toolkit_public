@@ -94,7 +94,7 @@ elif "vasp" in calculator:
 	nsw_neb     = 20
 	nsw_dimer   = 100
 	nelmin      = 5
-	nelm        = 10 # default:40
+	nelm        = 40 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.1
 	kpts_surf   = [3, 3, 1]
