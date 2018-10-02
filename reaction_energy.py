@@ -361,8 +361,15 @@ for irxn in range(rxn_num):
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		tmp.get_potential_energy()
-		ismear_sp = -5
-		kpts_sp   = [5, 5, 1]
+
+		# single point
+		if mol_type=='gaseous':
+			ismear_sp = 0
+			kpts_sp   = [1, 1, 1]
+		else:
+			ismear_sp = -5
+			kpts_sp   = [5, 5, 1]
+
 		tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
@@ -372,8 +379,8 @@ for irxn in range(rxn_num):
 			xmlfile = "vasprun_" + r_label + ".xml"
 			contcar = "CONTCAR_" + r_label
 			reac_contcar = contcar
-			os.system('cp vasprun.xml %s' % xmlfile)
-			os.system('cp CONTCAR %s' % contcar)
+			os.system('cp vasprun.xml %s >& /dev/null' % xmlfile)
+			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
 		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
@@ -620,6 +627,15 @@ for irxn in range(rxn_num):
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
 		tmp.get_potential_energy()
+
+		# single point
+		if mol_type=='gaseous':
+			ismear_sp = 0
+			kpts_sp   = [1, 1, 1]
+		else:
+			ismear_sp = -5
+			kpts_sp   = [5, 5, 1]
+
 		tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=2, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
@@ -629,8 +645,8 @@ for irxn in range(rxn_num):
 			xmlfile = "vasprun_" + p_label + ".xml"
 			contcar = "CONTCAR_" + p_label
 			prod_contcar = contcar
-			os.system('cp vasprun.xml %s' % xmlfile)
-			os.system('cp CONTCAR %s' % contcar)
+			os.system('cp vasprun.xml %s >& /dev/null' % xmlfile)
+			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
 		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
