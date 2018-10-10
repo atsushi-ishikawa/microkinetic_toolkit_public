@@ -157,9 +157,9 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(r_ads[irxn]):
 		surf_tmp = surf.copy()
-		ads_height = ads_height0
 
 		for imol, mol in enumerate(mols):
+			ads_height = ads_height0
 			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 			config = "normal"
 
@@ -216,8 +216,13 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*3.0) ) # 2-->3
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*4.0) ) # 2-->4
+				#
 				# wrap atoms to prevent adsorbate being on different cell
+				#
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
@@ -430,9 +435,9 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(p_ads[irxn]):
 		surf_tmp = surf.copy()
-		ads_height = ads_height0
 
 		for imol, mol in enumerate(mols):
+			ads_height = ads_height0
 			print "----- product: molecule No.", imol, " is ", mol, "-----"
 			config = "normal"
 
@@ -489,8 +494,13 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*3.0) ) # 2-->3
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*4.0) ) # 2-->4
+				#
 				# wrap atoms to prevent adsorbate being on different cell
+				#
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
