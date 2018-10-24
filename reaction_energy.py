@@ -738,6 +738,8 @@ for irxn in range(rxn_num):
 #			print Ea
 
 			# make different directory and go there
+			os.system('rm tsdir -rf') # remove old one
+
 			if not os.path.exists("tsdir"):
 				os.makedirs("tsdir")
 			os.chdir("tsdir")
@@ -763,8 +765,10 @@ for irxn in range(rxn_num):
 			if not os.path.exists(nebmake):
 				nebmake = "/home/usr6/m70286a/vasp/vtstscripts/vtstscripts-935/nebmake.pl" # kyushu
 
-			if not os.path.exists(nebmake):
-				print "nebmake not found"
+			if os.path.exists(nebmake):
+				print "nebmake.pl: ", nebmake
+			else:
+				print "nebmake.pl not found"
 				
 			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
 
