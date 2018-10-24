@@ -67,7 +67,7 @@ ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
-TS = False
+TS = True
 nimages = 6
 
 # whether to do single point after optimization
@@ -87,18 +87,18 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
-	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	prec        = "low"
+	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
+	nsw         = 50
 	nsw_neb     = 20
 	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
-	ediffg      = -0.1
+	ediffg      = -0.5
 	kpts_surf   = [3, 3, 1]
-	ismear_surf = 0
+	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
@@ -215,7 +215,8 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)
 				# wrap atoms to prevent adsorbate being on different cell
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
@@ -481,7 +482,8 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)
 				# wrap atoms to prevent adsorbate being on different cell
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
@@ -733,7 +735,13 @@ for irxn in range(rxn_num):
 			write('POSCAR2',atom2)
 
 			# do "nebmake.pl"
-			nebmake = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebmake.pl"
+			nebmake = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebmake.pl" # whisky
+			if not os.path.exists(nebmake):
+				nebmake = "/home/usr6/m70286a/vasp/vtstscripts/vtstscripts-935/nebmake.pl" # kyushu
+
+			if not os.path.exists(nebmake):
+				print "nebmake not found"
+				
 			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
 
 			outcar1  = "../" + r_label + "/OUTCAR"
