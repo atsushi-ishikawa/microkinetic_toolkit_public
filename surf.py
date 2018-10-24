@@ -16,7 +16,7 @@ os.system('rm surf.db')
 nlayer = 2
 nrelax = 1
 
-cif_file = "mgo.cif"
+cif_file = "pd.cif"
 #cif_file = "cao.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
@@ -33,7 +33,7 @@ indices = []
 for c in facet:
 	indices.append(int(c))
 bulk = read(cif_file)
-surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+surf = surface(lattice=bulk, indices=indices, layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 if cif_file == "La2O3.cif":
 	surf.rotate(180,'y', rotate_cell=False) # La2O3

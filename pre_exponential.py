@@ -41,7 +41,6 @@ for irxn in range(rxn_num):
 
 	sigmaAB = 1.0
 
-
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
