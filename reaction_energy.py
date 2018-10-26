@@ -70,6 +70,11 @@ IR = False
 TS = True
 nimages = 6
 
+if TS:
+	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
+	if not os.path.exists(vtst):
+		vtst = "/home/usr6/m70286a/vasp/vtstscripts/vtstscripts-935/" # kyushu
+
 # whether to do single point after optimization
 # at different computational level
 
@@ -90,8 +95,8 @@ elif "vasp" in calculator:
 	prec        = "low"
 	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 50
-	nsw_neb     = 20
+	nsw         = 5
+	nsw_neb     = 2
 	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
@@ -738,13 +743,13 @@ for irxn in range(rxn_num):
 #			print Ea
 
 			# make different directory and go there
-			os.system('rm tsdir -rf') # remove old one
+			os.system('rm -rf tsdir') # remove old one
 
 			if not os.path.exists("tsdir"):
 				os.makedirs("tsdir")
 			os.chdir("tsdir")
 
-			# copy reactant and product POSCAR as POSCAR01 and POSCAR02
+			# copy reactant and product POSCAR as POSCAR1 and POSCAR2
 			contcar1 = "../" + r_label + "/CONTCAR"
 			contcar2 = "../" + p_label + "/CONTCAR"
 			os.system('cp %s ./POSCAR1' % contcar1)
@@ -761,20 +766,14 @@ for irxn in range(rxn_num):
 			write('POSCAR2',atom2)
 
 			# do "nebmake.pl"
-			nebmake = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebmake.pl" # whisky
-			if not os.path.exists(nebmake):
-				nebmake = "/home/usr6/m70286a/vasp/vtstscripts/vtstscripts-935/nebmake.pl" # kyushu
 
-			if os.path.exists(nebmake):
-				print "nebmake.pl: ", nebmake
-			else:
-				print "nebmake.pl not found"
-				
+			nebmake = vtst + "nebmake.pl"
+
 			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
 
 			outcar1  = "../" + r_label + "/OUTCAR"
-			outcar2  = "../" + r_label + "/OUTCAR"
-			os.system('cp %s 00'  % outcar1)
+			outcar2  = "../" + p_label + "/OUTCAR"
+			os.system('cp %s 00'   % outcar1)
 			os.system('cp %s %02d' % (outcar2, nimages+1))
 
 			# normal NEB
@@ -797,12 +796,15 @@ for irxn in range(rxn_num):
 			print "----------- CI NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
 
-			nebresults = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebresults.pl"
-			neb2dim    = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/neb2dim.pl"
+			# copy CONTCAR to 00 and 0#IMAGE's POSCAR
+			os.system('cp %s 00/POSCAR'   %  contcar1)
+			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
+
+			nebresults = vtst + "nebresults.pl"
+			neb2dim    = vtst + "neb2dim.pl"
 			os.system('%s >& /dev/null' % nebresults)
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
-
 
 			# dimer method
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
