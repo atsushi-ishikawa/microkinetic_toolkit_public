@@ -67,7 +67,7 @@ ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
-TS = True
+TS = False
 nimages = 6
 
 if TS:
@@ -95,13 +95,13 @@ elif "vasp" in calculator:
 	prec        = "low"
 	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 5
+	nsw         = 10
 	nsw_neb     = 2
 	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
-	ediffg      = -0.5
+	ediffg      = -0.1
 	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
@@ -255,6 +255,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
+		#view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -381,17 +382,18 @@ for irxn in range(rxn_num):
 		tmp.get_potential_energy()
 
 		# single point
-		if mol_type=='gaseous':
-			ismear_sp = 0
-			kpts_sp   = [1, 1, 1]
-		else:
-			ismear_sp = -5
-			kpts_sp   = [5, 5, 1]
+		if SP:
+			if mol_type=='gaseous':
+				ismear_sp = 0
+				kpts_sp   = [1, 1, 1]
+			else:
+				ismear_sp = -5
+				kpts_sp   = [5, 5, 1]
 
-		tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
-		en = tmp.get_potential_energy()
+			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
+			en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + r_label + ".xml"
@@ -660,17 +662,18 @@ for irxn in range(rxn_num):
 		tmp.get_potential_energy()
 
 		# single point
-		if mol_type=='gaseous':
-			ismear_sp = 0
-			kpts_sp   = [1, 1, 1]
-		else:
-			ismear_sp = -5
-			kpts_sp   = [5, 5, 1]
+		if SP:
+			if mol_type=='gaseous':
+				ismear_sp = 0
+				kpts_sp   = [1, 1, 1]
+			else:
+				ismear_sp = -5
+				kpts_sp   = [5, 5, 1]
 
-		tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
-		en = tmp.get_potential_energy()
+			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
+			en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + p_label + ".xml"
