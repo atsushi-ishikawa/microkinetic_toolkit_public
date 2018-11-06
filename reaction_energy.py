@@ -64,7 +64,7 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.8
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
@@ -93,12 +93,12 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
-	encut       = 300.0 # 213.0 or 400.0 or 500.0
+	prec        = "normal"
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 50
-	nsw_neb     = 10
-	nsw_dimer   = 100
+	nsw         = 100
+	nsw_neb     = 20
+	nsw_dimer   = 500
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -536,7 +536,6 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
-
 
 		#
 		# Identification done. Look for temporary database 
