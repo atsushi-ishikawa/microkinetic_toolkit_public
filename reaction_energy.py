@@ -41,10 +41,11 @@ if surface:
 	dbfile = 'surf.db'
 	dbfile = os.path.join(os.getcwd(), dbfile)
 	db     = connect(dbfile)
-	surf      = db.get_atoms(id=1)
-	lattice   = db.get(id=1).data.lattice
-	facet     = db.get(id=1).data.facet
-	surf_name = db.get(id=1).data.formula
+	surf       = db.get_atoms(id=1)
+	lattice    = db.get(id=1).data.lattice
+	facet      = db.get(id=1).data.facet
+	surf_name  = db.get(id=1).data.formula
+	offset_fac = db.get(id=1).data.offset_fac
 
 	# load site information
 	f = open('site_info.json','r')
@@ -67,8 +68,8 @@ ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
-TS = False
-nimages = 6
+TS = True
+nimages = 4
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -95,8 +96,8 @@ elif "vasp" in calculator:
 	prec        = "low"
 	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 10
-	nsw_neb     = 2
+	nsw         = 50
+	nsw_neb     = 10
 	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
@@ -221,10 +222,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				# offset = np.array(offset)*(3.0/4.0) # MgO only
-				offset = np.array(offset)
-				# offset = np.array(offset)*( (2.0*2.0)/(2.0*3.0) ) # 2-->3
-				# offset = np.array(offset)*( (2.0*2.0)/(2.0*4.0) ) # 2-->4
+				offset = np.array(offset)*offset_fac
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -255,7 +253,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
-		#view(tmp); quit()
+		view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -379,7 +377,7 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		# single point
 		if SP:
@@ -659,7 +657,7 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		# single point
 		if SP:
