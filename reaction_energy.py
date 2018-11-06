@@ -253,7 +253,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
-		view(tmp); quit()
+		#view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
