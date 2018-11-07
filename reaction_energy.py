@@ -94,11 +94,11 @@ if "gau" in calculator:
 elif "vasp" in calculator:
 	xc          = "rpbe"
 	prec        = "normal"
-	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
-	nsw_neb     = 20
-	nsw_dimer   = 500
+	nsw         = 50
+	nsw_neb     = 10
+	nsw_dimer   = 200
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -714,35 +714,13 @@ for irxn in range(rxn_num):
 		if(first_time):
 			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
 
+		#
 		# TS calc
+		#
 		if(TS):
-#			initial = read(reac_contcar)
-#			final   = read(prod_contcar)
-#
-#			images  = [initial]
-#			images += [initial.copy() for i in range(nimages)]
-#			images += [final]
-#
-#			for i in range(nimages+1):
-#	 			calc = Vasp(output_template="ts_tmp",prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-#							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-#							ibrion=2, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts)
-#				images[i].set_calculator(calc) 
-#
-#			neb = NEB(images)
-#			neb.interpolate("idpp")
-#			qn = MDMin(neb, trajectory='neb.traj')
-#			qn.run(fmax=0.1, steps=100)
-#
-#			nebtools = NEBTools(images)
-# 			for i in range(len(images)):
-# 				images[i].set_calculator( calc ) 
-#
-#			Ea,DE = nebtools.get_barrier()
-#			print "--------------="
-#			print Ea
-
+			#
 			# make different directory and go there
+			#
 			os.system('rm -rf tsdir') # remove old one
 
 			if not os.path.exists("tsdir"):
@@ -760,13 +738,11 @@ for irxn in range(rxn_num):
 			atom1 = read('POSCAR1')
 			atom2 = read('POSCAR2')
 			newatom1 = make_it_closer_by_exchange(atom1, atom2) # atom1 is exchanged
-			#write('POSCAR1',sort(newatom1))
-			#write('POSCAR2',sort(atom2))
-			write('POSCAR1',newatom1) # avoid sort because POTCAR does not follow
+			write('POSCAR1',newatom1) # do not sort because POTCAR does not follow
 			write('POSCAR2',atom2)
-
+			#
 			# do "nebmake.pl"
-
+			#
 			nebmake = vtst + "nebmake.pl"
 
 			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
@@ -779,23 +755,23 @@ for irxn in range(rxn_num):
 			# normal NEB
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=2, potim=potim, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts,
-							images=nimages, spring=-5.0, lclimb=False )
+			 				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 				images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
 			print "----------- doing NEB calculation with images=",nimages,"-----------"
 			tmp.get_potential_energy()
 			print "----------- normal NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
 
 			# CI-NEB
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-							images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
-			print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
-			tmp.get_potential_energy()
-			print "----------- CI NEB done -----------"
-			neb_copy_contcar_to_poscar(nimages)
-
+			#tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+			#				encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			#				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			#				images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+			#print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
+			#tmp.get_potential_energy()
+			#print "----------- CI NEB done -----------"
+			#neb_copy_contcar_to_poscar(nimages)
+ 
 			# copy CONTCAR to 00 and 0#IMAGE's POSCAR
 			os.system('cp %s 00/POSCAR'   %  contcar1)
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
