@@ -45,7 +45,8 @@ if surface:
 	lattice    = db.get(id=1).data.lattice
 	facet      = db.get(id=1).data.facet
 	surf_name  = db.get(id=1).data.formula
-	offset_fac = db.get(id=1).data.offset_fac
+	#offset_fac = db.get(id=1).data.offset_fac
+	offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -69,7 +70,7 @@ ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
 TS = True
-nimages = 4
+nimages = 6
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -96,8 +97,8 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 50
-	nsw_neb     = 10
+	nsw         = 100
+	nsw_neb     = 30
 	nsw_dimer   = 200
 	nelmin      = 5
 	nelm        = 40 # default:40
@@ -727,30 +728,33 @@ for irxn in range(rxn_num):
 				os.makedirs("tsdir")
 			os.chdir("tsdir")
 
-			# copy reactant and product POSCAR as POSCAR1 and POSCAR2
+			# copy reactant and product POSCAR as POSCAR_reac and POSCAR_prod
 			contcar1 = "../" + r_label + "/CONTCAR"
 			contcar2 = "../" + p_label + "/CONTCAR"
-			os.system('cp %s ./POSCAR1' % contcar1)
-			os.system('cp %s ./POSCAR2' % contcar2)
+			os.system('cp %s ./POSCAR_reac' % contcar1)
+			os.system('cp %s ./POSCAR_prod' % contcar2)
 
-			# Swith atomic index in order to make POSCAR1 and POSCAR2 close.
+			# Swith atomic index in order to make POSCAR_reac and POSCAR_prod close.
 			# Different ordering cause bad NEB images.
-			atom1 = read('POSCAR1')
-			atom2 = read('POSCAR2')
+			atom1 = read('POSCAR_reac')
+			atom2 = read('POSCAR_prod')
 			newatom1 = make_it_closer_by_exchange(atom1, atom2) # atom1 is exchanged
-			write('POSCAR1',newatom1) # do not sort because POTCAR does not follow
-			write('POSCAR2',atom2)
+			write('POSCAR_reac',newatom1) # do not sort because POTCAR does not follow
+			write('POSCAR_prod',atom2)
 			#
 			# do "nebmake.pl"
 			#
 			nebmake = vtst + "nebmake.pl"
 
-			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
+			os.system('%s POSCAR_reac POSCAR_prod %d >& /dev/null' % (nebmake,nimages))
 
 			outcar1  = "../" + r_label + "/OUTCAR"
 			outcar2  = "../" + p_label + "/OUTCAR"
-			os.system('cp %s 00'   % outcar1)
-			os.system('cp %s %02d' % (outcar2, nimages+1))
+			# copy reactant and product CONTCAR and OUTCAR to 00 and 0#IMAGE's POSCAR and OUTCAR
+			os.system('cp %s 00'          % outcar1)
+			os.system('cp %s 00/POSCAR'   % contcar1)
+			os.system('cp %s %02d'        % (outcar2, nimages+1))
+			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
 
 			# normal NEB
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
@@ -762,20 +766,17 @@ for irxn in range(rxn_num):
 			print "----------- normal NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
 
-			# CI-NEB
-			#tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-			#				encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-			#				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-			#				images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
-			#print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
-			#tmp.get_potential_energy()
-			#print "----------- CI NEB done -----------"
-			#neb_copy_contcar_to_poscar(nimages)
- 
-			# copy CONTCAR to 00 and 0#IMAGE's POSCAR
-			os.system('cp %s 00/POSCAR'   %  contcar1)
-			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
 
+			# CI-NEB
+			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+							images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+			print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
+			tmp.get_potential_energy()
+			print "----------- CI NEB done -----------"
+			neb_copy_contcar_to_poscar(nimages)
+ 
 			nebresults = vtst + "nebresults.pl"
 			neb2dim    = vtst + "neb2dim.pl"
 			os.system('%s >& /dev/null' % nebresults)
