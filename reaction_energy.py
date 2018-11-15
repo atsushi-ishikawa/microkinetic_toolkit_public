@@ -45,8 +45,8 @@ if surface:
 	lattice    = db.get(id=1).data.lattice
 	facet      = db.get(id=1).data.facet
 	surf_name  = db.get(id=1).data.formula
-	#offset_fac = db.get(id=1).data.offset_fac
-	offset_fac = 1.0
+	offset_fac = db.get(id=1).data.offset_fac
+	# offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -70,7 +70,7 @@ ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
 TS = True
-nimages = 6
+nimages = 4
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -84,6 +84,8 @@ if TS:
 if "gau" in calculator:
 	method = "b3lyp"
 	basis  = "6-31G(d)" # do not use aesterisk for polarization func
+	nprocs = 12
+	mem    = "8GB"
 	if SP:
 		method_sp = "ccsd(t)"
 	basis_name = re.sub("\(", "", basis)
@@ -94,11 +96,11 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
-	encut       = 350.0 # 213.0 or 400.0 or 500.0
+	prec        = "low"
+	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
-	nsw_neb     = 30
+	nsw         = 50
+	nsw_neb     = 10
 	nsw_dimer   = 200
 	nelmin      = 5
 	nelm        = 40 # default:40
@@ -323,12 +325,12 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=r_label, method=method, basis=basis, scf="xqc")
+			tmp.calc = Gaussian(label=r_label, method=method, basis=basis, scf="xqc", nprocs=nprocs, mem=mem)
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
 				r_label = r_label + "_sp"
-				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
+				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None, nprocs=nprocs, mem=mem)
 		elif "vasp" in calculator:
 			if gas_mol:
 				#
@@ -602,12 +604,12 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=p_label, method=method, basis=basis, scf="xqc")
+			tmp.calc = Gaussian(label=p_label, method=method, basis=basis, scf="xqc", nprocs=nprocs, mem=mem)
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
 				p_label = p_label + "_sp"
-				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
+				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None, nprocs=nprocs, mem=mem)
 		elif "vasp" in calculator:
 			if gas_mol:
 				#
