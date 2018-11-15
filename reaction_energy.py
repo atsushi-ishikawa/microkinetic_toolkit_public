@@ -41,10 +41,12 @@ if surface:
 	dbfile = 'surf.db'
 	dbfile = os.path.join(os.getcwd(), dbfile)
 	db     = connect(dbfile)
-	surf      = db.get_atoms(id=1)
-	lattice   = db.get(id=1).data.lattice
-	facet     = db.get(id=1).data.facet
-	surf_name = db.get(id=1).data.formula
+	surf       = db.get_atoms(id=1)
+	lattice    = db.get(id=1).data.lattice
+	facet      = db.get(id=1).data.facet
+	surf_name  = db.get(id=1).data.formula
+	offset_fac = db.get(id=1).data.offset_fac
+	# offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -63,12 +65,17 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.8
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
-TS = False
-nimages = 6
+TS = True
+nimages = 4
+
+if TS:
+	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
+	if not os.path.exists(vtst):
+		vtst = "/home/usr6/m70286a/vasp/vtstscripts/vtstscripts-935/" # kyushu
 
 # whether to do single point after optimization
 # at different computational level
@@ -77,6 +84,8 @@ nimages = 6
 if "gau" in calculator:
 	method = "b3lyp"
 	basis  = "6-31G(d)" # do not use aesterisk for polarization func
+	nprocs = 12
+	mem    = "8GB"
 	if SP:
 		method_sp = "ccsd(t)"
 	basis_name = re.sub("\(", "", basis)
@@ -87,18 +96,18 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
-	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	prec        = "low"
+	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
-	nsw_neb     = 20
-	nsw_dimer   = 100
+	nsw         = 50
+	nsw_neb     = 10
+	nsw_dimer   = 200
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.1
 	kpts_surf   = [3, 3, 1]
-	ismear_surf = 0
+	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
@@ -157,9 +166,9 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(r_ads[irxn]):
 		surf_tmp = surf.copy()
-		ads_height = ads_height0
 
 		for imol, mol in enumerate(mols):
+			ads_height = ads_height0
 			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
 			config = "normal"
 
@@ -216,8 +225,10 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)*offset_fac
+				#
 				# wrap atoms to prevent adsorbate being on different cell
+				#
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
@@ -245,6 +256,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
+		#view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -313,12 +325,12 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=r_label, method=method, basis=basis, scf="xqc")
+			tmp.calc = Gaussian(label=r_label, method=method, basis=basis, scf="xqc", nprocs=nprocs, mem=mem)
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
 				r_label = r_label + "_sp"
-				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None)
+				tmp.calc = Gaussian(label=r_label, method=method_sp, basis=basis, force=None, nprocs=nprocs, mem=mem)
 		elif "vasp" in calculator:
 			if gas_mol:
 				#
@@ -368,20 +380,21 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=r_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		# single point
-		if mol_type=='gaseous':
-			ismear_sp = 0
-			kpts_sp   = [1, 1, 1]
-		else:
-			ismear_sp = -5
-			kpts_sp   = [5, 5, 1]
+		if SP:
+			if mol_type=='gaseous':
+				ismear_sp = 0
+				kpts_sp   = [1, 1, 1]
+			else:
+				ismear_sp = -5
+				kpts_sp   = [5, 5, 1]
 
-		tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
-		en = tmp.get_potential_energy()
+			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
+			en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + r_label + ".xml"
@@ -430,9 +443,9 @@ for irxn in range(rxn_num):
 	#
 	for imols, mols in enumerate(p_ads[irxn]):
 		surf_tmp = surf.copy()
-		ads_height = ads_height0
 
 		for imol, mol in enumerate(mols):
+			ads_height = ads_height0
 			print "----- product: molecule No.", imol, " is ", mol, "-----"
 			config = "normal"
 
@@ -489,8 +502,13 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*(3.0/4.0) # MgO only
+				# offset = np.array(offset)*(3.0/4.0) # MgO only
+				offset = np.array(offset)
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*3.0) ) # 2-->3
+				# offset = np.array(offset)*( (2.0*2.0)/(2.0*4.0) ) # 2-->4
+				#
 				# wrap atoms to prevent adsorbate being on different cell
+				#
 				surf_tmp.translate([0,0,2])
 				surf_tmp.wrap(pbc=[0,0,1])
 				surf_tmp.translate([0,0,-2])
@@ -521,7 +539,6 @@ for irxn in range(rxn_num):
 		#
 		# end adsorbing molecule
 		#
-
 
 		#
 		# Identification done. Look for temporary database 
@@ -587,12 +604,12 @@ for irxn in range(rxn_num):
 		# set calculator
 		#
 		if "gau" in calculator:
-			tmp.calc = Gaussian(label=p_label, method=method, basis=basis, scf="xqc")
+			tmp.calc = Gaussian(label=p_label, method=method, basis=basis, scf="xqc", nprocs=nprocs, mem=mem)
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 			if SP:
 				p_label = p_label + "_sp"
-				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None)
+				tmp.calc = Gaussian(label=p_label, method=method_sp, basis=basis, force=None, nprocs=nprocs, mem=mem)
 		elif "vasp" in calculator:
 			if gas_mol:
 				#
@@ -642,20 +659,21 @@ for irxn in range(rxn_num):
 			opt = BFGS(tmp, trajectory=p_traj)
 			opt.run(fmax=0.05, steps=maxoptsteps)
 
-		tmp.get_potential_energy()
+		en = tmp.get_potential_energy()
 
 		# single point
-		if mol_type=='gaseous':
-			ismear_sp = 0
-			kpts_sp   = [1, 1, 1]
-		else:
-			ismear_sp = -5
-			kpts_sp   = [5, 5, 1]
+		if SP:
+			if mol_type=='gaseous':
+				ismear_sp = 0
+				kpts_sp   = [1, 1, 1]
+			else:
+				ismear_sp = -5
+				kpts_sp   = [5, 5, 1]
 
-		tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-						encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-						ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
-		en = tmp.get_potential_energy()
+			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
+			en = tmp.get_potential_energy()
 
 		if "vasp" in calculator:
 			xmlfile = "vasprun_" + p_label + ".xml"
@@ -699,73 +717,57 @@ for irxn in range(rxn_num):
 		if(first_time):
 			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
 
+		#
 		# TS calc
+		#
 		if(TS):
-#			initial = read(reac_contcar)
-#			final   = read(prod_contcar)
-#
-#			images  = [initial]
-#			images += [initial.copy() for i in range(nimages)]
-#			images += [final]
-#
-#			for i in range(nimages+1):
-#	 			calc = Vasp(output_template="ts_tmp",prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-#							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-#							ibrion=2, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts)
-#				images[i].set_calculator(calc) 
-#
-#			neb = NEB(images)
-#			neb.interpolate("idpp")
-#			qn = MDMin(neb, trajectory='neb.traj')
-#			qn.run(fmax=0.1, steps=100)
-#
-#			nebtools = NEBTools(images)
-# 			for i in range(len(images)):
-# 				images[i].set_calculator( calc ) 
-#
-#			Ea,DE = nebtools.get_barrier()
-#			print "--------------="
-#			print Ea
-
+			#
 			# make different directory and go there
+			#
+			os.system('rm -rf tsdir') # remove old one
+
 			if not os.path.exists("tsdir"):
 				os.makedirs("tsdir")
 			os.chdir("tsdir")
 
-			# copy reactant and product POSCAR as POSCAR01 and POSCAR02
+			# copy reactant and product POSCAR as POSCAR_reac and POSCAR_prod
 			contcar1 = "../" + r_label + "/CONTCAR"
 			contcar2 = "../" + p_label + "/CONTCAR"
-			os.system('cp %s ./POSCAR1' % contcar1)
-			os.system('cp %s ./POSCAR2' % contcar2)
+			os.system('cp %s ./POSCAR_reac' % contcar1)
+			os.system('cp %s ./POSCAR_prod' % contcar2)
 
-			# Swith atomic index in order to make POSCAR1 and POSCAR2 close.
+			# Swith atomic index in order to make POSCAR_reac and POSCAR_prod close.
 			# Different ordering cause bad NEB images.
-			atom1 = read('POSCAR1')
-			atom2 = read('POSCAR2')
+			atom1 = read('POSCAR_reac')
+			atom2 = read('POSCAR_prod')
 			newatom1 = make_it_closer_by_exchange(atom1, atom2) # atom1 is exchanged
-			#write('POSCAR1',sort(newatom1))
-			#write('POSCAR2',sort(atom2))
-			write('POSCAR1',newatom1) # avoid sort because POTCAR does not follow
-			write('POSCAR2',atom2)
-
+			write('POSCAR_reac',newatom1) # do not sort because POTCAR does not follow
+			write('POSCAR_prod',atom2)
+			#
 			# do "nebmake.pl"
-			nebmake = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebmake.pl"
-			os.system('%s POSCAR1 POSCAR2 %d >& /dev/null' % (nebmake,nimages))
+			#
+			nebmake = vtst + "nebmake.pl"
+
+			os.system('%s POSCAR_reac POSCAR_prod %d >& /dev/null' % (nebmake,nimages))
 
 			outcar1  = "../" + r_label + "/OUTCAR"
-			outcar2  = "../" + r_label + "/OUTCAR"
-			os.system('cp %s 00'  % outcar1)
-			os.system('cp %s %02d' % (outcar2, nimages+1))
+			outcar2  = "../" + p_label + "/OUTCAR"
+			# copy reactant and product CONTCAR and OUTCAR to 00 and 0#IMAGE's POSCAR and OUTCAR
+			os.system('cp %s 00'          % outcar1)
+			os.system('cp %s 00/POSCAR'   % contcar1)
+			os.system('cp %s %02d'        % (outcar2, nimages+1))
+			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
 
 			# normal NEB
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=2, potim=potim, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts,
-							images=nimages, spring=-5.0, lclimb=False )
+			 				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 				images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
 			print "----------- doing NEB calculation with images=",nimages,"-----------"
 			tmp.get_potential_energy()
 			print "----------- normal NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
+
 
 			# CI-NEB
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
@@ -776,13 +778,12 @@ for irxn in range(rxn_num):
 			tmp.get_potential_energy()
 			print "----------- CI NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
-
-			nebresults = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/nebresults.pl"
-			neb2dim    = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/neb2dim.pl"
+ 
+			nebresults = vtst + "nebresults.pl"
+			neb2dim    = vtst + "neb2dim.pl"
 			os.system('%s >& /dev/null' % nebresults)
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
-
 
 			# dimer method
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,

@@ -3,7 +3,7 @@
 #PJM -L "rscgrp=ito-a-oc170117"
 #PJM -L "vnode=4"
 #PJM -L "vnode-core=36"
-#PJM -L "elapse=12:00:00"
+#PJM -L "elapse=60:00:00"
 #PJM -j
 #PJM -X
 
@@ -28,7 +28,7 @@ export I_MPI_HYDRA_HOST_FILE=${PJM_O_NODEINF}
 # python adsorption.py ch4.txt
 # python adsorption.py $INP
 
-INP="test4.txt"
+INP="test.txt"
 LBL=$$
 
 ####

@@ -14,9 +14,10 @@ doping = True
 os.system('rm surf.db')
 
 nlayer = 2
-nrelax = 1
+nrelax = 2
 
 cif_file = "mgo.cif"
+#cif_file = "pd.cif"
 #cif_file = "cao.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
@@ -33,7 +34,7 @@ indices = []
 for c in facet:
 	indices.append(int(c))
 bulk = read(cif_file)
-surf = surface(lattice=bulk, indices=(1,0,0), layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
+surf = surface(lattice=bulk, indices=indices, layers=nlayer, vacuum=vacuum) # step: (310) is good. nlayer=7, [1,2,1] might be good.
 
 if cif_file == "La2O3.cif":
 	surf.rotate(180,'y', rotate_cell=False) # La2O3
@@ -45,6 +46,8 @@ surf = surf*[2,2,1]
 surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
+
+offset_fac = 3.0/4.0
 #
 # doping e.g.) Mg by Li
 #
@@ -67,9 +70,10 @@ surf.translate([0,0,-vacuum+1])
 #
 # information for JSON file
 #
-pos = {	'lattice' : lattice, 
-		'facet'   : facet  ,
-		'formula' : formula
+pos = {	'lattice'   : lattice, 
+		'facet'     : facet  ,
+		'formula'   : formula,
+		'offset_fac'  : offset_fac
       }
 #
 # relaxation issues
