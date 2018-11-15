@@ -39,7 +39,7 @@ for irxn in range(rxn_num):
 	mass_sum = 0; mass_prod = 1;
 	rxntype = []
 
-	sigmaAB = 1.0
+	sigmaAB = 0.0
 
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
@@ -54,12 +54,14 @@ for irxn in range(rxn_num):
 			sigma  = 3.0/4.0/np.pi * np.cbrt(vol) # molecular diagmeter (in Angstrom) calculated from radius
 			sigma *= 10e-10 					  # Angstrom --> m
 			coef   = r_coef[irxn][imol]
-			sigma  = sigma**coef
 
-			if nmol==1 and coef==1:
-				sigmaAB  = sigma**2 * 10**0
+			if nmol==1:
+				if coef==1:
+					sigmaAB = sigma * 10**0
+				elif coef==2:
+					sigmaAB = 2*sigma
 			else:
-				sigmaAB *= sigma
+				sigmaAB += sigma
 
 			mass = sum(tmp.get_masses())
 
@@ -86,7 +88,7 @@ for irxn in range(rxn_num):
 		type_for[irxn] = "gas"
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
-		fac_for  = sigmaAB * np.sqrt( kbolt*T/red_mass ) * Nav
+		fac_for  = sigmaAB**2 * np.sqrt( 8.0*kbolt*T/ (np.pi*red_mass) ) * Nav
 		fac_for  = fac_for * 10**6 # [m^3] --> [cm^3]
 		#
 		# sqrt(kbolt*T/mass) [kg*m^2*s^-2*K^-1 * K * kg^-1]^1/2 = [m*s^-1]
@@ -99,19 +101,19 @@ for irxn in range(rxn_num):
 			# desorption --- transition state theory
 			#
 			type_for[irxn] = "des"
-			fac_for = kbolt*T/hplanck * 10**7 # 6 may be ok [s^-1]
+			fac_for = kbolt*T/hplanck * 10**0 # 6 may be ok [s^-1]
 		else:
 			#
 			# LH --- transition state theory
 			#
 			type_for[irxn] = "lh"
-			fac_for = kbolt*T/hplanck * 10**7 # [s^-1]
+			fac_for = kbolt*T/hplanck * 10**0 # [s^-1]
 	else:
 		#
 		# adsorption --- Hertz-Knudsen or Chemkin
 		#
 		type_for[irxn] = "ads"
-		stick = 0.1
+		stick = 1.0*10**-1
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
 		# --- Hertz-Knudsen

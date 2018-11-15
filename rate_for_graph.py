@@ -19,7 +19,7 @@ f.close()
 
 for iline, line in enumerate(lines):
 	spe = iline
-	val = float(line)
+	val = float(line.split()[1])
 	cov[spe] = val
 
 # read rate constants
@@ -108,7 +108,7 @@ lines = return_lines_of_reactionfile(reactionfile)
 
 for iline, line in enumerate(lines):
 	text = line.replace('\n','')
-	f1.write('{0:<40s}:{1:16.8e}\n'.format(text,rate[iline]))
+	f1.write('{0:<65s}:{1:12.4e}\n'.format(text,rate[iline]))
 
 f1.close()
 
