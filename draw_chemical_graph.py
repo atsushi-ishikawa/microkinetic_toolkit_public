@@ -34,7 +34,7 @@ value = [0 for i in range(numlines)]
 eps  = 1.0e-10
 tiny = 1.0e-50 # Tiny value. Effectively zero.
 
-edge_scale = 0.5
+edge_scale = 0.01
 rate_thre  = 4  # Thre for eaction rate in log scale. Rxn with smallter than this value is discarded.
 
 idx = 0
@@ -90,7 +90,8 @@ if coverage:
 	fcov = open(cov_file,"r")
 	lines = fcov.readlines()
 	for iline,line in enumerate(lines):
-		cov = line.replace(' ','').replace('\n','')
+		cov = line.split()[1]
+		cov = cov.replace(' ','').replace('\n','')
 		cov_dict[iline] = float(cov)
 
 nodeA = 200.0
@@ -179,16 +180,20 @@ nx.draw_networkx_labels(Gcomp, pos, font_size=14, font_family='Gill Sans MT')
 
 # reaction labels
 if label_rxn:
-	if directed:
-		Grxn = nx.DiGraph()
-	else:
-		Grxn = nx.Graph()
-	#
-	for n,typ in G.nodes.data('typ'):
-		if typ == 'rxn':
-			Grxn.add_node(n)
+	rxn_label_size = 12
+else:
+	rxn_label_size = 0
+	
+if directed:
+	Grxn = nx.DiGraph()
+else:
+	Grxn = nx.Graph()
+#
+for n,typ in G.nodes.data('typ'):
+	if typ == 'rxn':
+		Grxn.add_node(n)
 
-	nx.draw_networkx_labels(Grxn, pos, font_size=12, font_family='Gill Sans MT')
+nx.draw_networkx_labels(Grxn, pos, font_size=rxn_label_size, font_family='Gill Sans MT')
 
 plt.xticks([])
 plt.yticks([])
