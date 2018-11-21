@@ -65,12 +65,15 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.8
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
 TS = True
-nimages = 8
+if TS:
+	CI = False # whether to do CI-NEB
+
+nimages = 4
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -96,12 +99,12 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "normal"
-	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	prec        = "low"
+	encut       = 350.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 200
-	nsw_neb     = 40
-	nsw_dimer   = 200
+	nsw         = 100
+	nsw_neb     = 20
+	nsw_dimer   = 100
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -113,7 +116,7 @@ elif "vasp" in calculator:
 	setups      = None
 	ivdw        = 12
 	ialgo       = 48 # normal=38, veryfast=48
-	npar        = 12
+	npar        = 18
 	nsim        = npar
 	lwave       = False
 	lcharg      = True
@@ -256,7 +259,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
-		# view(tmp); quit()
+		view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -475,7 +478,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 1.0
+					ads_height += 0.8
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -767,14 +770,15 @@ for irxn in range(rxn_num):
 
 
 			# CI-NEB
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-							images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
-			print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
-			tmp.get_potential_energy()
-			print "----------- CI NEB done -----------"
-			neb_copy_contcar_to_poscar(nimages)
+			if CI:
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+								images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+				print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
+				tmp.get_potential_energy()
+				print "----------- CI NEB done -----------"
+				neb_copy_contcar_to_poscar(nimages)
  
 			nebresults = vtst + "nebresults.pl"
 			neb2dim    = vtst + "neb2dim.pl"
