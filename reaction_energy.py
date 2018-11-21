@@ -65,12 +65,12 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.8
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
 TS = True
-nimages = 4
+nimages = 8
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -96,11 +96,11 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
-	encut       = 300.0 # 213.0 or 400.0 or 500.0
+	prec        = "normal"
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 50
-	nsw_neb     = 10
+	nsw         = 200
+	nsw_neb     = 40
 	nsw_dimer   = 200
 	nelmin      = 5
 	nelm        = 40 # default:40
@@ -256,7 +256,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
-		#view(tmp); quit()
+		# view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -502,10 +502,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				# offset = np.array(offset)*(3.0/4.0) # MgO only
-				offset = np.array(offset)
-				# offset = np.array(offset)*( (2.0*2.0)/(2.0*3.0) ) # 2-->3
-				# offset = np.array(offset)*( (2.0*2.0)/(2.0*4.0) ) # 2-->4
+				offset = np.array(offset)*offset_fac
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
