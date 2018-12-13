@@ -65,15 +65,15 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.8
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = False
 TS = True
 if TS:
-	CI = False # whether to do CI-NEB
+	CI = True # whether to do CI-NEB
 
-nimages = 4
+nimages = 8
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -99,12 +99,12 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
-	encut       = 350.0 # 213.0 or 400.0 or 500.0
+	prec        = "normal"
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
+	nsw         = 200
 	nsw_neb     = 20
-	nsw_dimer   = 100
+	nsw_dimer   = 800
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -259,7 +259,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
 					tmp = surf_tmp
 		del surf_tmp
-		view(tmp); quit()
+		# view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -478,7 +478,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 0.8
+					ads_height += 1.0
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -786,11 +786,13 @@ for irxn in range(rxn_num):
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
 
+			# print "dimer made" ; quit()
+
 			# dimer method
 			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=2, potim=0, nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
-							iopt=2, maxmove=0.20, ichain=2)
+							nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
+							iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2)
 			print "----------- doing dimer method TS optimization -----------"
 			TSene = tmp.get_potential_energy()
 			print "----------- dimer done -----------"
