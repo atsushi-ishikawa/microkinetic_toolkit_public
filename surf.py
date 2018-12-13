@@ -22,7 +22,6 @@ cif_file = "pd.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
-
 lattice = "fcc"
 facet   = "100"
 #lattice = "hcp"
@@ -54,16 +53,7 @@ offset_fac = 1.5 # for Pd110*[2,2,1]
 #
 if doping:
 	symbols  =  np.array(surf.get_chemical_symbols())
-	if nlayer==1:
-		rep_atom = 16
-	elif nlayer==2:
-		rep_atom = 48
-	elif nlayer==3:
-		rep_atom = 80
-	elif nlayer==4:
-		rep_atom = 112
-	# MgO: 16 for layer=1, 48 for layer=2
-	# CaO: 18 for layer=1
+	rep_atom = 112
 	symbols[rep_atom] = 'Li'
 	surf.set_chemical_symbols(symbols)
 
