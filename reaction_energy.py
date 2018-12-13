@@ -46,7 +46,6 @@ if surface:
 	facet      = db.get(id=1).data.facet
 	surf_name  = db.get(id=1).data.formula
 	offset_fac = db.get(id=1).data.offset_fac
-	# offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -65,7 +64,7 @@ rxn_num = get_number_of_reaction(reactionfile)
 ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.4
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
 IR = True
@@ -120,7 +119,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = True
-	ispin = 1
+	ispin       = 1
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -418,9 +417,11 @@ for irxn in range(rxn_num):
 				os.system("rm vib.*")
 			if IR:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
 				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
 				os.system("rm ir-*.pckl")
@@ -694,9 +695,11 @@ for irxn in range(rxn_num):
 				os.system("rm vib.*")
 			if IR:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
 				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
 				os.system("rm ir-*.pckl")
