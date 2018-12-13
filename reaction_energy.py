@@ -68,8 +68,8 @@ maxoptsteps = 200
 ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 # whether to do IR --- ongoing
-IR = False
-TS = True
+IR = True
+TS = False
 if TS:
 	CI = True # whether to do CI-NEB
 

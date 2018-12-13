@@ -9,15 +9,15 @@ import numpy as np
 from reaction_tools import *
 
 vacuum = 10.0
-doping = True
+doping = False
 
 os.system('rm surf.db')
 
 nlayer = 2
 nrelax = 2
 
-cif_file = "mgo.cif"
-#cif_file = "pd.cif"
+#cif_file = "mgo.cif"
+cif_file = "pd.cif"
 #cif_file = "cao.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
@@ -47,7 +47,8 @@ surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
 
-offset_fac = 3.0/4.0
+#offset_fac = 3.0/4.0
+offset_fac = 1.5 # for Pd110*[2,2,1]
 #
 # doping e.g.) Mg by Li
 #
