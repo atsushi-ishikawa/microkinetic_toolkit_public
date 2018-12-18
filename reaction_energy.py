@@ -228,7 +228,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -238,7 +238,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -256,7 +256,7 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
 		# view(tmp); quit()
@@ -512,7 +512,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -522,7 +522,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -540,7 +540,7 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
 		#
