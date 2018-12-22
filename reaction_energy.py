@@ -46,7 +46,6 @@ if surface:
 	facet      = db.get(id=1).data.facet
 	surf_name  = db.get(id=1).data.formula
 	offset_fac = db.get(id=1).data.offset_fac
-	# offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -62,13 +61,14 @@ surf.set_constraint(c)
 rxn_num = get_number_of_reaction(reactionfile)
 
 ## --- parameters
-ZPE = False
 SP  = False
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.4
 ads_pos0 = (0.0, 0.0)
-# whether to do IR --- ongoing
-IR = True
+
+ZPE = [False, False]
+IR  = [True, False] # whether to do IR...[Reac, Prod]
+
 TS = False
 if TS:
 	CI = True # whether to do CI-NEB
@@ -120,7 +120,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = True
-	ispin = 1
+	ispin       = 1
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -143,7 +143,7 @@ elif "emt" in calculator:
 	basis  = ""
 	label  = ""
 
-if ZPE:
+if True in ZPE:
 	label = label + "_ZPE"
 if SP:
 	label = label + "_SP"
@@ -228,7 +228,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -238,7 +238,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -256,7 +256,7 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
 		# view(tmp); quit()
@@ -295,7 +295,7 @@ for irxn in range(rxn_num):
 			ispin = 1
 
 		if natom == 1:
-			ZPE = False; IR = False
+			ZPE[0] = False; IR[0] = False
 		#
 		# set label
 		#
@@ -407,31 +407,38 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
-		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
+		if mol_type!='surf' and (ZPE[0] or IR[0]): # surf--nothing to do with vibration
 			# fix atoms for vibrations
 			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
-			if ZPE:
+			if ZPE[0]:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
-			if IR:
+			if IR[0]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
-				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				# vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				vib.write_spectra(out=r_label+"_IR.dat")
 				os.system("rm ir-*.pckl")
 			
-			hnu = vib.get_energies()
-			zpe = vib.get_zero_point_energy()
-			reac_en[imols] = en + zpe
-			if ZPE:
+			#hnu = vib.get_energies()
+
+			if ZPE[0]:
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
 				os.system("rm vib.*")
 			if IR:
 				os.system("rm ir-*.pckl")
+
+			reac_en[imols] = en
+
 		else:
 			reac_en[imols] = en
 
@@ -505,7 +512,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -515,7 +522,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -533,7 +540,7 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
 		#
@@ -571,7 +578,7 @@ for irxn in range(rxn_num):
 			ispin = 1
 
 		if natom == 1:
-			ZPE = False; IR = False
+			ZPE[1] = False; IR[1] = False
 		#
 		# set label
 		#
@@ -683,31 +690,37 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
-		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
+		if mol_type!='surf' and (ZPE[1] or IR[1]): # surf--nothing to do with vibration
 			# fix atoms for vibrations
 			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
-			if ZPE:
+			if ZPE[1]:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
-			if IR:
+			if IR[1]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
-				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				# vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				vib.write_spectra(out=r_label+"_IR.dat")
 				os.system("rm ir-*.pckl")
 
-			hnu = vib.get_energies()
-			zpe = vib.get_zero_point_energy()
-			prod_en[imols] = en + zpe
-			if ZPE:
+			#hnu = vib.get_energies()
+
+			if ZPE[1]:
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
 				os.system("rm vib.*")
 			if IR:
 				os.system("rm ir-*.pckl")
+
+			prod_en[imols] = en
 		else:
 			prod_en[imols] = en
 
