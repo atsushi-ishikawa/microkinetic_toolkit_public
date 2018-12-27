@@ -13,17 +13,17 @@ doping = False
 
 os.system('rm surf.db')
 
-nlayer = 2
-nrelax = 2
+nlayer = 5
+nrelax = 3
 
-#cif_file = "mgo.cif"
-cif_file = "pd.cif"
+cif_file = "mgo.cif"
+#cif_file = "pd.cif"
 #cif_file = "cao.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
 lattice = "fcc"
-facet   = "100"
+facet   = "310"
 #lattice = "hcp"
 #facet   = "001"
 #lattice = "sp15"
@@ -40,14 +40,16 @@ if cif_file == "La2O3.cif":
 	surf.wrap()
 	surf.center(axis=2) # La2O3, only z-axis
 
-surf = surf*[2,2,1]
+surf = surf*[1,2,1]
 #surf = sort(surf)
 surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
 
 #offset_fac = 3.0/4.0
-offset_fac = 1.5 # for Pd110*[2,2,1]
+#offset_fac = 1.5 # for Pd110*[2,2,1]
+#offset_fac = 1.0
+offset_fac = 0.67
 #
 # doping e.g.) Mg by Li
 #
