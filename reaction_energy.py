@@ -60,18 +60,22 @@ surf.set_constraint(c)
 
 rxn_num = get_number_of_reaction(reactionfile)
 
-## --- parameters
-SP  = False
+# single point
+SP = True
+if SP:
+	xc_sp = "hse06"
+	ivdw_sp = 0
+
 maxoptsteps = 200
 ads_height0 = 1.4
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
-IR  = [True, False] # whether to do IR...[Reac, Prod]
+IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 TS = False
 if TS:
-	CI = True # whether to do CI-NEB
+	CI = False# whether to do CI-NEB
 
 nimages = 8
 
@@ -135,7 +139,11 @@ elif "vasp" in calculator:
 		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
 		ialgo = 38
 	# charge
-	neutral = True
+	neutral = False
+	if neutral:
+		charge = 0
+	else:
+		charge = 1
 
 ## --- EMT --- -> nothing to set
 elif "emt" in calculator:
@@ -259,7 +267,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
-		# view(tmp); quit()
+		#view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -391,10 +399,12 @@ for irxn in range(rxn_num):
 				ismear_sp = 0
 				kpts_sp   = [1, 1, 1]
 			else:
-				ismear_sp = -5
-				kpts_sp   = [5, 5, 1]
+				#ismear_sp = -5
+				ismear_sp = ismear
+				#kpts_sp   = [5, 5, 1]
+				kpts_sp = kpts
 
-			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
@@ -674,10 +684,12 @@ for irxn in range(rxn_num):
 				ismear_sp = 0
 				kpts_sp   = [1, 1, 1]
 			else:
-				ismear_sp = -5
-				kpts_sp   = [5, 5, 1]
+				#ismear_sp = -5
+				ismear_sp = ismear
+				#kpts_sp   = [5, 5, 1]
+				kpts_sp = kpts
 
-			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
 							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
@@ -768,14 +780,23 @@ for irxn in range(rxn_num):
 			# copy reactant and product CONTCAR and OUTCAR to 00 and 0#IMAGE's POSCAR and OUTCAR
 			os.system('cp %s 00'          % outcar1)
 			os.system('cp %s 00/POSCAR'   % contcar1)
-			os.system('cp %s %02d'        % (outcar2, nimages+1))
+			os.system('cp %s %02d'        % (outcar2,  nimages+1))
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
 
 			# normal NEB
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-			 				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-			 				images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
+			if neutral:
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			 					ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
+			else:
+				nelect = get_number_of_valence_electrons(tmp)
+				nelect = nelect - charge
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			 					ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10, nelect=nelect, lmono="true")
+
 			print "----------- doing NEB calculation with images=",nimages,"-----------"
 			tmp.get_potential_energy()
 			print "----------- normal NEB done -----------"
@@ -784,10 +805,18 @@ for irxn in range(rxn_num):
 
 			# CI-NEB
 			if CI:
-				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-								ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-								images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+				if neutral:
+					tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+									ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+				else:
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+					tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+									ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10, nelect=nelect, lmono="true")
 				print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
 				tmp.get_potential_energy()
 				print "----------- CI NEB done -----------"
@@ -802,10 +831,19 @@ for irxn in range(rxn_num):
 			# print "dimer made" ; quit()
 
 			# dimer method
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
-							iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2)
+			if neutral:
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
+								iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2)
+			else:
+				nelect = get_number_of_valence_electrons(tmp)
+				nelect = nelect - charge
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
+								iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2, nelect=nelect, lmono="true")
+
 			print "----------- doing dimer method TS optimization -----------"
 			TSene = tmp.get_potential_energy()
 			print "----------- dimer done -----------"
