@@ -64,6 +64,8 @@ rxn_num = get_number_of_reaction(reactionfile)
 SP = True
 if SP:
 	xc_sp = "hse06"
+	if ("hse" or "b3lyp") in xc_sp:
+		ialgo_sp = 58
 	ivdw_sp = 0
 
 maxoptsteps = 200
@@ -405,7 +407,7 @@ for irxn in range(rxn_num):
 				kpts_sp = kpts
 
 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo_sp, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
 
@@ -690,7 +692,7 @@ for irxn in range(rxn_num):
 				kpts_sp = kpts
 
 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo_sp, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
 
