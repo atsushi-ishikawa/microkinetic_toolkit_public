@@ -24,11 +24,14 @@ python make_rate_equation.py input.txt
 ```
 
 #### 5. Run MATLAB
+```bash
+cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB_dir
+```
 * `coverage.txt` and `rateconst.txt` are generated
 
 #### 6. Add rate to reactionfile
 ```bash
-python rate_for_graph.py [input.txt] coverage.txt rateconst.txt variable.txt
+python rate_for_graph.py [input.txt] coverage.txt rateconst.txt variables.txt
 ```
 * `input_val.txt` is generated
 
