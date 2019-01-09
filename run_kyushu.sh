@@ -1,6 +1,6 @@
 #!/bin/bash
 #PJM -L "rscunit=ito-a"
-#PJM -L "rscgrp=ito-a-oc170117"
+#PJM -L "rscgrp=ito-a-oc170141"
 #PJM -L "vnode=4"
 #PJM -L "vnode-core=36"
 #PJM -L "elapse=60:00:00"
@@ -37,6 +37,12 @@ echo
 echo "import os" > $vasp_script
 echo "exitcode = os.system(\"mpirun -np ${NUM_PROCS} ${PRG}\")" >> $vasp_script
 ####
+
+# remove old files
+rm -rf rpbe*
+rm -rf tsdir
+rm tmp.db
+rm std*
 
 python reaction_energy.py $INP 1> stdout_$LBL.txt 2> stderr_$LBL.txt
 

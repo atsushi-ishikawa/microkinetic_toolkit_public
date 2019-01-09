@@ -208,6 +208,11 @@ for irxn in range(rxn_num):
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-TILT" in mol:
+					mol = mol.replace("-TILT","")
+					tmp = methane[mol]
+					tmp.rotate(45,'y')
+					config = "tilt"
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
@@ -269,7 +274,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
-		#view(tmp); quit()
+		view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -494,6 +499,11 @@ for irxn in range(rxn_num):
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-TILT" in mol:
+					mol = mol.replace("-TILT","")
+					tmp = methane[mol]
+					tmp.rotate(45,'y')
+					config = "tilt"
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
