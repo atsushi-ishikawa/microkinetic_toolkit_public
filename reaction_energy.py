@@ -61,7 +61,7 @@ surf.set_constraint(c)
 rxn_num = get_number_of_reaction(reactionfile)
 
 # single point
-SP = True
+SP = False
 if SP:
 	xc_sp = "hse06"
 	if ("hse" or "b3lyp") in xc_sp:
@@ -198,11 +198,16 @@ for irxn in range(rxn_num):
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
-				if "-SIDE" in mol:
-					mol = mol.replace("-SIDE","")
+				if "-SIDEy" in mol:
+					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					config = "side"
+					config = "sidey"
+				elif "-SIDEx" in mol:
+					mol = mol.replace("-SIDEx","")
+					tmp = methane[mol]
+					tmp.rotate(90,'x')
+					config = "sidex"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
@@ -489,11 +494,16 @@ for irxn in range(rxn_num):
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
-				if "-SIDE" in mol:
-					mol = mol.replace("-SIDE","")
+				if "-SIDEy" in mol:
+					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					config = "side"
+					config = "sidey"
+				elif "-SIDEx" in mol:
+					mol = mol.replace("-SIDEx","")
+					tmp = methane[mol]
+					tmp.rotate(90,'x')
+					config = "sidex"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
