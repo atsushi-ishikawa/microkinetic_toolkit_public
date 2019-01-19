@@ -17,25 +17,25 @@ inp = argvs[1] # elementary reactions with reaction rate
 label_rxn = False
 directed  = True
 
-os.system('grep -v "^#" %s > reaction2.txt' % inp )
-os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')
+eps  = 1.0e-10
+tiny = 1.0e-50 # Tiny value. Effectively zero.
+
+edge_scale = 0.01
+rate_thre  = 4  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+
+os.system('grep -v "^#" %s > reaction2.txt' % inp ) # remove comment line
+os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt') # remove blanck line
 
 numlines = sum(1 for line in open("reaction3.txt"))
 
 f = open("reaction3.txt","r")
 lines = f.readlines()
-os.system('rm reaction2.txt reaction3.txt')
+#os.system('rm reaction2.txt reaction3.txt')
 
 reac  = [0 for i in range(numlines)]
 rxn   = [0 for i in range(numlines)]
 prod  = [0 for i in range(numlines)]
 value = [0 for i in range(numlines)]
-
-eps  = 1.0e-10
-tiny = 1.0e-50 # Tiny value. Effectively zero.
-
-edge_scale = 0.01
-rate_thre  = 4  # Thre for eaction rate in log scale. Rxn with smallter than this value is discarded.
 
 idx = 0
 for i,line in enumerate(lines):
@@ -45,7 +45,8 @@ for i,line in enumerate(lines):
 	if ':' in line:
 		comp,rate = line.split(':')
 		rate = rate.replace('\n','')
-		rate = float(rate)/eps
+		#rate = float(rate)/eps
+		rate = float(rate)
 		if rate >= 0.0:
 			rate = log10(rate) if rate > eps else 1.0
 		else:
@@ -85,7 +86,6 @@ c_siz = 200; c_col = "blue"
 r_siz = 10;  r_col = "black"
 
 if coverage:
-	# coverage
 	cov_dict = {}
 	fcov = open(cov_file,"r")
 	lines = fcov.readlines()
