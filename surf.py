@@ -11,17 +11,17 @@ from reaction_tools import *
 vacuum = 10.0
 doping = True
 
-os.system('rm surf.db')
+if os.path.exists('surf.db'):
+	os.system('rm surf.db')
 
 nlayer = 2
-nrelax = 2
+nrelax = 1
 
 cif_file = "mgo.cif"
 #cif_file = "pd.cif"
 #cif_file = "cao.cif"
 #cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
-
 
 lattice = "fcc"
 facet   = "100"
@@ -48,21 +48,15 @@ surf = sort_atoms_by_z(surf)
 formula = surf.get_chemical_formula()
 
 offset_fac = 3.0/4.0
+#offset_fac = 1.5 # for Pd110*[2,2,1]
+#offset_fac = 1.0
+#offset_fac = 0.67
 #
 # doping e.g.) Mg by Li
 #
 if doping:
 	symbols  =  np.array(surf.get_chemical_symbols())
-	if nlayer==1:
-		rep_atom = 16
-	elif nlayer==2:
-		rep_atom = 48
-	elif nlayer==3:
-		rep_atom = 80
-	elif nlayer==4:
-		rep_atom = 112
-	# MgO: 16 for layer=1, 48 for layer=2
-	# CaO: 18 for layer=1
+	rep_atom = 48
 	symbols[rep_atom] = 'Li'
 	surf.set_chemical_symbols(symbols)
 
@@ -97,4 +91,6 @@ surf.set_tags(tag)
 
 db = connect("surf.db")
 db.write(surf, data=pos)
+
+view(surf)
 

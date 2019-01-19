@@ -247,8 +247,8 @@ fout.write(comment)
 # tempelate - start
 #
 template = "\
-\t % Rate(1:Ngas) = Rate(1:Ngas)*Vr;\n \
-\t Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(area/Vr);\n \
+\t % Rate(1:Ngas) = Rate(1:Ngas)*Vr; % gas onlye \n \
+\t Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(area/Vr); % gas + surface \n \
 \t % fprintf('------------\\n');\n \
 \t % fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
 \t % fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', C(1),C(2),C(3),theta(4),theta(5));\n \

@@ -46,7 +46,6 @@ if surface:
 	facet      = db.get(id=1).data.facet
 	surf_name  = db.get(id=1).data.formula
 	offset_fac = db.get(id=1).data.offset_fac
-	# offset_fac = 1.0
 
 	# load site information
 	f = open('site_info.json','r')
@@ -61,19 +60,26 @@ surf.set_constraint(c)
 
 rxn_num = get_number_of_reaction(reactionfile)
 
-## --- parameters
-ZPE = False
-SP  = False
-maxoptsteps = 200
-ads_height0 = 1.8
-ads_pos0 = (0.0, 0.0)
-# whether to do IR --- ongoing
-IR = False
-TS = True
-if TS:
-	CI = False # whether to do CI-NEB
+# single point
+SP = False
+if SP:
+	xc_sp = "hse06"
+	if ("hse" or "b3lyp") in xc_sp:
+		ialgo_sp = 58
+	ivdw_sp = 0
 
-nimages = 4
+maxoptsteps = 200
+ads_height0 = 1.4
+ads_pos0 = (0.0, 0.0)
+
+ZPE = [False, False]
+IR  = [False, False] # whether to do IR...[Reac, Prod]
+
+TS = False
+if TS:
+	CI = False# whether to do CI-NEB
+
+nimages = 8
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -99,12 +105,12 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "rpbe"
-	prec        = "low"
-	encut       = 350.0 # 213.0 or 400.0 or 500.0
+	prec        = "normal"
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	nsw         = 100
+	nsw         = 200
 	nsw_neb     = 20
-	nsw_dimer   = 100
+	nsw_dimer   = 800
 	nelmin      = 5
 	nelm        = 40 # default:40
 	ediff       = 1.0e-5
@@ -120,7 +126,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = True
-	ispin = 1
+	ispin       = 1
 	#setups = {"O" : "_h"}
 
 	method = xc
@@ -135,7 +141,11 @@ elif "vasp" in calculator:
 		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
 		ialgo = 38
 	# charge
-	neutral = True
+	neutral = False
+	if neutral:
+		charge = 0
+	else:
+		charge = 1
 
 ## --- EMT --- -> nothing to set
 elif "emt" in calculator:
@@ -143,7 +153,7 @@ elif "emt" in calculator:
 	basis  = ""
 	label  = ""
 
-if ZPE:
+if True in ZPE:
 	label = label + "_ZPE"
 if SP:
 	label = label + "_SP"
@@ -188,16 +198,26 @@ for irxn in range(rxn_num):
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
-				if "-SIDE" in mol:
-					mol = mol.replace("-SIDE","")
+				if "-SIDEy" in mol:
+					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					config = "side"
+					config = "sidey"
+				elif "-SIDEx" in mol:
+					mol = mol.replace("-SIDEx","")
+					tmp = methane[mol]
+					tmp.rotate(90,'x')
+					config = "sidex"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-TILT" in mol:
+					mol = mol.replace("-TILT","")
+					tmp = methane[mol]
+					tmp.rotate(45,'y')
+					config = "tilt"
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
@@ -228,7 +248,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -238,7 +258,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -256,10 +276,10 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
-		view(tmp); quit()
+		#view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -295,7 +315,7 @@ for irxn in range(rxn_num):
 			ispin = 1
 
 		if natom == 1:
-			ZPE = False; IR = False
+			ZPE[0] = False; IR[0] = False
 		#
 		# set label
 		#
@@ -391,11 +411,13 @@ for irxn in range(rxn_num):
 				ismear_sp = 0
 				kpts_sp   = [1, 1, 1]
 			else:
-				ismear_sp = -5
-				kpts_sp   = [5, 5, 1]
+				#ismear_sp = -5
+				ismear_sp = ismear
+				#kpts_sp   = [5, 5, 1]
+				kpts_sp = kpts
 
-			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo_sp, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
 
@@ -407,31 +429,38 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
-		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
+		if mol_type!='surf' and (ZPE[0] or IR[0]): # surf--nothing to do with vibration
 			# fix atoms for vibrations
 			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
-			if ZPE:
+			if ZPE[0]:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
-			if IR:
+			if IR[0]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
-				vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				# vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				vib.write_spectra(out=r_label+"_IR.dat")
 				os.system("rm ir-*.pckl")
 			
-			hnu = vib.get_energies()
-			zpe = vib.get_zero_point_energy()
-			reac_en[imols] = en + zpe
-			if ZPE:
+			#hnu = vib.get_energies()
+
+			if ZPE[0]:
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
 				os.system("rm vib.*")
 			if IR:
 				os.system("rm ir-*.pckl")
+
+			reac_en[imols] = en
+
 		else:
 			reac_en[imols] = en
 
@@ -465,20 +494,30 @@ for irxn in range(rxn_num):
 				mol,neutral,charge = read_charge(mol)
 
 				# flip or rotate
-				if "-SIDE" in mol:
-					mol = mol.replace("-SIDE","")
+				if "-SIDEy" in mol:
+					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
-					config = "side"
+					config = "sidey"
+				elif "-SIDEx" in mol:
+					mol = mol.replace("-SIDEx","")
+					tmp = methane[mol]
+					tmp.rotate(90,'x')
+					config = "sidex"
 				elif "-FLIP" in mol:
 					mol = mol.replace("-FLIP","")
 					tmp = methane[mol]
 					tmp.rotate(180,'y')
 					config = "flip"
+				elif "-TILT" in mol:
+					mol = mol.replace("-TILT","")
+					tmp = methane[mol]
+					tmp.rotate(45,'y')
+					config = "tilt"
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 0.8
+					ads_height += 1.0
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -505,7 +544,7 @@ for irxn in range(rxn_num):
 					ads_height += shift
 					offset = offset[0:2]
 
-				offset = np.array(offset)*offset_fac
+				offset = np.array(offset)
 				#
 				# wrap atoms to prevent adsorbate being on different cell
 				#
@@ -515,7 +554,7 @@ for irxn in range(rxn_num):
 				print("lattice:{0}, facet:{1}, site:{2}, site_pos:{3}, config:{4}".format(lattice, facet, site, site_pos, config))
 				#
 				if tmp == 'def':
-					defect = find_closest_atom(surf_tmp, offset=offset)
+					defect = find_closest_atom(surf_tmp, offset=offset*offset_fac)
 					del surf_tmp[len(surf_tmp.get_atomic_numbers())-1]
 					del surf_tmp[defect] # defect
 					tmp = surf_tmp
@@ -533,7 +572,7 @@ for irxn in range(rxn_num):
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
-					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset)
+					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
 		#
@@ -571,7 +610,7 @@ for irxn in range(rxn_num):
 			ispin = 1
 
 		if natom == 1:
-			ZPE = False; IR = False
+			ZPE[1] = False; IR[1] = False
 		#
 		# set label
 		#
@@ -667,11 +706,13 @@ for irxn in range(rxn_num):
 				ismear_sp = 0
 				kpts_sp   = [1, 1, 1]
 			else:
-				ismear_sp = -5
-				kpts_sp   = [5, 5, 1]
+				#ismear_sp = -5
+				ismear_sp = ismear
+				#kpts_sp   = [5, 5, 1]
+				kpts_sp = kpts
 
-			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc_sp, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw_sp, npar=npar, nsim=nsim,
+							encut=encut, ismear=ismear_sp, istart=0, setups=setups, sigma=sigma, ialgo=ialgo_sp, lwave=lwave, lcharg=lcharg,
 							ibrion=-1, potim=potim, nsw=0, ediff=ediff, ediffg=ediffg, kpts=kpts_sp) # normal
 			en = tmp.get_potential_energy()
 
@@ -683,31 +724,37 @@ for irxn in range(rxn_num):
 			os.system('cp CONTCAR %s >& /dev/null' % contcar)
 			os.system('rm PCDAT XDATCAR EIGENVAL OSZICAR IBZKPT CHGCAR CHG WAVECAR REPORT >& /dev/null')
 
-		if mol_type!='surf' and (ZPE or IR): # surf--nothing to do with vibration
+		if mol_type!='surf' and (ZPE[1] or IR[1]): # surf--nothing to do with vibration
 			# fix atoms for vibrations
 			if mol_type=='adsorbed':
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
-			if ZPE:
+			if ZPE[1]:
 				vib = Vibrations(tmp)
 				vib.run()
 				os.system("rm vib.*")
-			if IR:
+			if IR[1]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec="normal", ediff=1E-4, isym=0, idipol=4, dipol=tmp.get_center_of_mass(scaled=True), ldipol=True,
-								xc=xc, ivdw=ivdw, npar=npar, nsim=nsim, encut=encut, ismear=ismear, sigma=sigma, ialgo=ialgo, kpts=kpts, nsw=0 )
-				vib = Infrared(tmp)
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								ediff=ediff, kpts=kpts,
+								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
+				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
 				vib.run()
-				vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				# vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				vib.write_spectra(out=r_label+"_IR.dat")
 				os.system("rm ir-*.pckl")
 
-			hnu = vib.get_energies()
-			zpe = vib.get_zero_point_energy()
-			prod_en[imols] = en + zpe
-			if ZPE:
+			#hnu = vib.get_energies()
+
+			if ZPE[1]:
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
 				os.system("rm vib.*")
 			if IR:
 				os.system("rm ir-*.pckl")
+
+			prod_en[imols] = en
 		else:
 			prod_en[imols] = en
 
@@ -755,14 +802,23 @@ for irxn in range(rxn_num):
 			# copy reactant and product CONTCAR and OUTCAR to 00 and 0#IMAGE's POSCAR and OUTCAR
 			os.system('cp %s 00'          % outcar1)
 			os.system('cp %s 00/POSCAR'   % contcar1)
-			os.system('cp %s %02d'        % (outcar2, nimages+1))
+			os.system('cp %s %02d'        % (outcar2,  nimages+1))
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
 
 			# normal NEB
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-			 				ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-			 				images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
+			if neutral:
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			 					ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10)
+			else:
+				nelect = get_number_of_valence_electrons(tmp)
+				nelect = nelect - charge
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+			 					ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10, nelect=nelect, lmono="true")
+
 			print "----------- doing NEB calculation with images=",nimages,"-----------"
 			tmp.get_potential_energy()
 			print "----------- normal NEB done -----------"
@@ -771,10 +827,18 @@ for irxn in range(rxn_num):
 
 			# CI-NEB
 			if CI:
-				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-								ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-								images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+				if neutral:
+					tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+									ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10)
+				else:
+					nelect = get_number_of_valence_electrons(tmp)
+					nelect = nelect - charge
+					tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+									ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+									images=nimages, spring=-5.0, lclimb=True, iopt=7, maxmove=0.10, nelect=nelect, lmono="true")
 				print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
 				tmp.get_potential_energy()
 				print "----------- CI NEB done -----------"
@@ -786,11 +850,22 @@ for irxn in range(rxn_num):
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
 
+			# print "dimer made" ; quit()
+
 			# dimer method
-			tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
-							encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-							ibrion=2, potim=0, nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
-							iopt=2, maxmove=0.20, ichain=2)
+			if neutral:
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
+								iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2)
+			else:
+				nelect = get_number_of_valence_electrons(tmp)
+				nelect = nelect - charge
+				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
+								nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
+								iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2, nelect=nelect, lmono="true")
+
 			print "----------- doing dimer method TS optimization -----------"
 			TSene = tmp.get_potential_energy()
 			print "----------- dimer done -----------"
