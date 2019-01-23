@@ -33,7 +33,7 @@ template = " \
 \t Afor = A(:,1); \n \
 \n \
 \t kfor = Afor .* exp(-Ea/R/T); \n \
-\t krev = kfor ./ (Kci * 10^6); \n \
+\t krev = kfor ./ Kci; \n \
 \n \
 \t C = y(1:Ngas);\n  \
 \t theta = y(1:Ncomp);\n \
