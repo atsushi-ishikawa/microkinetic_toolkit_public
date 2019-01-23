@@ -26,8 +26,8 @@ rxn_num = get_number_of_reaction(infile)
 #
 units   = create_units('2014')
 amu     = units['_amu']
-kbolt   = units['_k']
-hplanck = units['_hplanck']
+kbolt   = units['_k'] 		# 1.38e-23 
+hplanck = units['_hplanck']	# 6.63e-34
 Nav     = units['_Nav']
 
 type_for = ["gas"]*rxn_num
