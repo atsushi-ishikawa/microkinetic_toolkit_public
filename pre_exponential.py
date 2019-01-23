@@ -119,7 +119,7 @@ for irxn in range(rxn_num):
 		# --- Hertz-Knudsen
 		denom    = np.sqrt( 2.0*np.pi*red_mass*kbolt*T ) # [kg* kg*m^2*s^-2*K^-1 * K]^1/2 = [kg^2*m^2*s^-2]^1/2 = [kg*m*s^-1]
 		fac_for  = stick / denom # [kg^-1*m^-1*s]
-		fac_for *= 10**-5        # [g^-1*cm^-1*s]
+		fac_for *= 10**-5        # [g^-1*cm^-1*s], kg^-1*m^-1 --> g^-1*cm^-1
 		# --- chemkin
 		# sden  = 1.0*10**14 # [site/cm^2]
 		# sden /= Nav        # [site/cm^2]*[mol/site] = [mol/cm^2]

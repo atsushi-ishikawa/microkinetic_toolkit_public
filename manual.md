@@ -18,24 +18,29 @@ python count_species.py input.txt
 python pre_exponential.py input.txt
 ```
 
-#### 4. Make MATLAB ODE file
+#### 4. Make entropy file
+```bash
+python entropy.py input.txt
+```
+
+#### 5. Make MATLAB ODE file
 ```bash
 python make_rate_equation.py input.txt
 ```
 
-#### 5. Run MATLAB
+#### 6. Run MATLAB
 ```bash
 cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB_dir
 ```
 * `coverage.txt` and `rateconst.txt` are generated
 
-#### 6. Add rate to reactionfile
+#### 7. Add rate to reactionfile
 ```bash
 python rate_for_graph.py [input.txt] coverage.txt rateconst.txt variables.txt
 ```
 * `input_val.txt` is generated
 
-#### 7. Draw graph
+#### 8. Draw graph
 ```bash
 python draw_chemical_graph.py input_val.txt coverage.txt
 ```

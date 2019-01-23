@@ -394,10 +394,18 @@ def remove_side_and_flip(mol):
 	#
 	# remove SIDE and FLIP in molecule
 	#
-	if '-SIDE' in mol:
-		mol = mol.replace('-SIDE','')
+	if '-SIDEx' in mol:
+		mol = mol.replace('-SIDEx','')
+	if '-SIDEy' in mol:
+		mol = mol.replace('-SIDEy','')
 	if '-FLIP' in mol:
 		mol = mol.replace('-FLIP','')
+	if '-SIDE' in mol:
+		mol = mol.replace('-SIDE','')
+	if '-TILT' in mol:
+		mol = mol.replace('-TILT','')
+	if '-HIGH' in mol:
+		mol = mol.replace('-HIGH','')
 
 	return mol
 
