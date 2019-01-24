@@ -60,53 +60,52 @@ for irxn in range(rxn_num):
 	list_r = []
 	list_p = []
 
-	# making dict1, a dictionary of species with number hash
-	for imol,mol in enumerate(r_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
+	# making dict1, a dictionary with hash of species number and molecule
+	for imols, mols in enumerate(r_ads[irxn]):
+		for imol, mol in enumerate(mols):
+			mol = remove_side_and_flip(mol)
+			site = r_site[irxn][imols][imol]
+			if site !='gas':
+				mol = mol + "_surf"
+			spe = get_species_num(mol) + 1 # MATLAB
+			list_r.append(spe)
+			dict1[spe] = mol
 
-		site = r_site[irxn][imol][0]
-		if site !='gas':
-			mol = mol + "_surf"
-		spe = get_species_num(mol) + 1 # MATLAB
-		list_r.append(spe)
-		dict1[spe] = mol
+	for imols, mols in enumerate(p_ads[irxn]):
+		for imol, mol in enumerate(mols):
+			mol = remove_side_and_flip(mol)
+			site = p_site[irxn][imols][imol]
+			if site !='gas':
+				mol = mol + "_surf"
+			spe = get_species_num(mol) + 1 # MATLAB
+			list_p.append(spe)
+			dict1[spe] = mol
 
-	for imol,mol in enumerate(p_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
-
-		site = p_site[irxn][imol][0]
-		if site !='gas':
-			mol = mol + "_surf"
-		spe = get_species_num(mol) + 1 # MATLAB
-		list_p.append(spe)
-		dict1[spe] = mol
 	# making dict1 --- done
 
 	#
 	# forward direction
 	#
 	tmp = "kfor(" + rxn_idx + ")"
-	for imol,mol in enumerate(r_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
+	for imols, mols in enumerate(r_ads[irxn]):
+		for imol, mol in enumerate(mols):
+			mol = remove_side_and_flip(mol)
+			site = r_site[irxn][imols][imol]
 
-		site = r_site[irxn][imol][0]
-		if site !='gas':
-			mol = mol + "_surf"
-		spe = get_species_num(mol) + 1 # MATLAB
+			if site !='gas':
+				mol = mol + "_surf"
+			spe = get_species_num(mol) + 1 # MATLAB
 
-		if site != 'gas' or mol  == 'surf':
-			theta = "theta(" + str(spe) + ")"
-		else:
-			theta = "C(" + str(spe) + ")"
+			if site != 'gas' or mol  == 'surf':
+				theta = "theta(" + str(spe) + ")"
+			else:
+				theta = "C(" + str(spe) + ")"
 
-		power = r_coef[irxn][imol]
+			power = r_coef[irxn][imols]
 
-		if power != 1:
-			theta = theta + "^" + str(power)
-		tmp = tmp + "*" + theta
+			if power != 1:
+				theta = theta + "^" + str(power)
+			tmp = tmp + "*" + theta
 
   	for mem in list_r:
  		coef = 0
@@ -123,9 +122,9 @@ for irxn in range(rxn_num):
 
  		sto_coef = str(float(coef))
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + " -" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = " -" + sto_coef + "*" + tmp
+			dict2[mem] = " - " + sto_coef + "*" + tmp
 
 		# multiply area/Vr for the surface reaction contribution to gas-phase species
 		if not "surf" in dict1[mem] and "theta" in dict2[mem]:
@@ -133,15 +132,14 @@ for irxn in range(rxn_num):
 
   	for mem in list_p:
  		coef = 0
-  		for imol, mol in enumerate(p_ads[irxn]):
- 			mol = mol[0]
-			mol = remove_side_and_flip(mol)
-
-			adsorbate = dict1[mem].split("_")[0]
-  			if mol == adsorbate:
-  				coef = p_coef[irxn][imol]
+  		for imols, mols in enumerate(p_ads[irxn]):
+			for imol, mol in enumerate(mols):
+				mol = remove_side_and_flip(mol)
+				adsorbate = dict1[mem].split("_")[0]
+  				if mol == adsorbate:
+  					coef = p_coef[irxn][imols]
 		
- 		if coef == 0:
+		if coef == 0:
  			print "something wrong at coef 2"; exit()
 
  		sto_coef = str(float(coef))
@@ -158,25 +156,27 @@ for irxn in range(rxn_num):
 	# reverse direction
 	#
 	tmp = "krev(" + rxn_idx + ")"
-	for imol,mol in enumerate(p_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
+	for imols, mols in enumerate(p_ads[irxn]):
+		for imol, mol in enumerate(mols):
+			mol = remove_side_and_flip(mol)
+			site = p_site[irxn][imols][imol]
+			if site !='gas':
+				mol = mol + "_surf"
+			spe = get_species_num(mol) + 1 # MATLAB
 
-		site = p_site[irxn][imol][0]
-		if site !='gas':
-			mol = mol + "_surf"
-		spe = get_species_num(mol) + 1 # MATLAB
+			if site != 'gas' or mol  == 'surf':
+				theta = "theta(" + str(spe) + ")"
+			else:
+				theta = "C(" + str(spe) + ")"
 
-		if site != 'gas' or mol  == 'surf':
-			theta = "theta(" + str(spe) + ")"
-		else:
-			theta = "C(" + str(spe) + ")"
+			power = p_coef[irxn][imols]
 
-		power = p_coef[irxn][imol]
+			if power != 1:
+				theta = theta + "^" + str(power)
+			tmp = tmp + "*" + theta
 
-		if power != 1:
-			theta = theta + "^" + str(power)
-		tmp = tmp + "*" + theta
+		# end mol
+	# end mols
 
   	for mem in list_r:
  		coef = 0
@@ -203,22 +203,22 @@ for irxn in range(rxn_num):
 
   	for mem in list_p:
  		coef = 0
-  		for imol, mol in enumerate(p_ads[irxn]):
- 			mol = mol[0]
-			mol = remove_side_and_flip(mol)
+  		for imols, mols in enumerate(p_ads[irxn]):
+			for imol, mol in enumerate(mols):
+				mol = remove_side_and_flip(mol)
+				adsorbate = dict1[mem].split("_")[0]
 
-			adsorbate = dict1[mem].split("_")[0]
-  			if mol == adsorbate:
-  				coef = p_coef[irxn][imol]
+  				if mol == adsorbate:
+  					coef = p_coef[irxn][imols]
 		
  		if coef == 0:
  			print "something wrong at coef 4"; exit()
 
  		sto_coef = str(float(coef))
 		if mem in dict2:
-			dict2[mem] = dict2[mem] + " -" + sto_coef + "*" + tmp
+			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
-			dict2[mem] = " -" + sto_coef + "*" + tmp
+			dict2[mem] = " - " + sto_coef + "*" + tmp
 
 		# multiply area/Vr for the surface reaction contribution to gas-phase species
 		if not "surf" in dict1[mem] and "theta" in dict2[mem]:
