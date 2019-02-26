@@ -203,6 +203,7 @@ for irxn in range(rxn_num):
 
 				# flip or rotate
 				if "-SIDEy" in mol:
+					# if "-SIDE" only, maybe this direction
 					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
@@ -283,7 +284,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
-		#view(tmp); quit()
+		view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -465,6 +466,7 @@ for irxn in range(rxn_num):
 				vib.write_spectra(out=irdir+"_spectra.dat", start=1000, end=4000)
 				vib.write_mode()
 				vib.write_jmol()
+
 				# include ZPE
 				zpe = vib.get_zero_point_energy()
 				en = en + zpe
