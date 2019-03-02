@@ -69,13 +69,13 @@ if SP:
 	ivdw_sp = 0
 
 maxoptsteps = 200
-ads_height0 = 1.4
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
-TS = False
+TS = True
 if TS:
 	CI = False# whether to do CI-NEB
 
@@ -107,14 +107,14 @@ elif "vasp" in calculator:
 	xc          = "rpbe"
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
-	potim       = 0.10
+	potim       = 0.08
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 800
 	nelmin      = 5
-	nelm        = 40 # default:40
+	nelm        = 100 # default:40
 	ediff       = 1.0e-5
-	ediffg      = -0.1
+	ediffg      = -0.05
 	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
@@ -125,7 +125,7 @@ elif "vasp" in calculator:
 	npar        = 18
 	nsim        = npar
 	lwave       = False
-	lcharg      = True
+	lcharg      = False
 	ispin       = 1
 	#setups = {"O" : "_h"}
 
@@ -221,7 +221,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 1.0
+					ads_height += 1.5
 					config = "high"
 				else:
 					tmp = methane[mol]
