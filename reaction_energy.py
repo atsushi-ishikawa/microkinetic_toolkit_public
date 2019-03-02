@@ -60,13 +60,6 @@ surf.set_constraint(c)
 
 rxn_num = get_number_of_reaction(reactionfile)
 
-# single point
-SP = False
-if SP:
-	xc_sp = "hse06"
-	if ("hse" or "b3lyp") in xc_sp:
-		ialgo_sp = 58
-	ivdw_sp = 0
 
 maxoptsteps = 200
 ads_height0 = 1.6
@@ -75,7 +68,12 @@ ads_pos0 = (0.0, 0.0)
 ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
+# transition state
 TS = True
+
+# single point
+SP = False
+
 if TS:
 	CI = False# whether to do CI-NEB
 
@@ -108,6 +106,7 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.08
+	ibrion      = 2 # 1:quasi newton 2:CG
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 800
@@ -141,11 +140,17 @@ elif "vasp" in calculator:
 		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
 		ialgo = 38
 	# charge
-	neutral = False
+	neutral = True
 	if neutral:
 		charge = 0
 	else:
 		charge = 1
+
+	if SP:
+		xc_sp = "hse06"
+		if ("hse" or "b3lyp") in xc_sp:
+			ialgo_sp = 58
+		ivdw_sp = 0
 
 ## --- EMT --- -> nothing to set
 elif "emt" in calculator:
@@ -199,6 +204,7 @@ for irxn in range(rxn_num):
 
 				# flip or rotate
 				if "-SIDEy" in mol:
+					# if "-SIDE" only, maybe this direction
 					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
@@ -279,7 +285,7 @@ for irxn in range(rxn_num):
 					add_adsorbate(surf_tmp, tmp, ads_height, position=ads_pos, offset=offset*offset_fac)
 					tmp = surf_tmp
 		del surf_tmp
-		#view(tmp); quit()
+		view(tmp); quit()
 		#
 		# end adsorbing molecule
 		#
@@ -362,13 +368,13 @@ for irxn in range(rxn_num):
 				if neutral:
 		 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
+									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
 				#
@@ -378,24 +384,24 @@ for irxn in range(rxn_num):
 					if DFTU:
 		 				tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFT+U
 					else:
 			 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFT+U
 					else:
 		 				tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
 		elif "emt" in calculator:
@@ -435,32 +441,39 @@ for irxn in range(rxn_num):
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE[0]:
-				vib = Vibrations(tmp)
+				# do ZPE calculation
+				zpedir = r_label + "_ZPE"
+				if not os.path.isdir(zpedir):
+					os.makedirs(zpedir)
+				vib = Vibrations(tmp, delta=0.01, name=zpedir+"/"+"ZPE") # delta = 0.01 is default
 				vib.run()
-				os.system("rm vib.*")
+				hnu = vib.get_energies()
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
+				os.system("rm -r zpedir")
 			if IR[0]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+				irdir = r_label + "_IR"
+				if not os.path.isdir(irdir):
+					os.makedirs(irdir)
+
+				tmp.calc = Vasp(label=irdir, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 								ediff=ediff, kpts=kpts,
 								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
-				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
+				vib = Infrared(tmp, delta=0.01, name=irdir+"/"+"IR")
 				vib.run()
 				# vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
-				vib.write_spectra(out=r_label+"_IR.dat")
-				os.system("rm ir-*.pckl")
-			
-			#hnu = vib.get_energies()
+				vib.write_spectra(out=irdir+"_spectra.dat", start=1000, end=4000)
+				vib.write_mode()
+				vib.write_jmol()
 
-			if ZPE[0]:
+				# include ZPE
 				zpe = vib.get_zero_point_energy()
 				en = en + zpe
-				os.system("rm vib.*")
-			if IR:
-				os.system("rm ir-*.pckl")
+				os.system("rm *.pckl")
 
 			reac_en[imols] = en
-
 		else:
 			reac_en[imols] = en
 
@@ -657,13 +670,13 @@ for irxn in range(rxn_num):
 				if neutral:
 		 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 		 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-									ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
+									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true" )
 			else:
 				#
@@ -673,24 +686,24 @@ for irxn in range(rxn_num):
 					if DFTU:
 		 				tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # DFT+U
 					else:
 			 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
 					if DFTU:
 		 				tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true", ldau=ldau, ldautype=ldautype, ldau_luj=ldau_luj ) # charge + DFT+U
 					else:
 		 				tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, 
 										nelect=nelect, lmono="true") # charge
 
 		elif "emt" in calculator:
@@ -730,29 +743,36 @@ for irxn in range(rxn_num):
 				c = FixAtoms(indices=[atom.index for atom in surf if atom.tag == 1 or atom.tag == 2])
 				tmp.set_constraint(c)
 			if ZPE[1]:
-				vib = Vibrations(tmp)
+				# do ZPE calculation
+				zpedir = p_label + "_ZPE"
+				if not os.path.isdir(zpedir):
+					os.makedirs(zpedir)
+				vib = Vibrations(tmp, delta=0.01, name=zpedir+"/"+"ZPE") # delta = 0.01 is default
 				vib.run()
-				os.system("rm vib.*")
+				hnu = vib.get_energies()
+				zpe = vib.get_zero_point_energy()
+				en = en + zpe
+				os.system("rm -r zpedir")
 			if IR[1]:
 				# setting for IR calculation
-				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+				irdir = p_label + "_IR"
+				if not os.path.isdir(irdir):
+					os.makedirs(irdir)
+
+				tmp.calc = Vasp(label=irdir, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 								encut=encut, ismear=ismear, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 								ediff=ediff, kpts=kpts,
 								isym=0, lmono=True, ldipol=True, idipol=4, dipol=tmp.get_center_of_mass(scaled=True) )
-				vib = Infrared(tmp, delta=0.01) # delta = 0.01 is default
+				vib = Infrared(tmp, delta=0.01, name=irdir+"/"+"IR")
 				vib.run()
-				# vib.write_spectra(out=p_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
-				vib.write_spectra(out=r_label+"_IR.dat")
-				os.system("rm ir-*.pckl")
-
-			#hnu = vib.get_energies()
-
-			if ZPE[1]:
+				# vib.write_spectra(out=r_label+"_IR.dat",start=1000,end=4000, width=10, normalize=True)
+				vib.write_spectra(out=irdir+"_spectra.dat", start=1000, end=4000)
+				vib.write_mode()
+				vib.write_jmol()
+				# include ZPE
 				zpe = vib.get_zero_point_energy()
 				en = en + zpe
-				os.system("rm vib.*")
-			if IR:
-				os.system("rm ir-*.pckl")
+				os.system("rm *.pckl")
 
 			prod_en[imols] = en
 		else:
