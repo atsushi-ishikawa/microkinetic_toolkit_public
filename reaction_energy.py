@@ -68,7 +68,7 @@ ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = True
+TS = False
 
 # single point
 SP = False
@@ -102,6 +102,13 @@ if "gau" in calculator:
 ## --- VASP ---
 elif "vasp" in calculator:
 	xc          = "pw91"
+	ivdw        = 0
+	# GGA list
+	#  GGAs: pw91,pbe,pbesol,revpbe,rpbe,am05
+	#  meta-GGAs: tpss,revtpss,m06l,ms0,ms1,scan,scan-rvv10
+	#    --> gga and pp (to be override) are set automatically
+	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
+	#    --> luse_vdw and others are set automatically
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.08
@@ -118,7 +125,6 @@ elif "vasp" in calculator:
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ivdw        = 0
 	ialgo       = 48 # normal=38, veryfast=48
 	npar        = 6
 	nsim        = npar
@@ -126,10 +132,11 @@ elif "vasp" in calculator:
 	lcharg      = False
 	ispin       = 1
 	#setups = {"O" : "_h"}
-	if 'pbe' in xc:
-		pp = 'potpaw_PBE.54'
-	elif 'pw91' in xc:
+
+	if xc=='pw91':
 		pp = 'potpaw_GGA'
+	else: # mostly PBE is OK
+		pp = 'potpaw_PBE.54'
 
 	method = xc
 	basis  = ""
