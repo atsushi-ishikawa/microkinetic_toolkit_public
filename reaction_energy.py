@@ -101,11 +101,11 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "pbe"
+	xc          = "pw91"
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.08
-	ibrion      = 2 # 1:quasi newton 2:CG
+	ibrion      = 1 # 1:quasi newton 2:CG
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 800
@@ -118,9 +118,9 @@ elif "vasp" in calculator:
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ivdw        = 202
+	ivdw        = 0
 	ialgo       = 48 # normal=38, veryfast=48
-	npar        = 18
+	npar        = 6
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
