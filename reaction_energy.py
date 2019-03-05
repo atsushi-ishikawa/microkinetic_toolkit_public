@@ -61,14 +61,14 @@ surf.set_constraint(c)
 rxn_num = get_number_of_reaction(reactionfile)
 
 maxoptsteps = 200
-ads_height0 = 1.8
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = False
+TS = True
 
 # single point
 SP = False
@@ -76,7 +76,7 @@ SP = False
 if TS:
 	CI = False# whether to do CI-NEB
 
-nimages = 8
+nimages = 4
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -101,8 +101,8 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "pw91"
-	ivdw        = 0
+	xc          = "rpbe"
+	ivdw        = 12
 	# GGA list
 	#  GGAs: pw91,pbe,pbesol,revpbe,rpbe,am05
 	#  meta-GGAs: tpss,revtpss,m06l,ms0,ms1,scan,scan-rvv10
@@ -111,11 +111,11 @@ elif "vasp" in calculator:
 	#    --> luse_vdw and others are set automatically
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
-	potim       = 0.08
-	ibrion      = 1 # 1:quasi newton 2:CG
+	potim       = 0.10
+	ibrion      = 2 # 1:quasi newton 2:CG
 	nsw         = 200
 	nsw_neb     = 20
-	nsw_dimer   = 800
+	nsw_dimer   = 1
 	nelmin      = 5
 	nelm        = 100 # default:40
 	ediff       = 1.0e-5
@@ -130,7 +130,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
-	ispin       = 1
+	ispin       = 2
 	#setups = {"O" : "_h"}
 
 	if xc=='pw91':
@@ -817,7 +817,7 @@ for irxn in range(rxn_num):
 			# Different ordering cause bad NEB images.
 			atom1 = read('POSCAR_reac')
 			atom2 = read('POSCAR_prod')
-			newatom1 = make_it_closer_by_exchange(atom1, atom2) # atom1 is exchanged
+			newatom1 = make_it_closer_by_exchange(atom1, atom2, thre=0.1) # atom1 is exchanged
 			write('POSCAR_reac',newatom1) # do not sort because POTCAR does not follow
 			write('POSCAR_prod',atom2)
 			#
@@ -834,6 +834,8 @@ for irxn in range(rxn_num):
 			os.system('cp %s 00/POSCAR'   % contcar1)
 			os.system('cp %s %02d'        % (outcar2,  nimages+1))
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
+
+			print "check neb"; quit()
 
 			# normal NEB
 			if neutral:
@@ -853,7 +855,6 @@ for irxn in range(rxn_num):
 			tmp.get_potential_energy()
 			print "----------- normal NEB done -----------"
 			neb_copy_contcar_to_poscar(nimages)
-
 
 			# CI-NEB
 			if CI:
