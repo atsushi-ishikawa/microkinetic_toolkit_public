@@ -76,7 +76,7 @@ SP = False
 if TS:
 	CI = False# whether to do CI-NEB
 
-nimages = 4
+nimages = 8
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -540,7 +540,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 1.0
+					ads_height += 3.0
 					config = "high"
 				else:
 					tmp = methane[mol]
