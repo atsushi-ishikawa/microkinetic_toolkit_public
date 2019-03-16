@@ -76,7 +76,7 @@ SP = False
 if TS:
 	CI = False# whether to do CI-NEB
 
-nimages = 4
+nimages = 8
 
 if TS:
 	vtst = "/home/a_ishi/vasp/vtstscripts/vtstscripts-935/" # whisky
@@ -540,7 +540,7 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 1.0
+					ads_height += 3.0
 					config = "high"
 				else:
 					tmp = methane[mol]
@@ -817,7 +817,7 @@ for irxn in range(rxn_num):
 			# Different ordering cause bad NEB images.
 			atom1 = read('POSCAR_reac')
 			atom2 = read('POSCAR_prod')
-			newatom1 = make_it_closer_by_exchange(atom1, atom2, thre=0.1) # atom1 is exchanged
+			newatom1 = make_it_closer_by_exchange(atom1, atom2, thre=100.0) # atom1 is exchanged
 			write('POSCAR_reac',newatom1) # do not sort because POTCAR does not follow
 			write('POSCAR_prod',atom2)
 			#
@@ -834,8 +834,6 @@ for irxn in range(rxn_num):
 			os.system('cp %s 00/POSCAR'   % contcar1)
 			os.system('cp %s %02d'        % (outcar2,  nimages+1))
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
-
-			print "check neb"; quit()
 
 			# normal NEB
 			if neutral:
