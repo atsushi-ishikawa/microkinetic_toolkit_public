@@ -239,6 +239,11 @@ for irxn in range(rxn_num):
 					tmp = methane[mol]
 					ads_height += 1.5
 					config = "high"
+				elif "-AIR" in mol:
+					mol = mol.replace("-AIR","")
+					tmp = methane[mol]
+					ads_height += 3.0
+					config = "air"
 				else:
 					tmp = methane[mol]
 
@@ -540,8 +545,13 @@ for irxn in range(rxn_num):
 				elif "-HIGH" in mol:
 					mol = mol.replace("-HIGH","")
 					tmp = methane[mol]
-					ads_height += 3.0
+					ads_height += 1.5
 					config = "high"
+				elif "-AIR" in mol:
+					mol = mol.replace("-AIR","")
+					tmp = methane[mol]
+					ads_height += 3.0
+					config = "air"
 				else:
 					tmp = methane[mol]
 
