@@ -68,7 +68,7 @@ ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = True
+TS = False
 
 # single point
 SP = False
@@ -101,25 +101,25 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "rpbe"
-	ivdw        = 12
+	xc          = "vdw-df2"
+	ivdw        = 0
 	# GGA list
-	#  GGAs: pw91,pbe,pbesol,revpbe,rpbe,am05
-	#  meta-GGAs: tpss,revtpss,m06l,ms0,ms1,scan,scan-rvv10
+	#  GGAs: pw91, pbe, pbesol, revpbe, rpbe, am05
+	#  meta-GGAs: tpss, revtpss, m06l, ms0, ms1, scan, scan-rvv10
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	ibrion      = 2 # 1:quasi newton 2:CG
+	ibrion      = 1 # 1:quasi newton 2:CG
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 1
 	nelmin      = 5
 	nelm        = 100 # default:40
 	ediff       = 1.0e-5
-	ediffg      = -0.05
+	ediffg      = -0.03
 	kpts_surf   = [5, 5, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
@@ -130,7 +130,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
-	ispin       = 2
+	ispin       = 1
 	#setups = {"O" : "_h"}
 
 	if xc=='pw91':
@@ -817,7 +817,7 @@ for irxn in range(rxn_num):
 			# Different ordering cause bad NEB images.
 			atom1 = read('POSCAR_reac')
 			atom2 = read('POSCAR_prod')
-			newatom1 = make_it_closer_by_exchange(atom1, atom2, thre=0.1) # atom1 is exchanged
+			newatom1 = make_it_closer_by_exchange(atom1, atom2, thre=100.0) # atom1 is exchanged
 			write('POSCAR_reac',newatom1) # do not sort because POTCAR does not follow
 			write('POSCAR_prod',atom2)
 			#
@@ -834,8 +834,6 @@ for irxn in range(rxn_num):
 			os.system('cp %s 00/POSCAR'   % contcar1)
 			os.system('cp %s %02d'        % (outcar2,  nimages+1))
 			os.system('cp %s %02d/POSCAR' % (contcar2, nimages+1))
-
-			print "check neb"; quit()
 
 			# normal NEB
 			if neutral:
