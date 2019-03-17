@@ -16,7 +16,6 @@ f = open(outfile,"w")
 rxn_num = get_number_of_reaction(infile)
 
 for irxn in range(rxn_num):
-	# print "----- irxn = ", irxn, "-----"
 	reac_S = 0.0
 	prod_S = 0.0
 	#
@@ -30,12 +29,10 @@ for irxn in range(rxn_num):
 		if site != 'gas' or mol == 'surf' or mol == 'def':
 			# surface species
 			entropy = 0.0
-			# print "R: molecular entropy for surf = ",entropy, "eV/K"
 		else:
 			tmp = methane[mol]
 			try:
 				entropy = methane.data[mol]['molecular_entropy']
-				# print "R: molecular entropy for",mol," = ",entropy, "eV/K"
 			except:
 				entropy = 0.0
 
@@ -51,12 +48,10 @@ for irxn in range(rxn_num):
 
 		if site != 'gas' or mol == 'surf' or mol == 'def':
 			entropy = 0.0
-			# print "P: molecular entropy for surf = ",entropy, "eV/K"
 		else:
 			tmp = methane[mol]
 			try:
 				entropy = methane.data[mol]['molecular_entropy']
-				# print "P: molecular entropy for",mol," = ",entropy, "eV/K"
 			except:
 				entropy = 0.0
 
@@ -64,6 +59,7 @@ for irxn in range(rxn_num):
 
 	deltaS = np.sum(prod_S) - np.sum(reac_S)
 
+	# print("irxn: %4d, rxn: %28s --> %28s, deltaS: %+10.5e" % (irxn,r_ads[irxn],p_ads[irxn],deltaS))
 	# write to file
 	f.write("{0:>16.8e}\n".format(deltaS))
 
