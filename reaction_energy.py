@@ -74,7 +74,7 @@ TS = False
 SP = False
 
 if TS:
-	CI = False# whether to do CI-NEB
+	CI = False # whether to do CI-NEB
 
 nimages = 8
 
@@ -101,7 +101,7 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "vdw-df2"
+	xc          = "rpbe"
 	ivdw        = 0
 	# GGA list
 	#  GGAs: pw91, pbe, pbesol, revpbe, rpbe, am05
@@ -112,7 +112,7 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	ibrion      = 1 # 1:quasi newton 2:CG
+	ibrion      = 2 # 1:quasi newton 2:CG
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 1
