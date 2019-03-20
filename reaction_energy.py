@@ -130,7 +130,7 @@ elif "vasp" in calculator:
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
-	ispin       = 1
+	ispin       = 2
 	#setups = {"O" : "_h"}
 
 	if xc=='pw91':
