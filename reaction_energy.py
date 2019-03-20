@@ -142,7 +142,7 @@ elif "vasp" in calculator:
 	dipole = True
 	if dipole:
 		ldipol = True
-		idipol = 4 # xyz-direction
+		idipol = 3 # xyz-direction
 
 	method = xc
 	basis  = ""
@@ -248,7 +248,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 4.0
+					ads_height += 3.0
 					config = "air"
 				else:
 					tmp = methane[mol]
@@ -554,7 +554,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 4.0
+					ads_height += 3.0
 					config = "air"
 				else:
 					tmp = methane[mol]
