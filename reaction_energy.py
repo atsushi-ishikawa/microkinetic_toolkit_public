@@ -68,7 +68,7 @@ ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = True
+TS = False
 
 # single point
 SP = False
@@ -101,7 +101,7 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "beef-vdw"
+	xc          = "pbe"
 	ivdw        = 0
 	# GGA list
 	#  GGAs: pw91, pbe, pbesol, revpbe, rpbe, am05
@@ -113,25 +113,32 @@ elif "vasp" in calculator:
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	ibrion      = 2 # 1:quasi newton 2:CG
-	nsw         = 200
+	nsw         = 500
 	nsw_neb     = 1
 	nsw_dimer   = 1
 	nelmin      = 5
 	nelm        = 100 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.03
-	kpts_surf   = [5, 5, 1]
+	kpts_surf   = [1, 1, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ialgo       = 48 # normal=38, veryfast=48
+	ialgo       = 38 # normal=38, veryfast=48
 	npar        = 6
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
 	ispin       = 2
 	#setups = {"O" : "_h"}
+
+	# set lmaxmix
+	lmaxmix = 2
+	first_TM = ["Fe","Ni"]
+	for elem in first_TM:
+		if elem in surf.get_chemical_symbols():
+			lmaxmix = 4
 
 	if xc=='pw91':
 		pp = 'potpaw_GGA'
@@ -410,7 +417,8 @@ for irxn in range(rxn_num):
 					else:
 			 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol ) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol,
+										lmaxmix=lmaxmix ) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
@@ -715,7 +723,8 @@ for irxn in range(rxn_num):
 					else:
 			 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol ) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol,
+										lmaxmix=lmaxmix ) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
