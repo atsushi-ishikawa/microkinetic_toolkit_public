@@ -61,7 +61,7 @@ surf.set_constraint(c)
 rxn_num = get_number_of_reaction(reactionfile)
 
 maxoptsteps = 200
-ads_height0 = 1.5
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
@@ -109,23 +109,24 @@ elif "vasp" in calculator:
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
-	prec        = "normal"
+	prec        = "accurate"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	ibrion      = 2 # 1:quasi newton 2:CG
-	nsw         = 500
+	ibrion      = 1
+	nfree       = 10
+	nsw         = 200
 	nsw_neb     = 1
 	nsw_dimer   = 1
 	nelmin      = 5
 	nelm        = 100 # default:40
-	ediff       = 1.0e-5
-	ediffg      = -0.03
-	kpts_surf   = [1, 1, 1]
+	ediff       = 1.0e-6
+	ediffg      = -0.05
+	kpts_surf   = [5, 5, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ialgo       = 38 # normal=38, veryfast=48
+	ialgo       = 48 # normal=38, veryfast=48
 	npar        = 6
 	nsim        = npar
 	lwave       = False
@@ -162,6 +163,7 @@ elif "vasp" in calculator:
 		ldautype = 2
 		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
 		ialgo = 38
+
 	# charge
 	neutral = True
 	if neutral:
@@ -255,7 +257,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 3.0
+					ads_height += 5.0
 					config = "air"
 				else:
 					tmp = methane[mol]
@@ -417,8 +419,8 @@ for irxn in range(rxn_num):
 					else:
 			 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol,
-										lmaxmix=lmaxmix ) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, 
+										idipol=idipol, nfree=nfree ) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
@@ -562,7 +564,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 3.0
+					ads_height += 5.0
 					config = "air"
 				else:
 					tmp = methane[mol]
@@ -723,8 +725,8 @@ for irxn in range(rxn_num):
 					else:
 			 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 										encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
-										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol, idipol=idipol,
-										lmaxmix=lmaxmix ) # normal
+										ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts, pp=pp, ldipol=ldipol,
+										idipol=idipol, nfree=nfree ) # normal
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
@@ -869,7 +871,8 @@ for irxn in range(rxn_num):
 				tmp.calc = Vasp(prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 								encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 			 					ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, 
-			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10, nelect=nelect, lmono="true", pp=pp, ldipol=ldipol, idipol=idipol )
+			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10, nelect=nelect, lmono="true", 
+								pp=pp, ldipol=ldipol, idipol=idipol )
 
 			print "----------- doing NEB calculation with images=",nimages,"-----------"
 			tmp.get_potential_energy()
