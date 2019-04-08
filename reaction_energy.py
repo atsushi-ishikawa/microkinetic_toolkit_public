@@ -68,7 +68,7 @@ ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = False
+TS = True
 
 # single point
 SP = False
@@ -101,7 +101,7 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "pbe"
+	xc          = "beef-vdw"
 	ivdw        = 0
 	# GGA list
 	#  GGAs: pw91, pbe, pbesol, revpbe, rpbe, am05
@@ -109,7 +109,7 @@ elif "vasp" in calculator:
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
-	prec        = "accurate"
+	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	ibrion      = 1
@@ -257,7 +257,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 5.0
+					ads_height += 4.0
 					config = "air"
 				else:
 					tmp = methane[mol]
@@ -564,7 +564,7 @@ for irxn in range(rxn_num):
 				elif "-AIR" in mol:
 					mol = mol.replace("-AIR","")
 					tmp = methane[mol]
-					ads_height += 5.0
+					ads_height += 4.0
 					config = "air"
 				else:
 					tmp = methane[mol]
