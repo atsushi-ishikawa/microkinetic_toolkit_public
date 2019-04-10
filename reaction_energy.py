@@ -112,13 +112,13 @@ elif "vasp" in calculator:
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
-	ibrion      = 1
+	ibrion      = 2
 	nfree       = 10
 	nsw         = 200
-	nsw_neb     = 1
-	nsw_dimer   = 1
+	nsw_neb     = 20
+	nsw_dimer   = 1000
 	nelmin      = 5
-	nelm        = 100 # default:40
+	nelm        = 50 # default:40
 	ediff       = 1.0e-6
 	ediffg      = -0.05
 	kpts_surf   = [5, 5, 1]
@@ -127,7 +127,7 @@ elif "vasp" in calculator:
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ialgo       = 48 # normal=38, veryfast=48
-	npar        = 6
+	npar        = 12
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
