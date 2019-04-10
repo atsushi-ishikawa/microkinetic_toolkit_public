@@ -1,4 +1,4 @@
-from ase.build import fcc111, surface, sort, niggli_reduce
+from ase.build import fcc111, surface, sort, niggli_reduce, add_adsorbate
 from ase.calculators.emt import EMT
 from ase.db import connect
 from ase.io import read,write
@@ -9,23 +9,28 @@ import numpy as np
 from reaction_tools import *
 
 vacuum = 10.0
-doping = True
+doping = False
 
 if os.path.exists('surf.db'):
 	os.system('rm surf.db')
 
-nlayer = 2
-nrelax = 1
+nlayer = 4
+nrelax = 2
 
-cif_file = "mgo.cif"
+#cif_file = "ga2o3.cif"
+#cif_file = "FePO4_P31_2_1.cif"
+#cif_file = "LaCuO3.cif"
+#cif_file = "SrCoO3.cif"
+#cif_file = "LaMnO3.cif"
+#cif_file = "wo3.cif"
 #cif_file = "pd.cif"
 #cif_file = "cao.cif"
-#cif_file = "La2O3.cif"
+cif_file = "La2O3.cif"
 #cif_file = "Ce2W3O12.cif"
 
-lattice = "fcc"
+#lattice = "fcc"
 facet   = "100"
-#lattice = "hcp"
+lattice = "hcp"
 #facet   = "001"
 #lattice = "sp15"
 #facet = "010"
@@ -41,15 +46,16 @@ if cif_file == "La2O3.cif":
 	surf.wrap()
 	surf.center(axis=2) # La2O3, only z-axis
 
-surf = surf*[2,2,1]
-#surf = sort(surf)
+surf = surf*[3,2,1]
+surf = sort(surf)
 surf = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
 
-offset_fac = 3.0/4.0
+#offset_fac = 3.0/4.0
 #offset_fac = 1.5 # for Pd110*[2,2,1]
-#offset_fac = 1.0
+offset_fac = (2.1,1.5)
+offset_fac = np.array(offset_fac)
 #offset_fac = 0.67
 #
 # doping e.g.) Mg by Li
@@ -92,5 +98,15 @@ surf.set_tags(tag)
 db = connect("surf.db")
 db.write(surf, data=pos)
 
+# adsorbate check
+check_adsorbate = True
+if check_adsorbate:
+	mol = Atoms("H",[(0,0,0)])
+	offset = (0.16, 0.33) # x1y1
+	offset = np.array(offset)
+	add_adsorbate(surf, mol, 0.6, position=(0,0), offset=offset*offset_fac)
+
 view(surf)
+
+write("POSCAR",surf)
 
