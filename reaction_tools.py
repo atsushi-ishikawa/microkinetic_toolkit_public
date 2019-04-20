@@ -346,21 +346,36 @@ def sort_atoms_by_z(atoms):
 	cell = atoms.get_cell()
 
 	dtype = [("idx",int), ("z",float)]
-	zlist = np.array([], dtype=dtype)
 
-	for idx, atom in enumerate(atoms):
-		tmp = np.array([(idx,atom.z)],dtype=dtype)
-		zlist = np.append(zlist, tmp)
-
-	zlist = np.sort(zlist, order="z")
-
-	newatoms = Atoms()
-
-	for i in zlist:
-		idx = i[0]
-		newatoms.append(atoms[idx])
 	#
-	# restore
+	# get set of chemical symbols
+	#
+	list = atoms.get_chemical_symbols()
+	elements = sorted(set(list), key=list.index)
+	num_elem = []
+	for i in elements:
+		num_elem.append(list.count(i))
+
+	#
+	# loop over each groups
+	#
+	iatm = 0
+	newatoms = Atoms()
+	for inum in num_elem:
+		zlist = np.array([], dtype=dtype)
+		for idx in range(inum):
+			tmp = np.array([(iatm, atoms[iatm].z)], dtype=dtype)
+			zlist = np.append(zlist, tmp)
+			iatm = iatm + 1
+
+		zlist = np.sort(zlist, order="z")
+
+		for i in zlist:
+			idx = i[0]
+			newatoms.append(atoms[idx])
+
+	#
+	# restore tag, pbc, cell
 	#
 	newatoms.set_tags(tags)
 	newatoms.set_pbc(pbc)
