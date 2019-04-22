@@ -433,23 +433,29 @@ def neb_copy_contcar_to_poscar(nimages):
 			os.system('cp %02d/CONTCAR %02d/POSCAR' % (images+1, images+1))
 
 
-def make_it_closer_by_exchange(atom1, atom2):
+def make_it_closer_by_exchange(atom1, atom2, thre=0.05):
+	# thre: when distance is larger than this value, do switch
 	from ase import Atoms, Atom
 	from ase.geometry import distance
 
 	natoms = len(atom1)
-	thre = 0.05 # when distance is large than this value, do switch
+	const_list = atom1.constraints[0].get_indices() 
+	# Constrained atoms. Do not exchange these.
 
 	for i in range(natoms):
 		for j in range(i+1, natoms):
 			if atom1[i].symbol == atom1[j].symbol:
+				# measure distance between "ATOMS" (in ASE object)
 				dis_bef = distance(atom1, atom2)
-				atom1B = atom1.copy()
+				atom1B  = atom1.copy()
 				atom1B.positions[ [i,j] ] = atom1B.positions[ [j,i] ]
 				dis_aft = distance(atom1B, atom2)
 
-				if dis_aft + thre < dis_bef:
+				if (dis_aft + thre < dis_bef) and not (i in const_list) and not (j in const_list):
+					#
 					# switch
+					#
+					print "exchanged {0:3d} and {1:3d}: (dis_bef, dis_aft) = ({2:6.2f},{3:6.2f})".format(i,j,dis_bef,dis_aft)
 					tmp = atom1B.numbers[i]
 					atom1B.numbers[i] = atom1B.numbers[j]
 					atom1B.numbers[j] = tmp
