@@ -68,7 +68,7 @@ ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = True
+TS = False
 
 # single point
 SP = False
@@ -120,7 +120,7 @@ elif "vasp" in calculator:
 	nelm        = 50 # default:40
 	ediff       = 1.0e-5
 	ediffg      = -0.05
-	kpts_surf   = [2, 2, 1]
+	kpts_surf   = [3, 3, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
