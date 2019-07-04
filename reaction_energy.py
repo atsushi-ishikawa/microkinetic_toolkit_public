@@ -69,7 +69,7 @@ if SP:
 	ivdw_sp = 0
 
 maxoptsteps = 200
-ads_height0 = 1.4
+ads_height0 = 1.6
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
@@ -104,18 +104,18 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "rpbe"
+	xc          = "beef-vdw"
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
-	potim       = 0.10
+	potim       = 0.08
 	nsw         = 200
 	nsw_neb     = 20
 	nsw_dimer   = 800
 	nelmin      = 5
-	nelm        = 40 # default:40
+	nelm        = 50 # default:40
 	ediff       = 1.0e-5
-	ediffg      = -0.1
-	kpts_surf   = [3, 3, 1]
+	ediffg      = -0.05
+	kpts_surf   = [2, 2, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
@@ -125,13 +125,17 @@ elif "vasp" in calculator:
 	npar        = 18
 	nsim        = npar
 	lwave       = False
-	lcharg      = True
-	ispin       = 1
+	lcharg      = False
+	ispin       = 2
 	#setups = {"O" : "_h"}
 
 	method = xc
 	basis  = ""
 	label  = method
+
+	# switch of ivdw for vdw-including xc
+	if xc in ["beef-vdw"]:
+		ivdw = 0
 
 	# DFT+U
 	DFTU = False
