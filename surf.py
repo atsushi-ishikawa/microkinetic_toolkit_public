@@ -14,8 +14,8 @@ doping = False
 if os.path.exists('surf.db'):
 	os.system('rm surf.db')
 
-nlayer = 4
-nrelax = 2
+nlayer = 3
+nrelax = 1
 
 #cif_file = "ga2o3.cif"
 #cif_file = "FePO4_P31_2_1.cif"
@@ -106,7 +106,8 @@ if check_adsorbate:
 	offset = np.array(offset)
 	add_adsorbate(surf, mol, 0.6, position=(0,0), offset=offset*offset_fac)
 
-view(surf)
-
 write("POSCAR",surf)
+print offset*offset_fac
+
+view(surf)
 

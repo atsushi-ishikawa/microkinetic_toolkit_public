@@ -107,9 +107,9 @@ elif "vasp" in calculator:
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
-	xc          = "beef-vdw"
+	xc          = "pbe"
 	prec        = "normal"
-	encut       = 400.0 # 213.0 or 400.0 or 500.0
+	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	ibrion      = 2
 	nfree       = 10
@@ -118,15 +118,14 @@ elif "vasp" in calculator:
 	nsw_dimer   = 1000
 	nelmin      = 5
 	nelm        = 50 # default:40
-	ediff       = 1.0e-5
+	ediff       = 1.0e-4
 	ediffg      = -0.05
-	kpts_surf   = [2,2,1]
+	kpts_surf   = [2, 2, 1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ialgo       = 48 # normal=38, veryfast=48
-	ivdw        = 12
 	npar        = 12
 	nsim        = npar
 	lwave       = False
