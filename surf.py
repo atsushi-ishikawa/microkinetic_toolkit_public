@@ -6,6 +6,7 @@ from ase.visualize import view
 from ase import Atoms, Atom
 import os
 import numpy as np
+import collections
 from reaction_tools import *
 
 vacuum = 10.0
@@ -15,7 +16,7 @@ if os.path.exists('surf.db'):
 	os.system('rm surf.db')
 
 nlayer = 3
-nrelax = 1
+nrelax = [1,2] # for each element
 
 #cif_file = "ga2o3.cif"
 #cif_file = "FePO4_P31_2_1.cif"
@@ -48,7 +49,7 @@ if cif_file == "La2O3.cif":
 
 surf = surf*[3,2,1]
 surf = sort(surf)
-surf = sort_atoms_by_z(surf)
+surf, zcount = sort_atoms_by_z(surf)
 
 formula = surf.get_chemical_formula()
 
@@ -78,36 +79,59 @@ pos = {	'lattice'   : lattice,
 #
 # relaxation issues
 #
-natoms = len(surf.get_atomic_numbers())
-per_layer = natoms / nlayer / 2 # divide by 2 for oxides -- check
+#natoms = len(surf.get_atomic_numbers())
+symbols  = surf.get_chemical_symbols()
+symbols  = sorted(symbols, key=symbols.index)
+natoms   = collections.Counter(symbols)
+elements = sorted(set(symbols), key=symbols.index)
+
+last_num = []
+tmp = 0
+for i in elements:
+	tmp += natoms[i]
+	last_num.append(tmp)
+
+#per_layer = natoms // nlayer
+#print(per_layer)
 #
 # set tags: 2 = fixed layers, 1 = relaxing layers, 0 = adsorbates
 #
 # constraint will be set in reaction_energy.py
 #
-tag = np.full(natoms, 2, dtype=int)
-if nrelax == 0:
-	for i in range(natoms):
-		tag[i] = 1
+tag = np.full(sum(natoms.values()), 2, dtype=int)
+
+if all([x==0 for x in nrelax]):
+	print("hello")
+#	for i in range(natoms):
+#		tag[i] = 1
 else:
-	for i in range(natoms-1, natoms-nrelax*per_layer-1, -1):
-		tag[i] = 1
+	#
+	# loop over each element group
+	#
+	for ielem, elem in enumerate(elements):
+		now = last_num[ielem]
+		nlayer_of_elem = len(zcount[ielem])
+		for i in range(nlayer_of_elem, nlayer_of_elem-nrelax[ielem], -1):
+			for j in range(now,now-zcount[ielem][i-1],-1):
+				tag[j-1] = 1
+				now -= 1
 
 surf.set_tags(tag)
 
 db = connect("surf.db")
 db.write(surf, data=pos)
-
+#
 # adsorbate check
-check_adsorbate = True
+#
+check_adsorbate = False
 if check_adsorbate:
 	mol = Atoms("H",[(0,0,0)])
 	offset = (0.16, 0.33) # x1y1
 	offset = np.array(offset)
 	add_adsorbate(surf, mol, 0.6, position=(0,0), offset=offset*offset_fac)
+	print(offset*offset_fac)
 
 write("POSCAR",surf)
-print offset*offset_fac
 
 view(surf)
 

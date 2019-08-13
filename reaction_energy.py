@@ -42,9 +42,9 @@ calculator = calculator.lower()
 #
 # temprary database to avoid overlapping calculations
 #
-dbfile = 'tmp.db'
-dbfile = os.path.join(os.getcwd(), dbfile)
-tmpdb  = connect(dbfile)
+tmpdbfile = 'tmp.db'
+tmpdbfile = os.path.join(os.getcwd(), tmpdbfile)
+tmpdb = connect(tmpdbfile)
 #
 # if surface present, provide surface file
 # in ase.db form
@@ -131,20 +131,20 @@ elif "vasp" in calculator:
 	nsw_neb     = 20
 	nsw_dimer   = 1000
 	nelmin      = 5
-	nelm        = 50 # default:40
+	nelm        = 60 # default:40
 	ediff       = 1.0e-4
 	ediffg      = -0.05
-	kpts_surf   = [2, 2, 1]
+	kpts_surf   = [1,1,1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ialgo       = 38 # normal=38, veryfast=48
+	ialgo       = 48 # normal=38, fast=58, veryfast=48
 	npar        = 10
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
-	ispin       = 2
+	ispin       = 1
 	#setups = {"O" : "_h"}
 
 	# set lmaxmix
@@ -174,12 +174,12 @@ elif "vasp" in calculator:
 		ivdw = 0
 
 	# DFT+U
-	DFTU = False
+	DFTU = True
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
-		ldau_luj = { 'La':{'L':3, 'U':3.5, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
-		ialgo = 38
+		ldau_luj = { 'La':{'L':3, 'U':5.0, 'J':0.0}, 'O':{'L':-1, 'U':0.0, 'J':0.0} }
+		#ialgo = 38
 
 	# charge
 	neutral = True
@@ -344,7 +344,7 @@ for irxn in range(rxnst, rxned):
 		#
 		formula = tmp.get_chemical_formula()
 		try:
-			past = tmpdb.get(formula=formula)
+			past = tmpdb.get(name=formula + site + site_pos + config)
 		except:
 			print("first time")
 			first_time = True
@@ -528,8 +528,11 @@ for irxn in range(rxnst, rxned):
 
 		# recording to database
 		if(first_time):
-			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
-
+			id = tmpdb.reserve(name = formula + site + site_pos + config)
+			if id is None: # somebody is writing to db
+				continue
+			else:
+				tmpdb.write(tmp, name=formula + site + site_pos + config, id=id, data={'site':site, 'site_pos':site_pos, 'config':config})
 	#
 	# products
 	#
@@ -650,7 +653,7 @@ for irxn in range(rxnst, rxned):
 		#
 		formula = tmp.get_chemical_formula()
 		try:
-			past = tmpdb.get(formula=formula)
+			past = tmpdb.get(name=formula + site + site_pos + config)
 		except:
 			print("first time")
 			first_time = True
@@ -834,8 +837,11 @@ for irxn in range(rxnst, rxned):
 
 		# recording to database
 		if(first_time):
-			tmpdb.write(tmp, data={'site':site, 'site_pos':site_pos, 'config':config})
-
+			id = tmpdb.reserve(name = formula + site + site_pos + config)
+			if id is None: # somebody is writing to db
+				continue
+			else:
+				tmpdb.write(tmp, name=formula+site+site_pos+config, id=id, data={'site':site, 'site_pos':site_pos, 'config':config})
 		#
 		# TS calc
 		#
@@ -965,7 +971,7 @@ for irxn in range(rxnst, rxned):
 		if imol != len(p_ads[irxn])-1:
 			string = string + " + "
 
-	fbarrier.write('{0:<70s}'.format(string))
+	fbarrier.write('{0:>3d} {1:<70s}'.format(irxn, string))
 
 	Eafor  =  deltaE
 	Earev  = -deltaE
@@ -974,11 +980,11 @@ for irxn in range(rxnst, rxned):
 	fbarrier.write('{0:>14.8f} {1:>14.8f}\n'.format(Eafor, Earev))
 	fbarrier.close()
 
-	fdeltaE.write('{0:>14.8f} {1:>14.8f}\n'.format(Eafor, Earev))
+	fdeltaE.write('{0:>3d} {1:>14.8f} {2:>14.8f}\n'.format(irxn, Eafor, Earev))
 	fdeltaE.close()
 	#
 	# loop over reaction
 	#
+
 remove_parentheses(barrierfile)
-os.system("rm tmp.db >& /dev/null") # delte temporary database
 

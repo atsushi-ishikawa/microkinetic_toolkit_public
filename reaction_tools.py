@@ -338,6 +338,7 @@ def find_closest_atom(surf,offset=(0,0)):
 def sort_atoms_by_z(atoms):
 	from ase import Atoms, Atom
 	import numpy as np
+	import collections
 	#
 	# keep information for original Atoms
 	#
@@ -346,23 +347,23 @@ def sort_atoms_by_z(atoms):
 	cell = atoms.get_cell()
 
 	dtype = [("idx",int), ("z",float)]
-
 	#
 	# get set of chemical symbols
 	#
-	list = atoms.get_chemical_symbols()
-	elements = sorted(set(list), key=list.index)
+	symbols  = atoms.get_chemical_symbols()
+	elements = sorted(set(symbols), key=symbols.index)
 	num_elem = []
 	for i in elements:
-		num_elem.append(list.count(i))
+		num_elem.append(symbols.count(i))
 
 	#
 	# loop over each groups
 	#
 	iatm = 0
 	newatoms = Atoms()
+	zcount = []
 	for inum in num_elem:
-		zlist = np.array([], dtype=dtype)
+		zlist  = np.array([], dtype=dtype)
 		for idx in range(inum):
 			tmp = np.array([(iatm, atoms[iatm].z)], dtype=dtype)
 			zlist = np.append(zlist, tmp)
@@ -374,6 +375,11 @@ def sort_atoms_by_z(atoms):
 			idx = i[0]
 			newatoms.append(atoms[idx])
 
+		tmp = np.array([], dtype=float)
+		for val in zlist:
+			tmp = np.append(tmp, round(val[1],2))
+		l = collections.Counter(tmp)
+		zcount.append( list(l.values()) )
 	#
 	# restore tag, pbc, cell
 	#
@@ -381,7 +387,7 @@ def sort_atoms_by_z(atoms):
 	newatoms.set_pbc(pbc)
 	newatoms.set_cell(cell)
 
-	return newatoms
+	return newatoms, zcount
 
 def get_number_of_valence_electrons(atoms):
 	#
