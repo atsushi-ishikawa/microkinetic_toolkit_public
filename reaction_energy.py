@@ -23,6 +23,20 @@ from ase.neb import NEB, NEBTools
 argvs = sys.argv
 reactionfile = argvs[1]
 
+rxn_num = get_number_of_reaction(reactionfile)
+
+if len(argvs)==2:
+	rxnst = 0
+	rxned = rxn_num
+elif len(argvs)==3:
+	rxnst = int(argvs[2])
+	rxned = rxn_num
+elif len(argvs)==4:
+	rxnst = int(argvs[2])
+	rxned = int(argvs[3])
+else:
+	print("something wrong in input line"); quit()
+
 calculator = "vasp"
 calculator = calculator.lower()
 #
@@ -58,10 +72,9 @@ surf.set_constraint(c)
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
-rxn_num = get_number_of_reaction(reactionfile)
 
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.8
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
@@ -108,6 +121,7 @@ elif "vasp" in calculator:
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
 	xc          = "pbe"
+	ivdw        = 11
 	prec        = "normal"
 	encut       = 300.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
@@ -125,8 +139,8 @@ elif "vasp" in calculator:
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
-	ialgo       = 48 # normal=38, veryfast=48
-	npar        = 12
+	ialgo       = 38 # normal=38, veryfast=48
+	npar        = 10
 	nsim        = npar
 	lwave       = False
 	lcharg      = False
@@ -198,12 +212,13 @@ fbarrier.close()
 fdeltaE = open(deltaEfile, 'w')
 fdeltaE.close()
 
-print "calculator:" + calculator + " method: " + method + " basis: " + basis
+print("calculator: %s, method: %s, basis: %s" % (calculator, method, basis))
 
-for irxn in range(rxn_num):
+#for irxn in range(rxn_num):
+for irxn in range(rxnst, rxned):
 	fbarrier = open(barrierfile, 'a')
 	fdeltaE  = open(deltaEfile,  'a')
-	print "--- calculating elementary reaction No. ", irxn, "---"
+	print("--- calculating elementary reaction No. %d ---" % irxn)
 
 	reac_en = np.array(range(len(r_ads[irxn])),dtype="f")
 	prod_en = np.array(range(len(p_ads[irxn])),dtype="f")
@@ -215,7 +230,7 @@ for irxn in range(rxn_num):
 
 		for imol, mol in enumerate(mols):
 			ads_height = ads_height0
-			print "----- reactant: molecule No.", imol, " is ", mol, "-----"
+			print("----- reactant: molecule No. %d is %s -----" % (imol, mol))
 			config = "normal"
 
 			if 'surf' in mol:
@@ -331,16 +346,16 @@ for irxn in range(rxn_num):
 		try:
 			past = tmpdb.get(formula=formula)
 		except:
-			print "first time"
+			print("first time")
 			first_time = True
 		else:
 			if site == past.data.site:
- 				if site_pos == past.data.site_pos:
- 					if config == past.data.config:
+				if site_pos == past.data.site_pos:
+					if config == past.data.config:
 						if len(mols) == 1:
- 							print "already calculated"
- 							tmp = tmpdb.get_atoms(id=past.id)
- 							first_time = False
+							print("already calculated")
+							tmp = tmpdb.get_atoms(id=past.id)
+							first_time = False
 
 		magmom = tmp.get_initial_magnetic_moments()
 		natom  = len(tmp.get_atomic_numbers())
@@ -348,7 +363,7 @@ for irxn in range(rxn_num):
 
 		# spin switch
 		if int( math.ceil(sum(magmom)) )!=0:
-			print "has unpaired electron"
+			print("has unpaired electron")
 			ispin = 2
 		else:
 			ispin = 1
@@ -405,7 +420,7 @@ for irxn in range(rxn_num):
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
-		 			tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+					tmp.calc = Vasp(label=r_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true", pp=pp, ldipol=ldipol, idipol=idipol )
@@ -523,7 +538,7 @@ for irxn in range(rxn_num):
 
 		for imol, mol in enumerate(mols):
 			ads_height = ads_height0
-			print "----- product: molecule No.", imol, " is ", mol, "-----"
+			print("----- product: molecule No. %d is %s -----" % (imol, mol))
 			config = "normal"
 
 			if 'surf' in mol:
@@ -637,14 +652,14 @@ for irxn in range(rxn_num):
 		try:
 			past = tmpdb.get(formula=formula)
 		except:
-			print "first time"
+			print("first time")
 			first_time = True
 		else:
 			if site == past.data.site:
 				if site_pos == past.data.site_pos:
 					if config == past.data.config:
 						if len(mols) == 1:
-							print "already calculated"
+							print("already calculated")
 							tmp = tmpdb.get_atoms(id=past.id)
 							first_time = False
 
@@ -654,7 +669,7 @@ for irxn in range(rxn_num):
 
 		# spin switch
 		if int( math.ceil(sum(magmom)) )!=0:
-			print "has unpaired electron"
+			print("has unpaired electron")
 			ispin = 2
 		else:
 			ispin = 1
@@ -711,7 +726,7 @@ for irxn in range(rxn_num):
 				else:
 					nelect = get_number_of_valence_electrons(tmp)
 					nelect = nelect - charge
-		 			tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
+					tmp.calc = Vasp(label=p_label, prec=prec, xc=xc, ispin=ispin, nelm=nelm, nelmin=nelmin, ivdw=ivdw, npar=npar, nsim=nsim,
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=ibrion, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts,
 									nelect=nelect, lmono="true", pp=pp, ldipol=ldipol, idipol=idipol )
@@ -877,9 +892,9 @@ for irxn in range(rxn_num):
 			 					images=nimages, spring=-5.0, lclimb=False, iopt=7, maxmove=0.10, nelect=nelect, lmono="true", 
 								pp=pp, ldipol=ldipol, idipol=idipol )
 
-			print "----------- doing NEB calculation with images=",nimages,"-----------"
+			print("----------- doing NEB calculation with images=%d ----------" % nimages)
 			tmp.get_potential_energy()
-			print "----------- normal NEB done -----------"
+			print("----------- normal NEB done -----------")
 			neb_copy_contcar_to_poscar(nimages)
 
 			# CI-NEB
@@ -896,9 +911,9 @@ for irxn in range(rxn_num):
 									encut=encut, ismear=ismear, istart=0, setups=setups, sigma=sigma, ialgo=ialgo, lwave=lwave, lcharg=lcharg,
 									ibrion=3, potim=0, nsw=nsw_neb, ediff=ediff, ediffg=ediffg, kpts=kpts, images=nimages,
 									spring=-5.0, lclimb=True, iopt=7, maxmove=0.10, nelect=nelect, lmono="true", pp=pp, ldipol=ldipol, idipol=idipol )
-				print "---------- doing CI-NEB calculation with images=",nimages,"-----------"
+				print("---------- doing CI-NEB calculation with images=%d -------" % nimages)
 				tmp.get_potential_energy()
-				print "----------- CI NEB done -----------"
+				print("----------- CI NEB done -----------")
 				neb_copy_contcar_to_poscar(nimages)
  
 			nebresults = vtst + "nebresults.pl"
@@ -907,7 +922,7 @@ for irxn in range(rxn_num):
 			os.system('%s >& /dev/null' % neb2dim)
 			os.chdir("dim")
 
-			# print "dimer made" ; quit()
+			# print("dimer made"); quit()
 
 			# dimer method
 			if neutral:
@@ -923,15 +938,15 @@ for irxn in range(rxn_num):
 								nsw=nsw_dimer, ediff=ediff*0.1, ediffg=ediffg*0.5, kpts=kpts,
 								iopt=2, maxmove=0.20, dfnmax=1.0, ichain=2, nelect=nelect, lmono="true", pp=pp, ldipol=ldipol, idipol=idipol )
 
-			print "----------- doing dimer method TS optimization -----------"
+			print("----------- doing dimer method TS optimization -----------")
 			TSene = tmp.get_potential_energy()
-			print "----------- dimer done -----------"
+			print("----------- dimer done -----------")
 
 			Ea = TSene -reac_en
-			print "Ea = ",Ea
+			print("Ea = %5.3f" % Ea)
 
 	deltaE = np.sum(prod_en) - np.sum(reac_en)
-	print "deltaE=",deltaE
+	print("deltaE = %5.3f" % deltaE)
 	#
 	# writing reaction
 	#
