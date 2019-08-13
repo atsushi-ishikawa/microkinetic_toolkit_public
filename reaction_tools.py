@@ -9,13 +9,13 @@ def read_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
- 	os.system('rm tmpfile1 tmpfile2')
+	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 
-	reac = range(numlines)
-	rxn  = range(numlines)
-	prod = range(numlines)
+	reac = list(range(numlines))
+	rxn  = list(range(numlines))
+	prod = list(range(numlines))
 
 	for i,line in enumerate(lines):
 		text = line.replace("\n","").replace(">","").split("--")
@@ -44,7 +44,7 @@ def return_lines_of_reactionfile(file):
 	numlines = sum(1 for line in open("tmpfile1"))
 
 	f = open("tmpfile1","r")
- 	os.system('rm tmpfile1 tmpfile2')
+	os.system('rm tmpfile1 tmpfile2')
 
 	lines = f.readlines()
 	return lines
@@ -82,7 +82,7 @@ def remove_space(obj):
 				else:
 					newobj[i] = obj2
 		else: # error
-			print "remove_space: input str or list"
+			print("remove_space: input str or list")
 
 		return newobj
 
@@ -96,13 +96,13 @@ def get_reac_and_prod(reactionfile):
 
 	rxn_num = len(rxn)
 
-	r_ads  = range(rxn_num)
+	r_ads  = list(range(rxn_num))
 	r_site = [ [] for i in range(rxn_num) ]
 	r_coef = [ [] for i in range(rxn_num) ]
 
-	p_ads  = range(rxn_num)
-	p_site = range(rxn_num)
-	p_coef = range(rxn_num)
+	p_ads  = list(range(rxn_num))
+	p_site = list(range(rxn_num))
+	p_coef = list(range(rxn_num))
 
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
@@ -110,9 +110,9 @@ def get_reac_and_prod(reactionfile):
 		#
 		# reactant
 		#
-		r_ads[irxn]  = range(ireac_num)
-		r_site[irxn] = range(ireac_num)
-		r_coef[irxn] = range(ireac_num)
+		r_ads[irxn]  = list(range(ireac_num))
+		r_site[irxn] = list(range(ireac_num))
+		r_coef[irxn] = list(range(ireac_num))
 		
 		for imol, mol in enumerate(ireac):
 			r_site[irxn][imol] = []
@@ -142,9 +142,9 @@ def get_reac_and_prod(reactionfile):
 		#
 		# product
 		#
-		p_ads[irxn]  = range(iprod_num)
-		p_site[irxn] = range(iprod_num)
-		p_coef[irxn] = range(iprod_num)
+		p_ads[irxn]  = list(range(iprod_num))
+		p_site[irxn] = list(range(iprod_num))
+		p_coef[irxn] = list(range(iprod_num))
 		
 		for imol, mol in enumerate(iprod):
 			p_site[irxn][imol] = []
@@ -208,7 +208,7 @@ def get_preexponential(reactionfile):
 	mass_prod = np.array(rxn_num*[range(len(p_ads[0]))], dtype="f")
 
 	for irxn in range(rxn_num):
-		print "---------", irxn, "------------"
+		print("--------- %d ---------" % irxn)
 		#
 		# reactants
 		#
@@ -279,7 +279,7 @@ def remove_parentheses(file):
 	tmpfile = "ttt.txt"
 	os.system('cat %s | sed "s/\[//g" > %s' % (file, tmpfile) )
 	os.system('cat %s | sed "s/\]//g" > %s' % (tmpfile, file) )
- 	os.system('rm %s' % tmpfile)
+	os.system('rm %s' % tmpfile)
 
 
 def get_species_num(*species):
@@ -305,8 +305,8 @@ def get_adsorption_sites(infile):
 
 	lines = f.readlines()
 
-	mol  = range(len(lines))
-	site = range(len(lines))
+	mol  = list(range(len(lines)))
+	site = list(range(len(lines)))
 
 	for i,line in enumerate(lines):
 		aaa,bbb = line.replace("\n","").split(":")
@@ -455,7 +455,7 @@ def make_it_closer_by_exchange(atom1, atom2, thre=0.05):
 					#
 					# switch
 					#
-					print "exchanged {0:3d} and {1:3d}: (dis_bef, dis_aft) = ({2:6.2f},{3:6.2f})".format(i,j,dis_bef,dis_aft)
+					print("exchanged {0:3d} and {1:3d}: (dis_bef, dis_aft) = ({2:6.2f},{3:6.2f})".format(i,j,dis_bef,dis_aft))
 					tmp = atom1B.numbers[i]
 					atom1B.numbers[i] = atom1B.numbers[j]
 					atom1B.numbers[j] = tmp
