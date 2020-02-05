@@ -107,20 +107,20 @@ for irxn in range(rxn_num):
 				theta = theta + "^" + str(power)
 			tmp = tmp + "*" + theta
 
-  	for mem in list_r:
- 		coef = 0
-  		for imol, mol in enumerate(r_ads[irxn]):
- 			mol = mol[0]
+	for mem in list_r:
+		coef = 0
+		for imol, mol in enumerate(r_ads[irxn]):
+			mol = mol[0]
 			mol = remove_side_and_flip(mol)
 
 			adsorbate = dict1[mem].split("_")[0]
-  			if mol == adsorbate:
-  				coef = r_coef[irxn][imol]
+			if mol == adsorbate:
+				coef = r_coef[irxn][imol]
 		
- 		if coef == 0:
- 			print "something wrong at coef 1"; exit()
+		if coef == 0:
+ 			print("something wrong at coef 1"); exit()
 
- 		sto_coef = str(float(coef))
+		sto_coef = str(float(coef))
 		if mem in dict2:
 			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
@@ -130,19 +130,19 @@ for irxn in range(rxn_num):
 		if not "surf" in dict1[mem] and "theta" in dict2[mem]:
 			dict2[mem] = dict2[mem] + "*" + "(area/Vr)"
 
-  	for mem in list_p:
- 		coef = 0
-  		for imols, mols in enumerate(p_ads[irxn]):
+	for mem in list_p:
+		coef = 0
+		for imols, mols in enumerate(p_ads[irxn]):
 			for imol, mol in enumerate(mols):
 				mol = remove_side_and_flip(mol)
 				adsorbate = dict1[mem].split("_")[0]
-  				if mol == adsorbate:
-  					coef = p_coef[irxn][imols]
+				if mol == adsorbate:
+					coef = p_coef[irxn][imols]
 		
 		if coef == 0:
- 			print "something wrong at coef 2"; exit()
+			print("something wrong at coef 2"); exit()
 
- 		sto_coef = str(float(coef))
+		sto_coef = str(float(coef))
 		if mem in dict2:
 			dict2[mem] = dict2[mem] + " + " + sto_coef + "*" + tmp
 		else:
@@ -178,20 +178,20 @@ for irxn in range(rxn_num):
 		# end mol
 	# end mols
 
-  	for mem in list_r:
- 		coef = 0
-  		for imol, mol in enumerate(r_ads[irxn]):
- 			mol = mol[0]
+	for mem in list_r:
+		coef = 0
+		for imol, mol in enumerate(r_ads[irxn]):
+			mol = mol[0]
 			mol = remove_side_and_flip(mol)
 
 			adsorbate = dict1[mem].split("_")[0]
-  			if mol == adsorbate:
-  				coef = r_coef[irxn][imol]
+			if mol == adsorbate:
+				coef = r_coef[irxn][imol]
 		
- 		if coef == 0:
- 			print "something wrong at coef 3"; exit()
+		if coef == 0:
+			print("something wrong at coef 3"); exit()
 
- 		sto_coef = str(float(coef))
+		sto_coef = str(float(coef))
 		if mem in dict2:
 			dict2[mem] = dict2[mem] + " + " + sto_coef + "*" + tmp
 		else:
@@ -201,20 +201,20 @@ for irxn in range(rxn_num):
 		if not "surf" in dict1[mem] and "theta" in dict2[mem]:
 			dict2[mem] = dict2[mem] + "*" + "(area/Vr)"
 
-  	for mem in list_p:
- 		coef = 0
-  		for imols, mols in enumerate(p_ads[irxn]):
+	for mem in list_p:
+		coef = 0
+		for imols, mols in enumerate(p_ads[irxn]):
 			for imol, mol in enumerate(mols):
 				mol = remove_side_and_flip(mol)
 				adsorbate = dict1[mem].split("_")[0]
 
-  				if mol == adsorbate:
-  					coef = p_coef[irxn][imols]
+				if mol == adsorbate:
+					coef = p_coef[irxn][imols]
 		
- 		if coef == 0:
- 			print "something wrong at coef 4"; exit()
+		if coef == 0:
+			print("something wrong at coef 4"); exit()
 
- 		sto_coef = str(float(coef))
+		sto_coef = str(float(coef))
 		if mem in dict2:
 			dict2[mem] = dict2[mem] + " - " + sto_coef + "*" + tmp
 		else:
@@ -238,16 +238,18 @@ if 'surf' in dict1.values(): # only when surface is involved
 
 	dict2[len(dict2)] = tmp
 
+comment = "\t % species --- "
 for imol,mol in enumerate(dict2):
 	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
+	comment += "%s = %s " % (imol+1,dict1[imol+1])
+comment += "\n"
 
-comment = "\t % species --- " + str(dict1).replace('\'','').replace('{','').replace('}','') + "\n"
+#comment = "\t % species --- " + str(sorted(dict1.items())).replace('\'','').replace('{','').replace('}','') + "\n"
 fout.write(comment)
 #
 # tempelate - start
 #
 template = "\
-\t % Rate(1:Ngas) = Rate(1:Ngas)*Vr; % gas onlye \n \
 \t Rate(Ngas+1:Ncomp) = Rate(Ngas+1:Ncomp)*(area/Vr); % gas + surface \n \
 \t % fprintf('------------\\n');\n \
 \t % fprintf('%+12.8e %+12.8e %+12.8e %+12.8e %+12.8e \\n', Rate(1),Rate(2),Rate(3),Rate(4),Rate(5));\n \
@@ -267,7 +269,9 @@ template = "\
 fout.write(template)
 
 string = ''
-for mol in dict1.values():
+#for mol in dict1.values():
+for i,_ in enumerate(dict1):
+	mol = dict1[i+1]
 	if mol == 'surf':
 		string = string + '"{0}"'.format('\\theta_{vac}')
 	elif 'surf' in mol:

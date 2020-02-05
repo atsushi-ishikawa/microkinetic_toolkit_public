@@ -19,9 +19,9 @@ def read_reactionfile(file):
 
 	for i,line in enumerate(lines):
 		text = line.replace("\n","").replace(">","").split("--")
-		reac_tmp  = text[0]
-		rxn_tmp   = text[1]
-		prod_tmp  = text[2]
+		reac_tmp = text[0]
+		rxn_tmp  = text[1]
+		prod_tmp = text[2]
 
 		reac[i] = re.split(" \+ ", reac_tmp) # for cations
 		prod[i] = re.split(" \+ ", prod_tmp) # for cations
@@ -104,6 +104,15 @@ def get_reac_and_prod(reactionfile):
 	p_site = list(range(rxn_num))
 	p_coef = list(range(rxn_num))
 
+# python2?
+#	r_ads  = [ [] for i in range(rxn_num) ]
+#	r_site = [ [] for i in range(rxn_num) ]
+#	r_coef = [ [] for i in range(rxn_num) ]
+
+#	p_ads  = [ [] for i in range(rxn_num) ]
+#	p_site = [ [] for i in range(rxn_num) ]
+#	p_coef = [ [] for i in range(rxn_num) ]
+
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
 		ireac_num = len(ireac); iprod_num = len(iprod)
@@ -116,12 +125,12 @@ def get_reac_and_prod(reactionfile):
 		
 		for imol, mol in enumerate(ireac):
 			r_site[irxn][imol] = []
-			r_ads[irxn][imol] = []
+			r_ads[irxn][imol]  = []
 			#
 			# coefficient
 			#
 			if "*" in mol:
-				r_coef[irxn][imol] = int( mol.split("*")[0] )
+				r_coef[irxn][imol] = int(mol.split("*")[0])
 				rest = mol.split("*")[1]
 			else:
 				r_coef[irxn][imol] = 1
@@ -131,14 +140,14 @@ def get_reac_and_prod(reactionfile):
 			if ',' in rest:
 				sites = rest.split(',')
 				for isite, site in enumerate(sites):
-					r_site[irxn][imol].append( site.split('_')[1] )
-					r_ads[irxn][imol].append(  site.split('_')[0] )
+					r_site[irxn][imol].append(site.split('_')[1])
+					r_ads[irxn][imol].append( site.split('_')[0])
 			elif '_' in rest:
-				r_site[irxn][imol].append( rest.split('_')[1] )
-				r_ads[irxn][imol].append(  rest.split('_')[0] )
+				r_site[irxn][imol].append(rest.split('_')[1])
+				r_ads[irxn][imol].append( rest.split('_')[0])
 			else:
-				r_site[irxn][imol].append( 'gas' )
-				r_ads[irxn][imol].append( rest )
+				r_site[irxn][imol].append('gas')
+				r_ads[irxn][imol].append(rest)
 		#
 		# product
 		#
@@ -148,12 +157,12 @@ def get_reac_and_prod(reactionfile):
 		
 		for imol, mol in enumerate(iprod):
 			p_site[irxn][imol] = []
-			p_ads[irxn][imol] = []
+			p_ads[irxn][imol]  = []
 			#
 			# coefficient
 			#
 			if "*" in mol:
-				p_coef[irxn][imol] = int( mol.split("*")[0] )
+				p_coef[irxn][imol] = int(mol.split("*")[0])
 				rest = mol.split("*")[1]
 			else:
 				p_coef[irxn][imol] = 1
@@ -163,14 +172,16 @@ def get_reac_and_prod(reactionfile):
 			if ',' in rest:
 				sites = rest.split(',')
 				for isite, site in enumerate(sites):
-					p_site[irxn][imol].append( site.split('_')[1] )
-					p_ads[irxn][imol].append(  site.split('_')[0] )
+					p_site[irxn][imol].append(site.split('_')[1])
+					p_ads[irxn][imol].append( site.split('_')[0])
 			elif '_' in rest:
-				p_site[irxn][imol].append( rest.split('_')[1] )
-				p_ads[irxn][imol].append(  rest.split('_')[0] )
+				p_site[irxn][imol].append(rest.split('_')[1])
+				p_ads[irxn][imol].append( rest.split('_')[0])
 			else:
-				p_site[irxn][imol].append( 'gas' )
-				p_ads[irxn][imol].append( rest )
+				p_site[irxn][imol].append('gas')
+				p_ads[irxn][imol].append(rest)
+
+		# print("irxn=%d, %s-->%s, coef: %s-->%s, site:%s-->%s" % (irxn, r_ads[irxn], p_ads[irxn], r_coef[irxn], p_coef[irxn], r_site[irxn], p_site[irxn]))
 
 	return (r_ads, r_site, r_coef,  p_ads, p_site, p_coef)
 
@@ -417,15 +428,15 @@ def remove_side_and_flip(mol):
 	#
 	if '-SIDEx' in mol:
 		mol = mol.replace('-SIDEx','')
-	if '-SIDEy' in mol:
+	elif '-SIDEy' in mol:
 		mol = mol.replace('-SIDEy','')
-	if '-FLIP' in mol:
-		mol = mol.replace('-FLIP','')
-	if '-SIDE' in mol:
+	elif '-SIDE' in mol:
 		mol = mol.replace('-SIDE','')
-	if '-TILT' in mol:
+	elif '-FLIP' in mol:
+		mol = mol.replace('-FLIP','')
+	elif '-TILT' in mol:
 		mol = mol.replace('-TILT','')
-	if '-HIGH' in mol:
+	elif '-HIGH' in mol:
 		mol = mol.replace('-HIGH','')
 
 	return mol

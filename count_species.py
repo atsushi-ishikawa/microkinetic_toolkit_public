@@ -30,7 +30,7 @@ for irxn in range(rxnnum):
 			site_pos = "x1y1"
 
 		if site != 'gas':
-			mol = mol + "_surf" # Not distinguish different sites. Reconsideration may be needed.
+			mol += "_surf" # Not distinguish different sites. Reconsideration may be needed.
 
 		species.append(mol)
 
@@ -49,12 +49,12 @@ for irxn in range(rxnnum):
 			site_pos = "x1y1"
 
 		if site != 'gas':
-			mol = mol + "_surf"
+			mol += "_surf"
 
 		species.append(mol)
 
+# species = sorted(set(species), key=species.index)
 
-# species = [item for sublist in species for item in sublist]
 species = list(set(species)) # remove duplication
 species.sort()
 
@@ -63,7 +63,7 @@ gas  = [i for i in species if not 'surf' in i]
 
 species = gas + surf
 
-print "Number of compounds:",len(species), "Number of surface species:",len(surf)
+print("Number of compounds: %d, Number of surface species: %d" % (len(species), len(surf)))
 
 # put 'surf' to the last
 for item in species:

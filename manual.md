@@ -39,6 +39,11 @@ cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB
 python rate_for_graph.py [input.txt] coverage.txt rateconst.txt variables.txt
 ```
 * `input_val.txt` is generated
+or 
+```bash
+python rate_for_graph2.py [input.txt] nodes.txt rateconst.txt variables.txt
+```
+* `edges.txt` is generated
 
 #### 8. Draw graph
 ```bash
