@@ -53,7 +53,10 @@ CH3^+1 or CH3^-1
 H_atop.x1y1,H_atop.x2y2 --> H2 + 2\*surf
 
 * flip, side, high
-CH4-FLIP_atop.x1y1 --> CH4 + surf
-CH4-SIDE_atop.x1y1 --> CH4 + surf
-CH4-HIGH_atop.x1y1 --> CH4 + surf
+CH4-FLIP_atop.x1y1  --> CH4 + surf
+CH4-SIDEx_atop.x1y1 --> CH4 + surf
+CH4-SIDEy_atop.x1y1 --> CH4 + surf
+CH4-TILT_atop.x1y1  --> CH4 + surf
+CH4-HIGH_atop.x1y1  --> CH4 + surf
+CH4-AIR_atop.x1y1   --> CH4 + surf
 

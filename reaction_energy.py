@@ -61,14 +61,14 @@ surf.set_constraint(c)
 rxn_num = get_number_of_reaction(reactionfile)
 
 maxoptsteps = 200
-ads_height0 = 1.6
+ads_height0 = 1.7
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
 IR  = [False, False] # whether to do IR...[Reac, Prod]
 
 # transition state
-TS = True
+TS = False
 
 # single point
 SP = False
@@ -114,14 +114,14 @@ elif "vasp" in calculator:
 	potim       = 0.10
 	ibrion      = 2
 	nfree       = 10
-	nsw         = 200
+	nsw         = 100
 	nsw_neb     = 20
 	nsw_dimer   = 1000
 	nelmin      = 5
 	nelm        = 50 # default:40
-	ediff       = 1.0e-6
+	ediff       = 1.0e-5
 	ediffg      = -0.05
-	kpts_surf   = [5, 5, 1]
+	kpts_surf   = [3,3,1]
 	ismear_surf = 1
 	sigma_surf  = 0.10
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
@@ -229,7 +229,6 @@ for irxn in range(rxn_num):
 
 				# flip or rotate
 				if "-SIDEy" in mol:
-					# if "-SIDE" only, maybe this direction
 					mol = mol.replace("-SIDEy","")
 					tmp = methane[mol]
 					tmp.rotate(90,'y')
@@ -308,7 +307,7 @@ for irxn in range(rxn_num):
 					z_shift = tmp.positions[:,2].min()
 
 					if tmp.get_chemical_formula()  == 'H': # special attention to H
-						ads_height = 1.2
+						ads_height = 1.0
 
 					ads_height -= z_shift
 					ads_pos = (ads_pos0[0]-shift[0], ads_pos0[1]-shift[1])
