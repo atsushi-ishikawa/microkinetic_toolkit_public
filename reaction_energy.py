@@ -72,7 +72,6 @@ surf.set_constraint(c)
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
-
 maxoptsteps = 200
 ads_height0 = 1.7
 ads_pos0 = (0.0, 0.0)
