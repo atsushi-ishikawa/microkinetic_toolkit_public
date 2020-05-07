@@ -73,7 +73,7 @@ surf.set_constraint(c)
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 maxoptsteps = 200
-ads_height0 = 1.7
+ads_height0 = 1.8
 ads_pos0 = (0.0, 0.0)
 
 ZPE = [False, False]
@@ -119,14 +119,14 @@ elif "vasp" in calculator:
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
-	xc          = "pbe"
-	ivdw        = 11
+	xc          = "beef-vdw"
+	ivdw        = 0
 	prec        = "normal"
-	encut       = 300.0 # 213.0 or 400.0 or 500.0
+	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
 	ibrion      = 2
 	nfree       = 10
-	nsw         = 100
+	nsw         = 300
 	nsw_neb     = 20
 	nsw_dimer   = 1000
 	nelmin      = 5
@@ -139,12 +139,13 @@ elif "vasp" in calculator:
 	vacuum      = 10.0 # for gas-phase molecules. surface vacuum is set by surf.py
 	setups      = None
 	ialgo       = 48 # normal=38, fast=58, veryfast=48
-	npar        = 10
-	nsim        = npar
 	lwave       = False
 	lcharg      = False
 	ispin       = 1
 	#setups = {"O" : "_h"}
+
+	npar = 18 # ito: 18 hokudai: 10
+	nsim = npar
 
 	# set lmaxmix
 	lmaxmix = 2
@@ -173,7 +174,7 @@ elif "vasp" in calculator:
 		ivdw = 0
 
 	# DFT+U
-	DFTU = True
+	DFTU = False
 	if DFTU:
 		ldau = "true"
 		ldautype = 2
