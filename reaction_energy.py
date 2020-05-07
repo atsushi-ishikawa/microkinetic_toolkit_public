@@ -840,7 +840,7 @@ for irxn in range(rxnst, rxned):
 			if id is None: # somebody is writing to db
 				continue
 			else:
-				tmpdb.write(tmp, name=formula+site+site_pos+config, id=id, data={'site':site, 'site_pos':site_pos, 'config':config})
+				tmpdb.write(tmp, name=formula + site + site_pos + config, id=id, data={'site':site, 'site_pos':site_pos, 'config':config})
 		#
 		# TS calc
 		#
