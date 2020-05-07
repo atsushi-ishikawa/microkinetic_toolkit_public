@@ -131,9 +131,9 @@ CH   + surf          --ER--> CHO  + def_atop.x1y1
 CO   + surf          --ER--> CO2  + def_atop.x1y1
 
 # surface mediated oxidation LH
-CH3_atop.x1y1 + surf --LH--> CH3O-SIDE_atop.x1y1 + def_atop.x1y1
+CH3_atop.x1y1 + surf --LH--> CH3O-SIDEx_atop.x1y1 + def_atop.x1y1
 CH2_atop.x1y1 + surf --LH--> CH2O_atop.x1y1 + def_atop.x1y1
-CH_atop.x1y1  + surf --LH--> CHO-SIDE_atop.x1y1  + def_atop.x1y1
+CH_atop.x1y1  + surf --LH--> CHO-SIDEx_atop.x1y1  + def_atop.x1y1
 
 # surface C-C coupling
 2*CH3_atop.x1y1      --LH--> C2H6 + 2*surf
@@ -156,26 +156,26 @@ H2O2 + surf          --ER--> H_atop.x1y1 + HO2
 O2 + 2*def_atop.x1y1 --ER--> 2*surf
 
 # adsorption
-C2H6 + surf --ads--> C2H6-SIDE_atop.x1y1
-C2H5 + surf --ads--> C2H5-SIDE_atop.x1y1
-C2H4 + surf --ads--> C2H4-SIDE_atop.x1y1
-C2H3 + surf --ads--> C2H3-SIDE_atop.x1y1
-C2H2 + surf --ads--> C2H2-SIDE_atop.x1y1
+C2H6 + surf --ads--> C2H6-SIDEx_atop.x1y1
+C2H5 + surf --ads--> C2H5-SIDEx_atop.x1y1
+C2H4 + surf --ads--> C2H4-SIDEx_atop.x1y1
+C2H3 + surf --ads--> C2H3-SIDEx_atop.x1y1
+C2H2 + surf --ads--> C2H2-SIDEx_atop.x1y1
 C2H  + surf --ads--> C2H-FLIP_atop.x1y1
-CH3O + surf --ads--> CH3O-SIDE_atop.x1y1
+CH3O + surf --ads--> CH3O-SIDEx_atop.x1y1
 CH2O + surf --ads--> CH2O_atop.x1y1
-CHO  + surf --ads--> CHO-SIDE_atop.x1y1
-CO   + surf --ads--> CO-SIDE_atop.x1y1
-O2   + surf --ads--> O2-SIDE_atop.x1y1
-OH   + surf --ads--> OH-SIDE_atop.x1y1
-H2O  + surf --ads--> H2O-SIDE_atop.x1y1
-H2O2 + surf --ads--> H2O2-SIDE_atop.x1y1
+CHO  + surf --ads--> CHO-SIDEx_atop.x1y1
+CO   + surf --ads--> CO-SIDEx_atop.x1y1
+O2   + surf --ads--> O2-SIDEx_atop.x1y1
+OH   + surf --ads--> OH-SIDEx_atop.x1y1
+H2O  + surf --ads--> H2O-SIDEx_atop.x1y1
+H2O2 + surf --ads--> H2O2-SIDEx_atop.x1y1
 HO2  + surf --ads--> HO2_atop.x1y1
 H2   + surf --ads--> H2_atop.x1y1
 CH4  + surf --ads--> CH4_atop.x1y1
 CH3  + surf --ads--> CH3_atop.x1y1
 CH2  + surf --ads--> CH2_atop.x1y1
-CH   + surf --ads--> CH-SIDE_atop.x1y1
+CH   + surf --ads--> CH-SIDEx_atop.x1y1
 C    + surf --ads--> C_atop.x1y1
 H    + surf --ads--> H_atop.x1y1
 O    + surf --ads--> O_atop.x1y1
