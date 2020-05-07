@@ -2,16 +2,16 @@ def read_reactionfile(file):
 	import os
 	import re
 
-	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
-	os.system('grep -v "^#" tmpfile1 > tmpfile2')
-	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
+	f = open(file, "r")
 
-	numlines = sum(1 for line in open("tmpfile1"))
-
-	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
-
+	# drop comment and branck lines
 	lines = f.readlines()
+	newlines = []
+	for line in lines:
+		if not(re.match(r"^#",line)) and not(re.match(r"^s*$",line)):
+			newlines.append(line)
+	lines = newlines
+	numlines = len(lines)
 
 	reac = list(range(numlines))
 	rxn  = list(range(numlines))
@@ -37,16 +37,13 @@ def return_lines_of_reactionfile(file):
 	import os
 	import re
 
-	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
-	os.system('grep -v "^#" tmpfile1 > tmpfile2')
-	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
-
-	numlines = sum(1 for line in open("tmpfile1"))
-
-	f = open("tmpfile1","r")
-	os.system('rm tmpfile1 tmpfile2')
-
+	# drop comment and branck lines
 	lines = f.readlines()
+	newlines = []
+	for line in lines:
+		if not(re.match(r"^#",line)) and not(re.match(r"^s*$",line)):
+			newlines.append(line)
+	lines = newlines
 	return lines
 
 def remove_space(obj):
