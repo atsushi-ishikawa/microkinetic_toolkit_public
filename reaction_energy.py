@@ -126,7 +126,7 @@ elif "vasp" in calculator:
 	potim       = 0.10
 	ibrion      = 2
 	nfree       = 10
-	nsw         = 300
+	nsw         = 50
 	nsw_neb     = 20
 	nsw_dimer   = 1000
 	nelmin      = 5
@@ -372,7 +372,7 @@ for irxn in range(rxnst, rxned):
 		#
 		# set label
 		#
-		r_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
+		r_label = label + "_rxn" + str(irxn).zfill(3) + "_" + "-".join(mols) + "_" + site
 		if mol_type=='adsorbed':
 			r_label = r_label + "_" + surf_name
 		r_traj  = r_label + "reac.traj"
@@ -681,7 +681,7 @@ for irxn in range(rxnst, rxned):
 		#
 		# set label
 		#
-		p_label = label + "_rxn" + str(irxn) + "_" + "-".join(mols) + "_" + site
+		p_label = label + "_rxn" + str(irxn).zfill(3) + "_" + "-".join(mols) + "_" + site
 		if mol_type=='adsorbed':
 			p_label = p_label + "_" + surf_name
 		p_traj  = p_label + "prod.traj"
