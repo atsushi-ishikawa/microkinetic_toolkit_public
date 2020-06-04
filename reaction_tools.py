@@ -2,26 +2,26 @@ def read_reactionfile(file):
 	import os
 	import re
 
-	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
-	os.system('grep -v "^#" tmpfile1 > tmpfile2')
-	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
+	f = open(file, "r")
 
-	numlines = sum(1 for line in open("tmpfile1"))
-
-	f = open("tmpfile1","r")
- 	os.system('rm tmpfile1 tmpfile2')
-
+	# drop comment and branck lines
 	lines = f.readlines()
+	newlines = []
+	for line in lines:
+		if not(re.match(r"^#",line)) and not(re.match(r"^s*$",line)):
+			newlines.append(line)
+	lines = newlines
+	numlines = len(lines)
 
-	reac = range(numlines)
-	rxn  = range(numlines)
-	prod = range(numlines)
+	reac = list(range(numlines))
+	rxn  = list(range(numlines))
+	prod = list(range(numlines))
 
 	for i,line in enumerate(lines):
 		text = line.replace("\n","").replace(">","").split("--")
-		reac_tmp  = text[0]
-		rxn_tmp   = text[1]
-		prod_tmp  = text[2]
+		reac_tmp = text[0]
+		rxn_tmp  = text[1]
+		prod_tmp = text[2]
 
 		reac[i] = re.split(" \+ ", reac_tmp) # for cations
 		prod[i] = re.split(" \+ ", prod_tmp) # for cations
@@ -37,16 +37,13 @@ def return_lines_of_reactionfile(file):
 	import os
 	import re
 
-	os.system('grep -v "^\s*$" %s > tmpfile1' % file)
-	os.system('grep -v "^#" tmpfile1 > tmpfile2')
-	os.system('grep -v "^\s*$" tmpfile2 > tmpfile1')
-
-	numlines = sum(1 for line in open("tmpfile1"))
-
-	f = open("tmpfile1","r")
- 	os.system('rm tmpfile1 tmpfile2')
-
+	# drop comment and branck lines
 	lines = f.readlines()
+	newlines = []
+	for line in lines:
+		if not(re.match(r"^#",line)) and not(re.match(r"^s*$",line)):
+			newlines.append(line)
+	lines = newlines
 	return lines
 
 def remove_space(obj):
@@ -82,7 +79,7 @@ def remove_space(obj):
 				else:
 					newobj[i] = obj2
 		else: # error
-			print "remove_space: input str or list"
+			print("remove_space: input str or list")
 
 		return newobj
 
@@ -96,13 +93,22 @@ def get_reac_and_prod(reactionfile):
 
 	rxn_num = len(rxn)
 
-	r_ads  = range(rxn_num)
+	r_ads  = list(range(rxn_num))
 	r_site = [ [] for i in range(rxn_num) ]
 	r_coef = [ [] for i in range(rxn_num) ]
 
-	p_ads  = range(rxn_num)
-	p_site = range(rxn_num)
-	p_coef = range(rxn_num)
+	p_ads  = list(range(rxn_num))
+	p_site = list(range(rxn_num))
+	p_coef = list(range(rxn_num))
+
+# python2?
+#	r_ads  = [ [] for i in range(rxn_num) ]
+#	r_site = [ [] for i in range(rxn_num) ]
+#	r_coef = [ [] for i in range(rxn_num) ]
+
+#	p_ads  = [ [] for i in range(rxn_num) ]
+#	p_site = [ [] for i in range(rxn_num) ]
+#	p_coef = [ [] for i in range(rxn_num) ]
 
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
@@ -110,18 +116,18 @@ def get_reac_and_prod(reactionfile):
 		#
 		# reactant
 		#
-		r_ads[irxn]  = range(ireac_num)
-		r_site[irxn] = range(ireac_num)
-		r_coef[irxn] = range(ireac_num)
+		r_ads[irxn]  = list(range(ireac_num))
+		r_site[irxn] = list(range(ireac_num))
+		r_coef[irxn] = list(range(ireac_num))
 		
 		for imol, mol in enumerate(ireac):
 			r_site[irxn][imol] = []
-			r_ads[irxn][imol] = []
+			r_ads[irxn][imol]  = []
 			#
 			# coefficient
 			#
 			if "*" in mol:
-				r_coef[irxn][imol] = int( mol.split("*")[0] )
+				r_coef[irxn][imol] = int(mol.split("*")[0])
 				rest = mol.split("*")[1]
 			else:
 				r_coef[irxn][imol] = 1
@@ -131,29 +137,29 @@ def get_reac_and_prod(reactionfile):
 			if ',' in rest:
 				sites = rest.split(',')
 				for isite, site in enumerate(sites):
-					r_site[irxn][imol].append( site.split('_')[1] )
-					r_ads[irxn][imol].append(  site.split('_')[0] )
+					r_site[irxn][imol].append(site.split('_')[1])
+					r_ads[irxn][imol].append( site.split('_')[0])
 			elif '_' in rest:
-				r_site[irxn][imol].append( rest.split('_')[1] )
-				r_ads[irxn][imol].append(  rest.split('_')[0] )
+				r_site[irxn][imol].append(rest.split('_')[1])
+				r_ads[irxn][imol].append( rest.split('_')[0])
 			else:
-				r_site[irxn][imol].append( 'gas' )
-				r_ads[irxn][imol].append( rest )
+				r_site[irxn][imol].append('gas')
+				r_ads[irxn][imol].append(rest)
 		#
 		# product
 		#
-		p_ads[irxn]  = range(iprod_num)
-		p_site[irxn] = range(iprod_num)
-		p_coef[irxn] = range(iprod_num)
+		p_ads[irxn]  = list(range(iprod_num))
+		p_site[irxn] = list(range(iprod_num))
+		p_coef[irxn] = list(range(iprod_num))
 		
 		for imol, mol in enumerate(iprod):
 			p_site[irxn][imol] = []
-			p_ads[irxn][imol] = []
+			p_ads[irxn][imol]  = []
 			#
 			# coefficient
 			#
 			if "*" in mol:
-				p_coef[irxn][imol] = int( mol.split("*")[0] )
+				p_coef[irxn][imol] = int(mol.split("*")[0])
 				rest = mol.split("*")[1]
 			else:
 				p_coef[irxn][imol] = 1
@@ -163,14 +169,16 @@ def get_reac_and_prod(reactionfile):
 			if ',' in rest:
 				sites = rest.split(',')
 				for isite, site in enumerate(sites):
-					p_site[irxn][imol].append( site.split('_')[1] )
-					p_ads[irxn][imol].append(  site.split('_')[0] )
+					p_site[irxn][imol].append(site.split('_')[1])
+					p_ads[irxn][imol].append( site.split('_')[0])
 			elif '_' in rest:
-				p_site[irxn][imol].append( rest.split('_')[1] )
-				p_ads[irxn][imol].append(  rest.split('_')[0] )
+				p_site[irxn][imol].append(rest.split('_')[1])
+				p_ads[irxn][imol].append( rest.split('_')[0])
 			else:
-				p_site[irxn][imol].append( 'gas' )
-				p_ads[irxn][imol].append( rest )
+				p_site[irxn][imol].append('gas')
+				p_ads[irxn][imol].append(rest)
+
+		# print("irxn=%d, %s-->%s, coef: %s-->%s, site:%s-->%s" % (irxn, r_ads[irxn], p_ads[irxn], r_coef[irxn], p_coef[irxn], r_site[irxn], p_site[irxn]))
 
 	return (r_ads, r_site, r_coef,  p_ads, p_site, p_coef)
 
@@ -208,7 +216,7 @@ def get_preexponential(reactionfile):
 	mass_prod = np.array(rxn_num*[range(len(p_ads[0]))], dtype="f")
 
 	for irxn in range(rxn_num):
-		print "---------", irxn, "------------"
+		print("--------- %d ---------" % irxn)
 		#
 		# reactants
 		#
@@ -279,7 +287,7 @@ def remove_parentheses(file):
 	tmpfile = "ttt.txt"
 	os.system('cat %s | sed "s/\[//g" > %s' % (file, tmpfile) )
 	os.system('cat %s | sed "s/\]//g" > %s' % (tmpfile, file) )
- 	os.system('rm %s' % tmpfile)
+	os.system('rm %s' % tmpfile)
 
 
 def get_species_num(*species):
@@ -305,8 +313,8 @@ def get_adsorption_sites(infile):
 
 	lines = f.readlines()
 
-	mol  = range(len(lines))
-	site = range(len(lines))
+	mol  = list(range(len(lines)))
+	site = list(range(len(lines)))
 
 	for i,line in enumerate(lines):
 		aaa,bbb = line.replace("\n","").split(":")
@@ -338,6 +346,7 @@ def find_closest_atom(surf,offset=(0,0)):
 def sort_atoms_by_z(atoms):
 	from ase import Atoms, Atom
 	import numpy as np
+	import collections
 	#
 	# keep information for original Atoms
 	#
@@ -346,27 +355,47 @@ def sort_atoms_by_z(atoms):
 	cell = atoms.get_cell()
 
 	dtype = [("idx",int), ("z",float)]
-	zlist = np.array([], dtype=dtype)
-
-	for idx, atom in enumerate(atoms):
-		tmp = np.array([(idx,atom.z)],dtype=dtype)
-		zlist = np.append(zlist, tmp)
-
-	zlist = np.sort(zlist, order="z")
-
-	newatoms = Atoms()
-
-	for i in zlist:
-		idx = i[0]
-		newatoms.append(atoms[idx])
 	#
-	# restore
+	# get set of chemical symbols
+	#
+	symbols  = atoms.get_chemical_symbols()
+	elements = sorted(set(symbols), key=symbols.index)
+	num_elem = []
+	for i in elements:
+		num_elem.append(symbols.count(i))
+
+	#
+	# loop over each groups
+	#
+	iatm = 0
+	newatoms = Atoms()
+	zcount = []
+	for inum in num_elem:
+		zlist  = np.array([], dtype=dtype)
+		for idx in range(inum):
+			tmp = np.array([(iatm, atoms[iatm].z)], dtype=dtype)
+			zlist = np.append(zlist, tmp)
+			iatm = iatm + 1
+
+		zlist = np.sort(zlist, order="z")
+
+		for i in zlist:
+			idx = i[0]
+			newatoms.append(atoms[idx])
+
+		tmp = np.array([], dtype=float)
+		for val in zlist:
+			tmp = np.append(tmp, round(val[1],2))
+		l = collections.Counter(tmp)
+		zcount.append( list(l.values()) )
+	#
+	# restore tag, pbc, cell
 	#
 	newatoms.set_tags(tags)
 	newatoms.set_pbc(pbc)
 	newatoms.set_cell(cell)
 
-	return newatoms
+	return newatoms, zcount
 
 def get_number_of_valence_electrons(atoms):
 	#
@@ -396,15 +425,15 @@ def remove_side_and_flip(mol):
 	#
 	if '-SIDEx' in mol:
 		mol = mol.replace('-SIDEx','')
-	if '-SIDEy' in mol:
+	elif '-SIDEy' in mol:
 		mol = mol.replace('-SIDEy','')
-	if '-FLIP' in mol:
-		mol = mol.replace('-FLIP','')
-	if '-SIDE' in mol:
+	elif '-SIDE' in mol:
 		mol = mol.replace('-SIDE','')
-	if '-TILT' in mol:
+	elif '-FLIP' in mol:
+		mol = mol.replace('-FLIP','')
+	elif '-TILT' in mol:
 		mol = mol.replace('-TILT','')
-	if '-HIGH' in mol:
+	elif '-HIGH' in mol:
 		mol = mol.replace('-HIGH','')
 
 	return mol
@@ -418,23 +447,29 @@ def neb_copy_contcar_to_poscar(nimages):
 			os.system('cp %02d/CONTCAR %02d/POSCAR' % (images+1, images+1))
 
 
-def make_it_closer_by_exchange(atom1, atom2):
+def make_it_closer_by_exchange(atom1, atom2, thre=0.05):
+	# thre: when distance is larger than this value, do switch
 	from ase import Atoms, Atom
 	from ase.geometry import distance
 
 	natoms = len(atom1)
-	thre = 0.05 # when distance is large than this value, do switch
+	const_list = atom1.constraints[0].get_indices() 
+	# Constrained atoms. Do not exchange these.
 
 	for i in range(natoms):
 		for j in range(i+1, natoms):
 			if atom1[i].symbol == atom1[j].symbol:
+				# measure distance between "ATOMS" (in ASE object)
 				dis_bef = distance(atom1, atom2)
-				atom1B = atom1.copy()
+				atom1B  = atom1.copy()
 				atom1B.positions[ [i,j] ] = atom1B.positions[ [j,i] ]
 				dis_aft = distance(atom1B, atom2)
 
-				if dis_aft + thre < dis_bef:
+				if (dis_aft + thre < dis_bef) and not (i in const_list) and not (j in const_list):
+					#
 					# switch
+					#
+					print("exchanged {0:3d} and {1:3d}: (dis_bef, dis_aft) = ({2:6.2f},{3:6.2f})".format(i,j,dis_bef,dis_aft))
 					tmp = atom1B.numbers[i]
 					atom1B.numbers[i] = atom1B.numbers[j]
 					atom1B.numbers[j] = tmp
