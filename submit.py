@@ -19,7 +19,7 @@ else:
 print("rxn_num = %d, rxns per jobs = %d" % (rxn_num, each))
 
 # remove old files
-os.system("rm -rf pbe*")
+os.system("rm -rf beef-vdw*")
 os.system("rm -rf tsdir")
 os.system("rm tmp.db")
 os.system("rm std*")

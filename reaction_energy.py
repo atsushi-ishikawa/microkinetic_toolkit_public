@@ -126,7 +126,7 @@ elif "vasp" in calculator:
 	potim       = 0.10
 	ibrion      = 2
 	nfree       = 10
-	nsw         = 50
+	nsw         = 300
 	nsw_neb     = 20
 	nsw_dimer   = 1000
 	nelmin      = 5
