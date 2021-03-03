@@ -1,4 +1,6 @@
-### Methane
+### Introduction
+* These scripts does the first-principle-based microkinetics.
+The corresponding work is 10.1021/acscatal.0c04104.
 
 * input file = "input.txt"
 
