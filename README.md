@@ -1,34 +1,36 @@
-### Python script to do high-throughput DFT calculation and constructing reaction rate file (MATLAB). Application intending Oxidative coupling of methane(OCM).
+### DFT計算を行い反応エネルギーを算出するとともにMATLABコードを生成する計算用スクリプト(Ref. ACS. Catal)
 
-* input file = "input.txt"
+* インプットファイル: input.txt"
+素反応を書く。詳しい書き方は下に。
 
-#### 1. Run vasp
-edit `run.sh` to change input file and then
+* ステップ
+#### 1. VASP計算を行う
+`run.sh`を編集
 ```bash
 qsub or pjsub run.sh
 ```
 
-#### 2. Make species file
+#### 2. 化学種をカウントする
 ```bash
 python count_species.py input.txt
 ```
 
-#### 3. Make pre-exponential file
+#### 3. pere-exponentialを作る
 ```bash
 python pre_exponential.py input.txt
 ```
 
-#### 4. Make entropy file
+#### 4. entropyを計算
 ```bash
 python entropy.py input.txt
 ```
 
-#### 5. Make MATLAB ODE file
+#### 5. MATLAB ODEファイルと作る
 ```bash
 python make_rate_equation.py input.txt
 ```
 
-#### 6. Run MATLAB
+#### 6. MATLAB計算を行う
 ```bash
 cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB_dir
 ```
