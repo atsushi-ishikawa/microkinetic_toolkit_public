@@ -1,4 +1,6 @@
-### DFT計算を行い反応エネルギーを算出するとともにMATLABコードを生成する計算用スクリプト(Ref. ACS. Catal)
+## DFT-based microkinetics for oxidative coupling of methane (ACS. Catal, 2021)
+* DFT計算を行い反応エネルギーを算出するとともにMATLABコードを生成する計算用スクリプト
+* 必要なもの: VASP (ASE利用), python3, MATLAB
 
 * インプットファイル: input.txt"
 素反応を書く。詳しい書き方は下に。
