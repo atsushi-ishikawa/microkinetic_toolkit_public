@@ -1,4 +1,5 @@
-import os,sys
+import os
+import sys
 from reaction_tools import *
 #
 # make rate equation for MATLAB format
@@ -17,9 +18,9 @@ reactionfile = argvs[1]
 # p_ads = [ [['C1'],['D1']] , [['C2'],['D2']] ]
 
 outputfile = "met001ode.m"
-fout = open(outputfile,"w")
+fout = open(outputfile, "w")
 
-fout.write('function dydt = ' + outputfile.replace('.m','') + '(~,y,yin,tau,A,Ea,Kci,sden,area,Vr)')
+fout.write('function dydt = ' + outputfile.replace('.m', '') + '(~,y,yin,tau,A,Ea,Kci,sden,area,Vr)')
 fout.write("\n\n")
 #
 # template - start
@@ -54,7 +55,7 @@ fout.write("\t Rate = zeros(" + str(spec_num) + ",1);\n\n")
 dict1 = {}
 dict2 = {}
 for irxn in range(rxn_num):
-	rxn_idx = str(irxn + 1) # MATLAB-index starts from 1
+	rxn_idx = str(irxn + 1)  # MATLAB-index starts from 1
 
 	# hash-tag based reactant and product species list FOR THIS REACTION
 	list_r = []
@@ -65,9 +66,9 @@ for irxn in range(rxn_num):
 		for imol, mol in enumerate(mols):
 			mol = remove_side_and_flip(mol)
 			site = r_site[irxn][imols][imol]
-			if site !='gas':
+			if site != 'gas':
 				mol = mol + "_surf"
-			spe = get_species_num(mol) + 1 # MATLAB
+			spe = get_species_num(mol) + 1  # MATLAB
 			list_r.append(spe)
 			dict1[spe] = mol
 
@@ -75,9 +76,9 @@ for irxn in range(rxn_num):
 		for imol, mol in enumerate(mols):
 			mol = remove_side_and_flip(mol)
 			site = p_site[irxn][imols][imol]
-			if site !='gas':
+			if site != 'gas':
 				mol = mol + "_surf"
-			spe = get_species_num(mol) + 1 # MATLAB
+			spe = get_species_num(mol) + 1  # MATLAB
 			list_p.append(spe)
 			dict1[spe] = mol
 
@@ -92,9 +93,9 @@ for irxn in range(rxn_num):
 			mol = remove_side_and_flip(mol)
 			site = r_site[irxn][imols][imol]
 
-			if site !='gas':
+			if site != 'gas':
 				mol = mol + "_surf"
-			spe = get_species_num(mol) + 1 # MATLAB
+			spe = get_species_num(mol) + 1  # MATLAB
 
 			if site != 'gas' or mol  == 'surf':
 				theta = "theta(" + str(spe) + ")"
@@ -118,7 +119,8 @@ for irxn in range(rxn_num):
 				coef = r_coef[irxn][imol]
 		
 		if coef == 0:
- 			print("something wrong at coef 1"); exit()
+			print("something wrong at coef 1")
+			exit()
 
 		sto_coef = str(float(coef))
 		if mem in dict2:
@@ -143,7 +145,8 @@ for irxn in range(rxn_num):
 					coef = p_coef[irxn][imols]
 		
 		if coef == 0:
-			print("something wrong at coef 2"); exit()
+			print("something wrong at coef 2")
+			exit()
 
 		sto_coef = str(float(coef))
 		if mem in dict2:
@@ -163,9 +166,9 @@ for irxn in range(rxn_num):
 		for imol, mol in enumerate(mols):
 			mol = remove_side_and_flip(mol)
 			site = p_site[irxn][imols][imol]
-			if site !='gas':
+			if site != 'gas':
 				mol = mol + "_surf"
-			spe = get_species_num(mol) + 1 # MATLAB
+			spe = get_species_num(mol) + 1  # MATLAB
 
 			if site != 'gas' or mol  == 'surf':
 				theta = "theta(" + str(spe) + ")"
@@ -192,7 +195,8 @@ for irxn in range(rxn_num):
 				coef = r_coef[irxn][imol]
 		
 		if coef == 0:
-			print("something wrong at coef 3"); exit()
+			print("something wrong at coef 3")
+			exit()
 
 		sto_coef = str(float(coef))
 		if mem in dict2:
@@ -215,7 +219,8 @@ for irxn in range(rxn_num):
 					coef = p_coef[irxn][imols]
 		
 		if coef == 0:
-			print("something wrong at coef 4"); exit()
+			print("something wrong at coef 4")
+			exit()
 
 		sto_coef = str(float(coef))
 		if mem in dict2:
@@ -232,9 +237,9 @@ for irxn in range(rxn_num):
 #
 
 # vacancy site
-if 'surf' in dict1.values(): # only when surface is involved
+if 'surf' in dict1.values():  # only when surface is involved
 	tmp = ""
-	for imol,mol in enumerate(dict1):
+	for imol, mol in enumerate(dict1):
 		comp = dict1[imol+1]
 		if 'surf' in comp and comp != 'surf':
 			tmp = tmp + "-Rate(" + str(imol+1) + ")"
@@ -242,9 +247,9 @@ if 'surf' in dict1.values(): # only when surface is involved
 	dict2[len(dict2)] = tmp
 
 comment = "\t % species --- "
-for imol,mol in enumerate(dict2):
+for imol, mol in enumerate(dict2):
 	fout.write("\t Rate({0}) = {1}; % {2}\n".format(imol+1, dict2[imol+1], dict1[imol+1]))
-	comment += "%s = %s " % (imol+1,dict1[imol+1])
+	comment += "%s = %s " % (imol+1, dict1[imol+1])
 comment += "\n"
 
 #comment = "\t % species --- " + str(sorted(dict1.items())).replace('\'','').replace('{','').replace('}','') + "\n"
@@ -273,12 +278,12 @@ fout.write(template)
 
 string = ''
 #for mol in dict1.values():
-for i,_ in enumerate(dict1):
+for i, _ in enumerate(dict1):
 	mol = dict1[i+1]
 	if mol == 'surf':
 		string = string + '"{0}"'.format('\\theta_{vac}')
 	elif 'surf' in mol:
-		string = string + '"{0}"'.format('\\theta_{' + mol.replace('_surf','') + '}')
+		string = string + '"{0}"'.format('\\theta_{' + mol.replace('_surf', '') + '}')
 	else:
 		string = string + '"{0}"'.format(mol)
 
@@ -288,4 +293,3 @@ fout.write( "\t species = [{0}];\n".format(string[:-1]))
 
 fout.write("\nend\n")
 fout.close()
-
