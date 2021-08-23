@@ -55,6 +55,7 @@ if surface:
 	dbfile = 'surf.db'
 	dbfile = os.path.join(os.getcwd(), dbfile)
 	db     = connect(dbfile)
+	db
 	surf       = db.get_atoms(id=1)
 	lattice    = db.get(id=1).data.lattice
 	facet      = db.get(id=1).data.facet

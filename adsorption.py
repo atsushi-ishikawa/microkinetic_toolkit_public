@@ -1,5 +1,7 @@
 import numpy as np
-import os, sys ,json
+import os
+import sys
+import json
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
@@ -21,7 +23,8 @@ argvs = sys.argv
 ads_file   = argvs[1]
 e_ads_file = ads_file.split(".")[0] + "_Ead" + ".txt"
 
-calculator = "vasp" ; calculator = calculator.lower()
+calculator = "vasp"
+calculator = calculator.lower()
 
 db_surf = connect('surf.db')
 surf    = db_surf.get_atoms(id=1)
@@ -29,7 +32,7 @@ lattice = db_surf.get(id=1).data.lattice
 facet   = db_surf.get(id=1).data.facet
 
 # load site information
-f = open('site_info.json','r')
+f = open('site_info.json', 'r')
 site_info = json.load(f)
 f.close()
 
@@ -39,7 +42,7 @@ db_ads = connect(ads_json)
 
 fads = open(e_ads_file, "w")
 
-mols,sites = get_adsorption_sites(ads_file)
+mols, sites = get_adsorption_sites(ads_file)
 mols_num = len(mols)
 
 e_ads = np.array([0]*mols_num, dtype="f")
@@ -62,7 +65,7 @@ if "vasp" in calculator:
 ## --- EMT --- -> nothing to set
 
 for imol, mol in enumerate(mols):
-	print "----- reactant: molecule No.", imol, " is ", mol, "-----"
+	print("----- reactant: molecule No.", imol, " is ", mol, "-----")
 
 	tmp = methane[mol]
 
@@ -73,10 +76,10 @@ for imol, mol in enumerate(mols):
 		except:
 			site_pos = "x1y1"
 
-		print "lattice",lattice; print "facet", facet; print "site",site; print "site_pos",site_pos
+		print("lattice, facet, site, site_pos", lattice, facet, site, site_pos)
 		if site != 'gas':
 			offset = site_info[lattice][facet][site][site_pos]
-			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0,0), offset=offset)
+			add_adsorbate(surf_tmp, tmp, ads_hight, position=(0, 0), offset=offset)
 			tmp2 = surf_tmp
 			del surf_tmp
 		else:
@@ -88,8 +91,8 @@ for imol, mol in enumerate(mols):
 		traj = mol + "_" + site + "_" + "ads.traj"
 
 		if "vasp" in calculator:
-			tmp2.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
-						ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts )
+			tmp2.calc = Vasp(prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0,
+						ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg, kpts=kpts)
 		elif "emt" in calculator:
 			tmp2.calc = EMT()
 			opt = MDMin(tmp2, trajectory=traj)
@@ -97,12 +100,12 @@ for imol, mol in enumerate(mols):
 
 		en  = tmp2.get_potential_energy()
 
-		print "Eads = ", en
+		print("Eads = ", en)
 
 #		fads.write(mol + "_" + site + "   " + str(en) + "\n")
-		fads.write('{0:<8}{1:<8}{2:<16.8f}\n'.format(mol,site,en))
+		fads.write('{0:<8}{1:<8}{2:<16.8f}\n'.format(mol, site, en))
 
-		db_ads.write(tmp2, data={ mol + "-" + site: en})
+		db_ads.write(tmp2, data={mol + "-" + site: en})
 
 		del tmp2
 
@@ -114,4 +117,3 @@ for imol, mol in enumerate(mols):
 	# loop over molecule
 
 fads.close()
-
