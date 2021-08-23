@@ -1,38 +1,37 @@
+<<<<<<< HEAD
 ### Python script to do high-throughput DFT calculation and constructing reaction rate file (MATLAB). Application intending Oxidative coupling of methane(OCM).
 =======
 ### Introduction
 * These scripts does the first-principle-based microkinetics.
 The corresponding work is 10.1021/acscatal.0c04104.
-
-* input file = "input.txt"
-
-#### 1. Run vasp
-edit `run.sh` to change input file and then
+=======
+#### 1. VASP
+`run.sh`
 ```bash
 qsub or pjsub run.sh
 ```
 
-#### 2. Make species file
+#### 2. 
 ```bash
 python count_species.py input.txt
 ```
 
-#### 3. Make pre-exponential file
+#### 3. pere-exponential
 ```bash
 python pre_exponential.py input.txt
 ```
 
-#### 4. Make entropy file
+#### 4. entropy
 ```bash
 python entropy.py input.txt
 ```
 
-#### 5. Make MATLAB ODE file
+#### 5. MATLAB ODE
 ```bash
 python make_rate_equation.py input.txt
 ```
 
-#### 6. Run MATLAB
+#### 6. MATLAB
 ```bash
 cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB_dir
 ```
