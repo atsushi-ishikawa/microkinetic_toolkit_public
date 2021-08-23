@@ -15,13 +15,13 @@ else:
 inp = argvs[1] # elementary reactions with reaction rate
 
 label_rxn = False
-directed  = True
+directed  = False
 
 eps  = 1.0e-10
 tiny = 1.0e-50 # Tiny value. Effectively zero.
 
-edge_scale = 0.01
-rate_thre  = 4  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+edge_scale = 0.2
+rate_thre  = 3 # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
 
 os.system('grep -v "^#" %s > reaction2.txt' % inp ) # remove comment line
 os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt') # remove blanck line
@@ -45,8 +45,8 @@ for i,line in enumerate(lines):
 	if ':' in line:
 		comp,rate = line.split(':')
 		rate = rate.replace('\n','')
-		#rate = float(rate)/eps
-		rate = float(rate)
+		rate = float(rate)/eps
+		#rate = float(rate)
 		if rate >= 0.0:
 			rate = log10(rate) if rate > eps else 1.0
 		else:
@@ -77,10 +77,10 @@ for i,line in enumerate(lines):
 #
 # drop 0 from list, as these are smaller than rate_thre
 #
-reac  = filter(lambda x: x!=0, reac)
-rxn   = filter(lambda x: x!=0, rxn)
-prod  = filter(lambda x: x!=0, prod)
-value = filter(lambda x: x!=0, value)
+reac  = list(filter(lambda x: x!=0, reac))
+rxn   = list(filter(lambda x: x!=0, rxn))
+prod  = list(filter(lambda x: x!=0, prod))
+value = list(filter(lambda x: x!=0, value))
 
 c_siz = 200; c_col = "blue"
 r_siz = 10;  r_col = "black"
@@ -96,18 +96,18 @@ if coverage:
 
 nodeA = 200.0
 nodeB = 11.0
-surf_scale = 0.4
+surf_scale = 0.01
 
 if directed:
 	G = nx.DiGraph()
 else:
 	G = nx.Graph()
 
-print "number of reactions:",len(rxn)
+print("number of reactions:",len(list(rxn)))
 
 for i,j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
- 	for ireac,j1 in enumerate(reac[i]):
+	for ireac,j1 in enumerate(reac[i]):
 		if coverage:
 			# node size
 			mol  = reac[i][ireac]
@@ -123,14 +123,14 @@ for i,j in enumerate(rxn):
 		else:
 			size = c_siz
 
- 		G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
+		G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
 
 		if directed and value[i] < 0:
  			G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
 		else:
  			G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
  
- 	for iprod,j2 in enumerate(prod[i]):
+	for iprod,j2 in enumerate(prod[i]):
 		if coverage:
 			# node size
 			mol  = prod[i][iprod]
@@ -146,13 +146,12 @@ for i,j in enumerate(rxn):
 		else:
 			size = c_siz
 
- 		G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
+		G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
 
 		if directed and value[i] < 0:
  			G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
 		else:
  			G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
-
 #
 # drawing 
 #
@@ -160,7 +159,7 @@ siz = nx.get_node_attributes(G,'size')
 col = nx.get_node_attributes(G,'color')
 
 pos = nx.nx_pydot.graphviz_layout(G, prog='fdp') # prog='neato' is also a good choice
-nx.draw_networkx_nodes(G, pos, nodelist=siz.keys(), node_size=siz.values(), node_color=col.values(), alpha=0.8)
+nx.draw_networkx_nodes(G, pos, nodelist=list(siz.keys()), node_size=list(siz.values()), node_color=list(col.values()), alpha=0.8)
 edges = G.edges()
 weights = [G[u][v]['weight'] for u,v in edges]
 

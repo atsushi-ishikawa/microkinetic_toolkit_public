@@ -13,8 +13,7 @@ infile  = argvs[1]
 outfile = "pre_exp.txt"
 f = open(outfile,"w")
 T = 1.0 # temporary temperature
-sden = 0.07*2.36*10**-9  # [mol/cm^2]
-#sden = 2.36*10**-9  # [mol/cm^2]
+sden = 5.624*10**-10 # [mol/cm^2]
 
 # Note on revserse reaction
 # Pre-exponential factor for reverse reaction is generally not needed
@@ -42,6 +41,7 @@ for irxn in range(rxn_num):
 	rxntype = []
 
 	rad_all = 0
+	d_ave = 0
 	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
@@ -63,6 +63,12 @@ for irxn in range(rxn_num):
 				rad_all += rad
 
 			sigma = np.pi*rad_all**2 # sigma = pi*(rA + rB)
+			#rad *= 0.182   # do empirical correction based on He, to match the vdW radius
+
+			d_ave += 2*rad/nmol # mean diameter
+
+			#sigma = np.pi*rad_all**2 # sigma = pi*(rA + rB)
+			#sigma = rad_all**2 # sigma = pi*(rA + rB)
 
 			mass = sum(tmp.get_masses())
 
@@ -89,7 +95,9 @@ for irxn in range(rxn_num):
 		type_for[irxn] = "gas"
 		red_mass = mass_prod / mass_sum
 		red_mass = red_mass*amu
-		fac_for  = sigma * np.sqrt( 8.0*np.pi*kbolt*T / red_mass ) * Nav
+		#fac_for  = sigma * np.sqrt( 8.0*np.pi*kbolt*T / red_mass ) * Nav
+		#fac_for  = sigma * np.sqrt( 8.0*np.pi*kbolt*T / red_mass ) * Nav
+		fac_for  = Nav * d_ave**2 * np.sqrt( 8.0*np.pi*kbolt*T / red_mass ) # Eq.3.21 in CHEMKIN Theory manual
 		#fac_for  = 0.5*fac_for # structural factor
 		fac_for  = fac_for * 10**6 # [m^3] --> [cm^3]
 		#
@@ -117,28 +125,18 @@ for irxn in range(rxn_num):
 		# adsorption --- Hertz-Knudsen or Chemkin
 		#
 		type_for[irxn] = "ads"
-		stick = 0.1
+		stick = 0.5
 		red_mass  = mass_prod / mass_sum
 		red_mass *= amu
 		#
-		# --- Hertz-Knudsen
+		# --- Hertz-Knudsen (in concentration form) acturally same with chemkin
 		#
-		#denom    = np.sqrt( 2.0*np.pi*red_mass*kbolt*T ) # [kg* kg*m^2*s^-2*K^-1 * K]^1/2 = [kg^2*m^2*s^-2]^1/2 = [kg*m*s^-1]
-		#fac_for  = stick / denom # [kg^-1*m^-1*s]
-		#fac_for *= 10**-5        # [kg^-1*m^-1*s] --> [g^-1*cm^-1*s]
-		#
-		# --- chemkin --- this is better (2019/07/13)
-		#
-		# when no infomration
-		#sden  = 1.0*10**14 # [site/cm^2]
-		#sden /= Nav        # [site/cm^2]*[mol/site] = [mol/cm^2]
-		# when having information 
-		#sden  = 2.36*10**-9  # [mol/cm^2]
-		fac_for  = ( stick/(sden*10**4) ) * np.sqrt( kbolt*T / (2.0*np.pi*red_mass )) # [mol^-1*m^3*s^-1] ; sden [mol/cm^2] --> [mol/m^2]
-		#fac_for  =                   np.sqrt( kbolt*Nav*T / (2.0*np.pi*red_mass*Nav)) # [mol^-1*m^3*s^-1]
+		# when having site density information 
+		#fac_for  = (stick/ (sden*10**4) ) * np.sqrt( kbolt*T / (2.0*np.pi*red_mass )) # [mol^-1*m^3*s^-1] ; sden [mol/cm^2] --> [mol/m^2]
+		fac_for  =                           np.sqrt( kbolt*T / (2.0*np.pi*red_mass )) # [mol^-1*m^3*s^-1]
+		fac_for  = stick*fac_for # multiplying sticking probability
 		fac_for *= 10**6 # [mol^-1*m^3*s^-1] --> [mol^-1*cm^3*s^-1]
 		
 	f.write("{0:>16.8e}\t{1:>6s}\n".format(fac_for, type_for[irxn]))
 
 f.close()
-

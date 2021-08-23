@@ -127,6 +127,9 @@ for irxn in range(rxn_num):
 			dict2[mem] = " - " + sto_coef + "*" + tmp
 
 		# multiply area/Vr for the surface reaction contribution to gas-phase species
+		# gas:     k*C = [m^3*s^-1]*[mol*m^-3] = [mol*s^-1]
+		# surface: k*(theta*sden)*(A/V)= [m^3*s^-1]*[mol*m^-2]*[m^2/m^3] = [mol*s^-1] --> same!
+
 		if not "surf" in dict1[mem] and "theta" in dict2[mem]:
 			dict2[mem] = dict2[mem] + "*" + "(area/Vr)"
 

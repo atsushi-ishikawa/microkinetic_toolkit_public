@@ -55,6 +55,7 @@ if surface:
 	dbfile = 'surf.db'
 	dbfile = os.path.join(os.getcwd(), dbfile)
 	db     = connect(dbfile)
+	db
 	surf       = db.get_atoms(id=1)
 	lattice    = db.get(id=1).data.lattice
 	facet      = db.get(id=1).data.facet
@@ -113,14 +114,14 @@ if "gau" in calculator:
 
 ## --- VASP ---
 elif "vasp" in calculator:
-	xc          = "beef-vdw"
-	ivdw        = 0
 	# GGA list
 	#  GGAs: pw91, pbe, pbesol, revpbe, rpbe, am05
 	#  meta-GGAs: tpss, revtpss, m06l, ms0, ms1, scan, scan-rvv10
 	#    --> gga and pp (to be override) are set automatically
 	#  vdw-DFs: vdw-df, optpbe-vdw, optb88-vdw, optb86b-vdw, vdw-df2, beef-vdw
 	#    --> luse_vdw and others are set automatically
+	xc          = "beef-vdw"
+	ivdw        = 0
 	prec        = "normal"
 	encut       = 400.0 # 213.0 or 400.0 or 500.0
 	potim       = 0.10
@@ -170,7 +171,7 @@ elif "vasp" in calculator:
 	label  = method
 
 	# switch of ivdw for vdw-including xc
-	if xc in ["beef-vdw"]:
+	if xc in ["vdw-df", "optpbe-vdw", "optb88-vdw", "optb86b-vdw", "vdw-df2", "beef-vdw"]:
 		ivdw = 0
 
 	# DFT+U

@@ -38,6 +38,7 @@ def return_lines_of_reactionfile(file):
 	import re
 
 	# drop comment and branck lines
+	f = open(file,"r")
 	lines = f.readlines()
 	newlines = []
 	for line in lines:
