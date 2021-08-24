@@ -18,7 +18,7 @@ for irxn in range(rxnnum):
 	#
 	# reactant
 	#
-	for imol,mol in enumerate(r_ads[irxn]):
+	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
 
@@ -30,14 +30,14 @@ for irxn in range(rxnnum):
 			site_pos = "x1y1"
 
 		if site != 'gas':
-			mol += "_surf" # Not distinguish different sites. Reconsideration may be needed.
+			mol += "_surf"  # Not distinguish different sites. Reconsideration may be needed.
 
 		species.append(mol)
 
 	#
 	# product
 	#
-	for imol,mol in enumerate(p_ads[irxn]):
+	for imol, mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
 
@@ -55,7 +55,7 @@ for irxn in range(rxnnum):
 
 # species = sorted(set(species), key=species.index)
 
-species = list(set(species)) # remove duplication
+species = list(set(species))  # remove duplication
 species.sort()
 
 surf = [i for i in species if 'surf' in i]
@@ -73,4 +73,3 @@ for item in species:
 
 fspecies.write(str(species))
 fspecies.close()
-
