@@ -1,5 +1,6 @@
 import sys
 from reaction_tools import *
+import pickle
 #
 # count species
 #
@@ -7,6 +8,7 @@ argvs = sys.argv
 reactionfile = argvs[1]
 
 speciesfile  = "species.txt"
+speciesfile_json = "species.json"
 
 fspecies = open(speciesfile, "w")
 
@@ -53,13 +55,11 @@ for irxn in range(rxnnum):
 
 		species.append(mol)
 
-# species = sorted(set(species), key=species.index)
-
 species = list(set(species))  # remove duplication
 species.sort()
 
 surf = [i for i in species if 'surf' in i]
-gas  = [i for i in species if not 'surf' in i]
+gas  = [i for i in species if 'surf' not in i]
 
 species = gas + surf
 
@@ -73,3 +73,4 @@ for item in species:
 
 fspecies.write(str(species))
 fspecies.close()
+pickle.dump(species, open("species.pickle", "wb"))
