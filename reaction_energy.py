@@ -36,10 +36,14 @@ rxn_num = get_number_of_reaction(reactionfile)
 if rxned == 0:  # not set...default
 	rxned = rxn_num
 
+clean = True  # whether to remove previous calculation
+if clean:
+	os.system("rm tmp.db")
+	os.system("rm *.traj")
 #
 # temprary database to avoid overlapping calculations
 #
-tmpdbfile = 'tmp.db'
+tmpdbfile = "tmp.db"
 tmpdbfile = os.path.join(os.getcwd(), tmpdbfile)
 tmpdb = connect(tmpdbfile)
 #
@@ -218,7 +222,7 @@ else:
 	method = ""
 	basis  = ""
 	label  = "emt"
-	fmax   = 0.05
+	fmax   = 0.10
 
 if True in ZPE:
 	label = label + "_ZPE"
@@ -241,8 +245,9 @@ for irxn in range(rxnst, rxned):
 	fdeltaE  = open(deltaEfile,  'a')
 	print("--- calculating elementary reaction No. %d ---" % irxn)
 
-	reac_en = np.array(range(len(r_ads[irxn])), dtype="f")
-	prod_en = np.array(range(len(p_ads[irxn])), dtype="f")
+	energies_bothside = {"reactant": None, "product": None}
+	#reac_en = np.array(range(len(r_ads[irxn])), dtype="f")
+	#prod_en = np.array(range(len(p_ads[irxn])), dtype="f")
 	dirs = {"reactant": None, "product": None}  # working directories. set by label in Vasp calculator.
 
 	for side in ["reactant", "product"]:
@@ -254,6 +259,8 @@ for irxn in range(rxnst, rxned):
 			mol_set = p_ads.copy()
 			sites   = p_site.copy()
 			coefs   = p_coef.copy()
+
+		energies = np.array(range(len(mol_set[irxn])), dtype="f")
 
 		for imols, mols in enumerate(mol_set[irxn]):
 			surf_tmp = surf.copy()
@@ -477,7 +484,6 @@ for irxn in range(rxnst, rxned):
 					tmp.calc = calc_gas_sp
 				else:
 					tmp.calc = calc_surf_sp
-
 				en = tmp.get_potential_energy()
 
 			if calculator == "vasp":
@@ -519,18 +525,17 @@ for irxn in range(rxnst, rxned):
 					vib.write_spectra(out=irdir + "_spectra.dat", start=1000, end=4000)
 					vib.write_mode()
 					vib.write_jmol()
-					#
+
 					# include ZPE
-					#
 					zpe = vib.get_zero_point_energy()
 					en = en + zpe
 					os.system("rm *.pckl")
 
-				reac_en[imols] = en
+				energies[imols] = en
 			else:
-				reac_en[imols] = en
+				energies[imols] = en
 
-			reac_en[imols] = coef * reac_en[imols]
+			energies[imols] = coef * energies[imols]
 
 			dirs[side] = dir  # needed when doing TS calc
 
@@ -543,7 +548,10 @@ for irxn in range(rxnst, rxned):
 					tmpdb.write(tmp, name=formula + site + site_pos + config, id=id,
 								data={'site': site, 'site_pos': site_pos, 'config': config})
 
-	deltaE = np.sum(prod_en) - np.sum(reac_en)
+		energies_bothside[side] = energies
+
+	deltaE = np.sum(energies_bothside["product"]) - np.sum(energies_bothside["reactant"])
+
 	print("deltaE = %5.3f" % deltaE)
 
 	#
@@ -554,9 +562,7 @@ for irxn in range(rxnst, rxned):
 	# TS calc
 	#
 	if TS:
-		#
 		# make different directory and go there
-		#
 		os.system('rm -rf tsdir')  # remove old one
 
 		if not os.path.exists("tsdir"):
