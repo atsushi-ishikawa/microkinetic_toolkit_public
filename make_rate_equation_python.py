@@ -22,16 +22,13 @@ fout = open(outputfile, "w")
 
 fout.write('import numpy as np')
 fout.write("\n\n")
-fout.write('def func(t, c, Afor, Ea, Kci, sden, Ngas, Ncomp):')
+fout.write('def func(t, c, Afor, Ea, Kci, T, sden, area, Vr, Ngas, Ncomp):')
 fout.write("\n")
 #
 # template - start
 #
 template = "\
 \tR  = 8.314\n\
-\tT  = 400.0\n\
-\tarea = 1.0\n\
-\tVr = 1.0\n\
 \n\
 \tkfor = Afor * np.exp(-Ea/R/T)\n\
 \tkrev = kfor / Kci\n\
@@ -57,7 +54,6 @@ for irxn in range(rxn_num):
 	# hash-tag based reactant and product species list FOR THIS REACTION
 	list_r = []
 	list_p = []
-
 	#
 	# making dict1, a dictionary with hash of species-number and molecule
 	#
@@ -217,5 +213,4 @@ fout.write(template)
 # fout.write("\t# species = [{0}] \n\n".format(string[:-1]))
 
 fout.write("\treturn rate\n")
-fout.write("\n")
 fout.close()
