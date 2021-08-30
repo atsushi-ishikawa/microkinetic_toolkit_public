@@ -6,29 +6,29 @@ from reaction_tools import *
 
 argvs = sys.argv
 
-if len(argvs) == 3: # read coverage
+if len(argvs) == 3:  # read coverage
 	coverage = True
 	cov_file = argvs[2]
 else:
 	coverage = False
 
-inp = argvs[1] # elementary reactions with reaction rate
+inp = argvs[1]  # elementary reactions with reaction rate
 
 label_rxn = False
 directed  = False
 
 eps  = 1.0e-10
-tiny = 1.0e-50 # Tiny value. Effectively zero.
+tiny = 1.0e-50  # Tiny value. Effectively zero.
 
 edge_scale = 0.2
-rate_thre  = 3 # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+rate_thre  = 3  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
 
-os.system('grep -v "^#" %s > reaction2.txt' % inp ) # remove comment line
-os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt') # remove blanck line
+os.system('grep -v "^#" %s > reaction2.txt' % inp )  # remove comment line
+os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
 
 numlines = sum(1 for line in open("reaction3.txt"))
 
-f = open("reaction3.txt","r")
+f = open("reaction3.txt", "r")
 lines = f.readlines()
 #os.system('rm reaction2.txt reaction3.txt')
 
@@ -38,13 +38,13 @@ prod  = [0 for i in range(numlines)]
 value = [0 for i in range(numlines)]
 
 idx = 0
-for i,line in enumerate(lines):
+for i, line in enumerate(lines):
 	#
 	# find reaction rate
 	#
 	if ':' in line:
-		comp,rate = line.split(':')
-		rate = rate.replace('\n','')
+		comp, rate = line.split(':')
+		rate = rate.replace('\n', '')
 		rate = float(rate)/eps
 		#rate = float(rate)
 		if rate >= 0.0:
@@ -52,10 +52,10 @@ for i,line in enumerate(lines):
 		else:
 			rate = -1.0*log10(abs(rate))
 	else:
-	 	comp = line
-	 	rate = 1.0
+		comp = line
+		rate = 1.0
 
-	comp = comp.replace('\n','').replace('>','').replace(' ','').split('--')
+	comp = comp.replace('\n', '').replace('>', '').replace(' ', '').split('--')
 
 	reac_tmp = comp[0]
 	reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
@@ -77,21 +77,21 @@ for i,line in enumerate(lines):
 #
 # drop 0 from list, as these are smaller than rate_thre
 #
-reac  = list(filter(lambda x: x!=0, reac))
-rxn   = list(filter(lambda x: x!=0, rxn))
-prod  = list(filter(lambda x: x!=0, prod))
-value = list(filter(lambda x: x!=0, value))
+reac  = list(filter(lambda x: x != 0, reac))
+rxn   = list(filter(lambda x: x != 0, rxn))
+prod  = list(filter(lambda x: x != 0, prod))
+value = list(filter(lambda x: x != 0, value))
 
 c_siz = 200; c_col = "blue"
 r_siz = 10;  r_col = "black"
 
 if coverage:
 	cov_dict = {}
-	fcov = open(cov_file,"r")
+	fcov = open(cov_file, "r")
 	lines = fcov.readlines()
-	for iline,line in enumerate(lines):
+	for iline, line in enumerate(lines):
 		cov = line.split()[1]
-		cov = cov.replace(' ','').replace('\n','')
+		cov = cov.replace(' ', '').replace('\n', '')
 		cov_dict[iline] = float(cov)
 
 nodeA = 200.0
@@ -103,11 +103,11 @@ if directed:
 else:
 	G = nx.Graph()
 
-print("number of reactions:",len(list(rxn)))
+print("number of reactions:", len(list(rxn)))
 
-for i,j in enumerate(rxn):
+for i, j in enumerate(rxn):
 	G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
-	for ireac,j1 in enumerate(reac[i]):
+	for ireac, j1 in enumerate(reac[i]):
 		if coverage:
 			# node size
 			mol  = reac[i][ireac]
@@ -126,11 +126,11 @@ for i,j in enumerate(rxn):
 		G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
 
 		if directed and value[i] < 0:
- 			G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
+			G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
 		else:
- 			G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
+			G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
  
-	for iprod,j2 in enumerate(prod[i]):
+	for iprod, j2 in enumerate(prod[i]):
 		if coverage:
 			# node size
 			mol  = prod[i][iprod]
@@ -149,19 +149,19 @@ for i,j in enumerate(rxn):
 		G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
 
 		if directed and value[i] < 0:
- 			G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
+			G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
 		else:
- 			G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
+			G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
 #
 # drawing 
 #
-siz = nx.get_node_attributes(G,'size')
-col = nx.get_node_attributes(G,'color')
+siz = nx.get_node_attributes(G, 'size')
+col = nx.get_node_attributes(G, 'color')
 
-pos = nx.nx_pydot.graphviz_layout(G, prog='fdp') # prog='neato' is also a good choice
+pos = nx.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
 nx.draw_networkx_nodes(G, pos, nodelist=list(siz.keys()), node_size=list(siz.values()), node_color=list(col.values()), alpha=0.8)
 edges = G.edges()
-weights = [G[u][v]['weight'] for u,v in edges]
+weights = [G[u][v]['weight'] for u, v in edges]
 
 nx.draw_networkx_edges(G, pos, edge_color='gray', alpha=0.6, width=weights)
 
@@ -171,7 +171,7 @@ if directed:
 else:
 	Gcomp = nx.Graph()
 
-for n,typ in G.nodes.data('typ'):
+for n, typ in G.nodes.data('typ'):
 	if typ == 'comp':
 		Gcomp.add_node(n)
 
@@ -188,7 +188,7 @@ if directed:
 else:
 	Grxn = nx.Graph()
 #
-for n,typ in G.nodes.data('typ'):
+for n, typ in G.nodes.data('typ'):
 	if typ == 'rxn':
 		Grxn.add_node(n)
 
@@ -201,5 +201,4 @@ plt.show()
 # plt.figure(figsize=(16,10))
 # plt.savefig("oxidative_coupling.eps", format="eps")
 
-nx.write_gexf(G,'test.gexf')
-
+nx.write_gexf(G, 'test.gexf')

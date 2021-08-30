@@ -1,22 +1,19 @@
-<<<<<<< HEAD
-### Python script to do high-throughput DFT calculation and constructing reaction rate file (MATLAB). Application intending Oxidative coupling of methane(OCM).
-=======
-### Introduction
+### Python script to do high-throughput DFT calculation and constructing reaction rate file (MATLAB). Application intending Oxidative coupling of methane(OCM)
 * These scripts does the first-principle-based microkinetics.
 The corresponding work is 10.1021/acscatal.0c04104.
-=======
+
 #### 1. VASP
 `run.sh`
 ```bash
 qsub or pjsub run.sh
 ```
 
-#### 2. 
+#### 2. count-species
 ```bash
 python count_species.py input.txt
 ```
 
-#### 3. pere-exponential
+#### 3. pre-exponential
 ```bash
 python pre_exponential.py input.txt
 ```
