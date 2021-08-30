@@ -28,7 +28,7 @@ fout.write("\n")
 # template - start
 #
 template = "\
-\tR  = 8.314\n\
+\tR  = 8.314e-3  # kJ/mol/K\n\
 \n\
 \tkfor = Afor * np.exp(-Ea/R/T)\n\
 \tkrev = kfor / Kci\n\
@@ -190,7 +190,7 @@ fout.write(comment)
 #
 template = "\
 \tif Ncomp > Ngas:\n\
-\t\trate[Ngas:Ncomp] = rate[Ngas:Ncomp]*(1/sden)  # surface\n\
+\t\trate[Ngas:Ncomp] = rate[Ngas:Ncomp]*(1/sden)*(Vr/area)  # surface\n\
 "
 #
 # tempelate - end

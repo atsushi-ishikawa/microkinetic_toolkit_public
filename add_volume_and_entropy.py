@@ -37,7 +37,7 @@ for imol in range(Nmol): # add 10 for safety
 		id = imol+1
 		mol = db1.get(id=id).name
 		tmp = db1.get_atoms(id=id)
-		print "adding volume and entropy",mol
+		print("adding volume and entropy", mol)
 		magmom = tmp.get_initial_magnetic_moments()
 
 		# do geometry optimization first
@@ -79,6 +79,4 @@ for imol in range(Nmol): # add 10 for safety
 			db2.write(tmp, key_value_pairs={'name' : mol, 'molecular_entropy' : entropy} )
 
 	except:
-		print "has nothing --- go to next"
-
-
+		print("has nothing --- go to next")

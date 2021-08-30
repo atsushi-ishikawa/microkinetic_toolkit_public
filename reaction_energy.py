@@ -37,9 +37,10 @@ if rxned == 0:  # not set...default
 	rxned = rxn_num
 
 clean = True  # whether to remove previous calculation
+traj_dir = "traj_dir"
 if clean:
 	os.system("rm tmp.db")
-	os.system("rm *.traj")
+	os.system("rm -rf %s" % traj_dir)
 #
 # temprary database to avoid overlapping calculations
 #
@@ -229,7 +230,7 @@ if True in ZPE:
 if SP:
 	label = label + "_SP"
 
-barrierfile = reactionfile.split(".")[0] + "_Ea" + label + ".txt"
+barrierfile = reactionfile.split(".")[0] + "_Ea_" + label + ".txt"
 deltaEfile  = "deltaE.txt"
 fbarrier = open(barrierfile, 'w')
 fdeltaE  = open(deltaEfile, 'w')
@@ -420,7 +421,9 @@ for irxn in range(rxnst, rxned):
 			else:
 				dir += "-".join(mols)
 
-			traj = dir + "_" + side + ".traj"
+			if not os.path.isdir(traj_dir):
+				os.makedirs(traj_dir)
+			traj = traj_dir + "/" + dir + "_" + side[0:4] + ".traj"
 			#
 			# branch compurational setting by gas or not
 			#

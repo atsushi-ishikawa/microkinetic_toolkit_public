@@ -1,5 +1,5 @@
 import numpy as np
-import os,sys
+import os, sys
 from reaction_tools import *
 from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
@@ -15,7 +15,8 @@ from ase.db import connect
 # molecule's data should be stored in "methane.json"
 #
 mol = sys.argv[1]
-calculator = "gau" ; calculator = calculator.lower()
+calculator = "gau"
+calculator = calculator.lower()
 db = connect("tmp.json")
 ###
 ## --- Gaussian ---
@@ -38,7 +39,7 @@ elif "vasp" in calculator:
 	kpts = [1, 1, 1]
 ## --- EMT --- -> nothing to set
 
-print "now optimize ",mol
+print("now optimize ", mol)
 tmp    = methane[mol]
 magmom = tmp.get_initial_magnetic_moments()
 natom  = len(tmp.get_atomic_numbers())
@@ -55,9 +56,9 @@ if "nw" in calculator:
 elif "vasp" in calculator:
 	cell = [10.0, 10.0, 10.0]
 	tmp.cell = cell
-	tmp.calc = Vasp(prec=prec,xc=xc,ispin=2,encut=encut, ismear=0, istart=0,
+	tmp.calc = Vasp(prec=prec, xc=xc, ispin=2, encut=encut, ismear=0, istart=0,
 					ibrion=2, potim=potim, nsw=nsw, ediff=ediff, ediffg=ediffg,
-					kpts=kpts )
+					kpts=kpts)
 	#tmp.center()
 	tmp.get_potential_energy()
 elif "emt" in calculator:
@@ -67,4 +68,3 @@ elif "emt" in calculator:
 
 view(tmp)
 db.write(tmp)
-
