@@ -1,24 +1,33 @@
+import numpy as np
 import os, sys
+import argparse
+import pickle
 from reaction_tools import *
 
-argvs = sys.argv
-reactionfile = argvs[1]
-coveragefile = argvs[2]  # time-dependent coverage file from MATLAB. Saved as "nodes.txt" in MATLAB
-rateconstfile = argvs[3]  # rate constants from MATLAB
-variablefile = argvs[4]  # sden, area, Vr
+parser = argparse.ArgumentParser()
+parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
+parser.add_argument("--coveragefile", default="nodes.txt", help="time-dependent coverage")
+argvs = parser.parse_args()
+
+reactionfile  = argvs.reactionfile
+coveragefile  = argvs.coveragefile
+rateconstfile = "rateconst.pickle"
+variablefile  = "variables.pickle"   # sden, area, Vr
 
 (r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 rxn_num = get_number_of_reaction(reactionfile)
 spe_num = get_species_num()
 
+Nrxn = 0
+#
+# read coverage
+#
 cov = [[] for i in range(spe_num)]
 
-f = open(coveragefile, 'r')
-lines = f.readlines()
-lines = lines[1:]
-f.close()
+with open(coveragefile, 'r') as f:
+	lines = f.readlines()
+	lines = lines[1:]
 
-Nrxn = 0
 for iline, line in enumerate(lines):
 	name = str(line.split()[0])
 	if "R" not in name:
@@ -30,100 +39,110 @@ for iline, line in enumerate(lines):
 	else:
 		Nrxn += 1
 
-maxtime = (len(lines) - Nrxn) // spe_num
+max_time = (len(lines) - Nrxn) // spe_num
 
-#
 # read rate constants
-#
-kfor = [0 for i in range(rxn_num)]
-krev = [0 for i in range(rxn_num)]
+kfor, krev = pickle.load(open(rateconstfile, "rb"))
 
-f = open(rateconstfile, 'r')
-lines = f.readlines()
-f.close()
-#
 # read variables
-#
-f = open(variablefile, 'r')
-sden = float(f.readline().replace("\n", ""))
-area = float(f.readline().replace("\n", ""))
-Vr = float(f.readline().replace("\n", ""))
-f.close()
-
-for iline, line in enumerate(lines):
-	val1, val2 = line.split(" ")
-	kfor[iline] = float(val1)
-	krev[iline] = float(val2)
-
-rate = [0 for i in range(rxn_num)]
+sden, area, Vr = pickle.load(open(variablefile, "rb"))
 
 AoverV = area / Vr
+#
+# output information for graph
+#
+rates = {"forward": None, "reverse": None}
+for direction in ["forward", "reverse"]:
+	if direction == "forward":
+		mols  = r_ads.copy()
+		sites = r_site.copy()
+		coefs = r_coef.copy()
+		k = kfor.copy()
+	elif direction == "reverse":
+		mols  = p_ads.copy()
+		sites = p_site.copy()
+		coefs = p_coef.copy()
+		k = krev.copy()
 
-edgefile = 'edges.txt'
-f1 = open(edgefile, 'w')
-f1.write('    from       to         rate         time\n')
+	rate = np.zeros((max_time, rxn_num))
+	for istep in range(max_time):
+		for irxn in range(rxn_num):
 
-for istep in range(maxtime):
-	for irxn in range(rxn_num):
-		#
-		# reactant side
-		#
-		val = kfor[irxn]
-		conc_all = 1.0
-		for imol, mol in enumerate(r_ads[irxn]):
-			mol = mol[0]
-			mol = remove_side_and_flip(mol)
+			conc_all = 1.0
+			for imol, mol in enumerate(mols[irxn]):
+				mol = mol[0]
+				mol = remove_side_and_flip(mol)
+				site = sites[irxn][imol]
 
-			site = r_site[irxn][imol]
-			if 'gas' not in site:
-				# surface species
-				mol = mol + '_surf'
+				if 'gas' not in site:  # surface species
+					mol += '_surf'
+					spe = get_species_num(mol)
+					name, conc, time = cov[spe][istep]
+					conc *= sden * AoverV
+				else:  # gas
+					spe = get_species_num(mol)
+					name, conc, time = cov[spe][istep]
+
+				power = coefs[irxn][imol]
+
+				if power != 1:
+					conc = conc ** power
+
+				conc_all = conc_all * conc
+
+			rate[istep][irxn] = k[irxn] * conc_all
+
+		rates[direction] = rate
+
+#
+# now write to file
+#
+# time-dependent case
+#
+edgefile = "edges.txt"
+f = open(edgefile, "w")
+f.write("    from       to         rate         time\n")
+
+for direction in ["forward", "reverse"]:
+	if direction == "forward":
+		mols = r_ads.copy()
+		sites = r_site.copy()
+		coefs = r_coef.copy()
+	elif direction == "reverse":
+		mols = p_ads.copy()
+		sites = p_site.copy()
+		coefs = p_coef.copy()
+
+	for istep in range(max_time):
+		for irxn in range(rxn_num):
+			now = 'R%03d' % irxn  # current reaction
+
+			for imol, mol in enumerate(mols[irxn]):
+				mol = remove_side_and_flip(mol[0])
+				site = sites[irxn][imol]
+
+				if 'gas' not in site:
+					mol = mol + '_surf'
+
 				spe = get_species_num(mol)
 				name, conc, time = cov[spe][istep]
-				conc *= sden * AoverV
-			else:
-				spe = get_species_num(mol)
-				name, conc, time = cov[spe][istep]
 
-			power = r_coef[irxn][imol]
-			if power!=1:
-				conc = conc ** power
-			conc_all = conc_all * conc
+				if direction == "forward":
+					f.write("%10s %10s %12.4e %12.4e\n" % (name, now, rates[direction][istep][irxn], time))
+				elif direction == "product":
+					f.write("%10s %10s %12.4e %12.4e\n" % (now, name, rates[direction][istep][irxn], time))
 
-		for_rate = val * conc_all
-		#
-		# now we write to file
-		#
-		now = 'R%03d' % irxn  # current reaction
+f.close()
 
-		for imol, mol in enumerate(r_ads[irxn]):
-			mol = remove_side_and_flip(mol[0])
-			site = r_site[irxn][imol]
+# time-independent case
 
-			if 'gas' not in site:
-				mol = mol + '_surf'
-			spe = get_species_num(mol)
-			name, conc, time = cov[spe][istep]
+reactionfile_out = reactionfile.split('.')[0] + '_val.txt'
+f = open(reactionfile_out, 'w')
+lines = return_lines_of_reactionfile(reactionfile)
 
-			f1.write("%8s %8s %12.4e %12.4e\n" % (name, now, for_rate, time))
+for iline, line in enumerate(lines):
+	text = line.replace('\n', '')
+	total_rate = rates["forward"][-1][iline] - rates["reverse"][-1][iline]
+	f.write('{0:<80s}:{1:12.4e}\n'.format(text, total_rate))
 
-		#
-		# product side
-		#
-		for imol, mol in enumerate(p_ads[irxn]):
-			mol = remove_side_and_flip(mol[0])
-			site = p_site[irxn][imol]
-
-			if 'gas' not in site:
-				mol = mol + '_surf'
-			spe = get_species_num(mol)
-			name, conc, time = cov[spe][istep]
-
-			f1.write("%8s %8s %12.4e %12.4e\n" % (now, name, for_rate, time))
-
-f1.close()
-
-# f = open(coveragefile, 'a')
-# for i in range(rxn_num):
-#	f.write("          RXN%03d%5.d%14.5e%14.5f\n" % (i, i+100, 1.0, 0.0))
-# f.close()
+f.close()

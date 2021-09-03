@@ -3,9 +3,9 @@ from reaction_tools import *
 #
 argvs = sys.argv
 reactionfile  = argvs[1]
-coveragefile  = argvs[2] # coverage file from MATLAB
-rateconstfile = argvs[3] # rate constants from MATLAB
-variablefile  = argvs[4] # sden, area, Vr
+coveragefile  = argvs[2]  # coverage file from MATLAB
+rateconstfile = argvs[3]  # rate constants from MATLAB
+variablefile  = argvs[4]  # sden, area, Vr
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 rxn_num  = get_number_of_reaction(reactionfile)
@@ -13,7 +13,7 @@ spec_num = get_species_num()
 
 # read coverages
 cov = [0 for i in range(spec_num)]
-f = open(coveragefile,'r')
+f = open(coveragefile, 'r')
 lines = f.readlines()
 f.close()
 
@@ -52,12 +52,12 @@ for irxn in range(rxn_num):
 	#
 	val = kfor[irxn]
 	conc_all = 1.0
-	for imol,mol in enumerate(r_ads[irxn]):
+	for imol, mol in enumerate(r_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
 		
 		site = r_site[irxn][imol]
-		if not 'gas' in site:
+		if 'gas' not in site:
 			# surface species
 			mol = mol + '_surf'
 			spe = get_species_num(mol)
@@ -77,12 +77,12 @@ for irxn in range(rxn_num):
 	#
 	val = krev[irxn]
 	conc_all = 1.0
-	for imol,mol in enumerate(p_ads[irxn]):
+	for imol, mol in enumerate(p_ads[irxn]):
 		mol = mol[0]
 		mol = remove_side_and_flip(mol)
 
 		site = p_site[irxn][imol]
-		if not 'gas' in site:
+		if 'gas' not in site:
 			# surface species
 			mol = mol + '_surf'
 			spe = get_species_num(mol)
@@ -103,12 +103,11 @@ for irxn in range(rxn_num):
 # rate end
 
 reactionfile_out = reactionfile.split('.')[0] + '_val.txt'
-f1 = open(reactionfile_out,'w')
+f1 = open(reactionfile_out, 'w')
 lines = return_lines_of_reactionfile(reactionfile)
 
 for iline, line in enumerate(lines):
-	text = line.replace('\n','')
-	f1.write('{0:<65s}:{1:12.4e}\n'.format(text,rate[iline]))
+	text = line.replace('\n', '')
+	f1.write('{0:<65s}:{1:12.4e}\n'.format(text, rate[iline]))
 
 f1.close()
-

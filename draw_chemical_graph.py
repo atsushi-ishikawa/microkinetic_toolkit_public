@@ -20,10 +20,10 @@ directed  = False
 eps  = 1.0e-10
 tiny = 1.0e-50  # Tiny value. Effectively zero.
 
-edge_scale = 0.2
-rate_thre  = 3  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+edge_scale = 0.5
+rate_thre  = -10  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
 
-os.system('grep -v "^#" %s > reaction2.txt' % inp )  # remove comment line
+os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
 os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
 
 numlines = sum(1 for line in open("reaction3.txt"))
@@ -39,18 +39,16 @@ value = [0 for i in range(numlines)]
 
 idx = 0
 for i, line in enumerate(lines):
-	#
 	# find reaction rate
-	#
 	if ':' in line:
 		comp, rate = line.split(':')
 		rate = rate.replace('\n', '')
-		rate = float(rate)/eps
-		#rate = float(rate)
+		rate = float(rate)
 		if rate >= 0.0:
 			rate = log10(rate) if rate > eps else 1.0
 		else:
-			rate = -1.0*log10(abs(rate))
+			#rate = -1.0*log10(abs(rate))
+			rate = rate_thre
 	else:
 		comp = line
 		rate = 1.0
@@ -68,7 +66,7 @@ for i, line in enumerate(lines):
 	prod_tmp = remove_side_and_flip(prod_tmp)
 	prod_tmp = prod_tmp.split(".")[0] if "." in prod_tmp else prod_tmp
 
-	if rate > rate_thre:
+	if rate >= rate_thre:
 		reac[i]  = reac_tmp.split("+")
 		rxn[i]   = 'rxn' + str(i+1)
 		prod[i]  = prod_tmp.split("+")
@@ -158,8 +156,10 @@ for i, j in enumerate(rxn):
 siz = nx.get_node_attributes(G, 'size')
 col = nx.get_node_attributes(G, 'color')
 
-pos = nx.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
-nx.draw_networkx_nodes(G, pos, nodelist=list(siz.keys()), node_size=list(siz.values()), node_color=list(col.values()), alpha=0.8)
+# pos = nx.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
+pos = nx.drawing.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
+nx.draw_networkx_nodes(G, pos, nodelist=list(siz.keys()),
+							   node_size=list(siz.values()), node_color=list(col.values()), alpha=0.8)
 edges = G.edges()
 weights = [G[u][v]['weight'] for u, v in edges]
 
@@ -198,7 +198,7 @@ plt.xticks([])
 plt.yticks([])
 plt.show()
 
-# plt.figure(figsize=(16,10))
-# plt.savefig("oxidative_coupling.eps", format="eps")
+plt.figure(figsize=(16, 10))
+#plt.savefig("graph.eps", format="eps")
 
 nx.write_gexf(G, 'test.gexf')
