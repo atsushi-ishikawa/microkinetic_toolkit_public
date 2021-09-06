@@ -1,18 +1,19 @@
-import sys
+import sys, pickle, argparse
 from reaction_tools import *
-import pickle
 #
 # count species
 #
-argvs = sys.argv
-reactionfile = argvs[1]
+parser = argparse.ArgumentParser()
+parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
+argvs = parser.parse_args()
+infile  = argvs.reactionfile
 
 speciesfile  = "species.txt"
 speciesfile_json = "species.json"
 
 fspecies = open(speciesfile, "w")
 
-(r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
+(r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
 species = []
 rxnnum = len(r_ads)

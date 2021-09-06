@@ -4,43 +4,13 @@ import matplotlib.pyplot as plt
 import pickle
 from ode_equation import func
 
+# constants
 R   = 8.314*1.0e-3  # kJ/mol/K
-Pin = 0.1e5  # inlet pressure in Pascal
-T   = 600    # K
-
-# get reaction energy
-deltaE = []
-f = open("deltaE.txt", "r")
-for line in f:
-	line = line.rstrip("\n")
-	line = line.split()
-	deltaE.append(float(line[1]))
-
-Nrxn = len(deltaE)
-
-# input by yourself (in eV)
-deltaS = np.zeros(Nrxn)
-deltaS[0] = -1.0e-3
-deltaS[1] = -1.0e-3
-deltaS[11] = 1.0e-3
-deltaS[13] = 1.0e-3
-
-deltaE = np.array(deltaE)
-deltaS = np.array(deltaS)
-
-# get detaG
-deltaG = deltaE - T*deltaS
 eVtokJ = 96.487
-deltaG = deltaG*eVtokJ
 
-# get Ea
-alpha = 0.8
-beta  = 1.2
-Ea = alpha*deltaE + beta
-Ea = Ea*eVtokJ
-
-Afor = np.array([1.0e08]*Nrxn)  # in [m, mol, s]
-Kci  = np.exp(-deltaG/R/T)
+# parameters
+Pin = 10e5  # inlet pressure in Pascal
+T   = 900    # K
 
 sden  = 1.0e-05  # site density [mol/m^2]
 w_cat = 0.1e-3   # catalyst weight [kg]
@@ -49,19 +19,62 @@ area  = 1000*w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
 phi   = 0.5     # porosity
 rho_b = 1.0e3   # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
 Vr    = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
-#Vr = 0.1e-6  # [m^3]
+#Vr = 0.01e-6  # [m^3]
 
-print("Ea:", Ea)
-print("deltaG:", deltaG)
-print("Kci:", Kci)
+alpha = 0.5
+beta  = 0.9
 
+# read reaction energy
+deltaE = []
+f = open("deltaE.txt", "r")
+for line in f:
+	line = line.rstrip("\n")
+	line = line.split()
+	deltaE.append(float(line[1]))
+
+Nrxn = len(deltaE)
+deltaE = np.array(deltaE)
+deltaE = deltaE*eVtokJ
+
+# read species
 speciesfile = "species.pickle"
 species = pickle.load(open(speciesfile, "rb"))
 
 Ncomp = len(species)
 Ngas  = len(list(filter(lambda x: "surf" not in x, species)))
 
-t0, tf = 0, 1.0e-1
+# read entropy (in eV)
+deltaS  = pickle.load(open("deltaS.pickle", "rb"))
+TdeltaS = T*deltaS
+TdeltaS = TdeltaS*eVtokJ
+
+# read pre-exponential (in [m, mol, s])
+Afor, Afor_type = pickle.load(open("pre_exp.pickle", "rb"))
+# multipy temperature and surface density
+for i, itype in enumerate(Afor_type):
+	if itype == "gas" or itype == "ads":
+		Afor[i] *= np.sqrt(T)
+	elif itype == "lh" or itype == "des":
+		Afor[i] *= (T/sden)
+Afor *= 1.0e3
+
+# calculate deltaG
+deltaG = deltaE - TdeltaS
+
+# get Ea
+Ea = alpha*(deltaE/eVtokJ) + beta
+Ea = Ea*eVtokJ
+
+Kpi = np.exp(-deltaG/R/T)  # in pressure unit
+Kci = Kpi*(101325/R/T)     # convert to concentration unit
+
+print("Ea:", Ea)
+print("deltaE :", deltaE)
+print("TdeltaS:", TdeltaS)
+print("deltaG :", deltaG)
+print("Kci:", Kci)
+
+t0, tf = 0, 1.0e+1
 dt = tf*1.0e-3
 t_span = (t0, tf)
 t_eval = np.arange(t0, tf, dt)
@@ -70,7 +83,7 @@ print(species)
 # C0 = PinPa / R*T
 x0 = np.zeros(Ncomp)
 x0[1]  = 1.0  # CO2
-x0[2]  = 1.0  # H2
+x0[2]  = 4.0  # H2
 
 x0[-1] = 1.0  # vacancy
 C0 = Pin / (R*T*1e3)  # density calculated from pressure. note that R is defined with kJ/mol/K.
@@ -85,7 +98,7 @@ C0 = x0*C0
 
 soln = solve_ivp(fun=lambda t, C: func(t, C, Afor, Ea, Kci, T, sden, area, Vr, Ngas, Ncomp),
 				 t_span=t_span, t_eval=t_eval, y0=C0,
-				 rtol=1e-5, atol=1e-8, method="Radau")
+				 rtol=1e-5, atol=1e-7, method="LSODA")
 print(soln.nfev, "evaluations requred.")
 
 fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))

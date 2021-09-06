@@ -1,20 +1,21 @@
 import numpy as np
-import os,sys
+import os, sys, pickle, argparse
 from ase import Atoms, Atom
 from ase.collections import methane
 from reaction_tools import *
 #
 # Calculate entropy change along the reaction
 #
-argvs   = sys.argv
-infile  = argvs[1]
-outfile = "deltaS.txt"
-f = open(outfile,"w")
+parser = argparse.ArgumentParser()
+parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
+argvs = parser.parse_args()
+infile  = argvs.reactionfile
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(infile)
 
 rxn_num = get_number_of_reaction(infile)
 
+deltaS = np.zeros(rxn_num)
 for irxn in range(rxn_num):
 	reac_S = 0.0
 	prod_S = 0.0
@@ -57,9 +58,6 @@ for irxn in range(rxn_num):
 
 		prod_S += entropy
 
-	deltaS = np.sum(prod_S) - np.sum(reac_S)
+	deltaS[irxn] = np.sum(prod_S) - np.sum(reac_S)
 
-	# print("irxn: %4d, rxn: %28s --> %28s, deltaS: %+10.5e" % (irxn,r_ads[irxn],p_ads[irxn],deltaS))
-	# write to file
-	f.write("{0:>16.8e}\n".format(deltaS))
-
+pickle.dump(deltaS, open("deltaS.pickle", "wb"))

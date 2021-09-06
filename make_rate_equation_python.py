@@ -1,11 +1,13 @@
-import os
-import sys
+import os, sys, argparse
 from reaction_tools import *
 #
 # make rate equation for python format
 #
-argvs = sys.argv
-reactionfile = argvs[1]
+#
+parser = argparse.ArgumentParser()
+parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
+argvs = parser.parse_args()
+reactionfile  = argvs.reactionfile
 
 (r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
@@ -190,7 +192,7 @@ fout.write(comment)
 #
 template = "\
 \tif Ncomp > Ngas:\n\
-\t\trate[Ngas:Ncomp] = rate[Ngas:Ncomp]*(1/sden)*(Vr/area)  # surface\n\
+\t\trate[Ngas:Ncomp] = rate[Ngas:Ncomp]*(1/sden)  # surface\n\
 "
 #
 # tempelate - end

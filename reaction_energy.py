@@ -1,8 +1,6 @@
 import numpy as np
-import os, sys, re, json, math
-import argparse
+import os, sys, re, json, math, argparse
 from reaction_tools import *
-from ase import Atoms, Atom
 from ase.calculators.gaussian import Gaussian
 from ase.calculators.vasp import Vasp
 from ase.calculators.emt import EMT

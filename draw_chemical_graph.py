@@ -21,7 +21,7 @@ eps  = 1.0e-10
 tiny = 1.0e-50  # Tiny value. Effectively zero.
 
 edge_scale = 0.5
-rate_thre  = -10  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+rate_thre  = -15  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
 
 os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
 os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line

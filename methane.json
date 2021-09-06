@@ -883,7 +883,7 @@
  "calculator": "pubchem",
  "cell": [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
  "initial_magmoms": [0.0, 0.0, 0.0, 0.0],
- "key_value_pairs": {"name": "HCOO"},
+ "key_value_pairs": {"molecular_entropy": 0.001, "name": "HCOO", "molecular_volume": 50.0},
  "numbers": [8, 8, 6, 1],
  "pbc": [false, false, false],
  "positions": [
