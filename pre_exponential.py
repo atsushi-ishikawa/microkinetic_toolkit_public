@@ -14,9 +14,8 @@ parser.add_argument("--reactionfile", required=True, help="file with elementary 
 argvs = parser.parse_args()
 infile  = argvs.reactionfile
 
-T = 1.0  # temporary temperature
-#sden = 5.624*10**-10  # [mol/cm^2]
-sden = 1
+T = 1.0     # temporary temperature
+sden = 1.0  # temporary side density
 
 # Note on revserse reaction
 # Pre-exponential factor for reverse reaction is generally not needed
@@ -80,19 +79,19 @@ for irxn in range(rxn_num):
 			try:
 				site, site_pos = site.split(".")
 			except:
-				site_pos = 'x1y1'
+				site_pos = "x1y1"
 
 			mass_sum  = mass_sum  + mass
 			mass_prod = mass_prod * mass
 
-			if site == 'gas':
+			if site == "gas":
 				rxntype.append(site)
 			else:
-				rxntype.append('surf')
+				rxntype.append("surf")
 
 	# end loop over molecule
 
-	if all(rxn == 'gas' for rxn in rxntype):
+	if all(rxn == "gas" for rxn in rxntype):
 		#
 		# gas reaction --- collision theory expression
 		#
@@ -103,14 +102,14 @@ for irxn in range(rxn_num):
 		#fac_for  = sigma * np.sqrt(8.0*np.pi*kbolt*T / red_mass) * Nav
 		fac_for  = Nav * d_ave**2 * np.sqrt(8.0*np.pi*kbolt*T / red_mass)  # Eq.3.21 in CHEMKIN Theory manual
 		#fac_for  = 0.5*fac_for  # structural factor
-		fac_for  = fac_for * 10**6  # [m^3] --> [cm^3]
+		#fac_for  = fac_for * 10**6  # [m^3] --> [cm^3]
 		#
 		# sqrt(kbolt*T/mass) [kg*m^2*s^-2*K^-1 * K * kg^-1]^1/2 = [m*s^-1]
 		# A = [m^2] * [m*s^-1] * Nav = [m^3*s^-1]*[mol^-1] = [mol^-1*m^3*s^-1]
 		# finally A in [mol^-1*cm^3*s^-1]
 		#
 		Afor[irxn] = fac_for
-	elif all(rxn == 'surf' for rxn in rxntype):
+	elif all(rxn == "surf" for rxn in rxntype):
 		if nmol == 1:
 			#
 			# desorption --- transition state theory
@@ -143,7 +142,7 @@ for irxn in range(rxn_num):
 		# sden is converted from [mol/cm^2] --> [mol/m^2]
 		fac_for  = np.sqrt(kbolt*T / (2.0*np.pi*red_mass))  # [mol^-1*m^3*s^-1]
 		fac_for  = stick*fac_for  # multiplying sticking probability
-		fac_for *= 10**6  # [mol^-1*m^3*s^-1] --> [mol^-1*cm^3*s^-1]
+		#fac_for *= 10**6  # [mol^-1*m^3*s^-1] --> [mol^-1*cm^3*s^-1]
 
 		Afor[irxn] = fac_for
 		

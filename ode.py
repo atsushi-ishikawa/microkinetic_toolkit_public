@@ -4,13 +4,16 @@ import matplotlib.pyplot as plt
 import pickle
 from ode_equation import func
 
+np.set_printoptions(precision=3, linewidth=100)
+
 # constants
 R   = 8.314*1.0e-3  # kJ/mol/K
 eVtokJ = 96.487
 
 # parameters
-Pin = 10e5  # inlet pressure in Pascal
-T   = 900    # K
+Pin = 1e5    # inlet pressure in Pascal
+T   = 700     # K
+v0  = 1e-6  # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
 sden  = 1.0e-05  # site density [mol/m^2]
 w_cat = 0.1e-3   # catalyst weight [kg]
@@ -21,8 +24,8 @@ rho_b = 1.0e3   # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3
 Vr    = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
 #Vr = 0.01e-6  # [m^3]
 
-alpha = 0.5
-beta  = 0.9
+alpha = 0.84
+beta  = 1.93
 
 # read reaction energy
 deltaE = []
@@ -56,7 +59,6 @@ for i, itype in enumerate(Afor_type):
 		Afor[i] *= np.sqrt(T)
 	elif itype == "lh" or itype == "des":
 		Afor[i] *= (T/sden)
-Afor *= 1.0e3
 
 # calculate deltaG
 deltaG = deltaE - TdeltaS
@@ -68,18 +70,27 @@ Ea = Ea*eVtokJ
 Kpi = np.exp(-deltaG/R/T)  # in pressure unit
 Kci = Kpi*(101325/R/T)     # convert to concentration unit
 
-print("Ea:", Ea)
-print("deltaE :", deltaE)
-print("TdeltaS:", TdeltaS)
-print("deltaG :", deltaG)
-print("Kci:", Kci)
 
-t0, tf = 0, 1.0e+1
+for i, itype in enumerate(Afor_type):
+	if itype == "lh" or itype == "des":
+		Kci[i] *= sden
+
+tau = Vr/v0  # residence time [sec]
+
+# output results here
+print("Ea [kJ/mol]:", Ea)
+print("deltaE [kJ/mol]:", deltaE)
+print("TdeltaS [kJ/mol]:", TdeltaS)
+print("deltaG [kJ/mol]:", deltaG)
+print("residence time [sec]: {0:5.3e}, GHSV [hour^-1]: {1:3d}".format(tau, int(60*60/tau)))
+
+# now solve the ODE
+t0, tf = 0, tau
 dt = tf*1.0e-3
 t_span = (t0, tf)
 t_eval = np.arange(t0, tf, dt)
 
-print(species)
+print("species:", species)
 # C0 = PinPa / R*T
 x0 = np.zeros(Ncomp)
 x0[1]  = 1.0  # CO2
