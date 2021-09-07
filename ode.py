@@ -12,11 +12,11 @@ eVtokJ = 96.487
 
 # parameters
 Pin = 1e5    # inlet pressure in Pascal
-T   = 700     # K
+T   = 800     # K
 v0  = 1e-6  # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
 sden  = 1.0e-05  # site density [mol/m^2]
-w_cat = 0.1e-3   # catalyst weight [kg]
+w_cat = 0.5e-3   # catalyst weight [kg]
 area  = 1000*w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
 
 phi   = 0.5     # porosity
@@ -24,8 +24,8 @@ rho_b = 1.0e3   # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3
 Vr    = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
 #Vr = 0.01e-6  # [m^3]
 
-alpha = 0.84
-beta  = 1.93
+alpha = 0.6
+beta  = 1.2
 
 # read reaction energy
 deltaE = []
@@ -55,8 +55,10 @@ TdeltaS = TdeltaS*eVtokJ
 Afor, Afor_type = pickle.load(open("pre_exp.pickle", "rb"))
 # multipy temperature and surface density
 for i, itype in enumerate(Afor_type):
-	if itype == "gas" or itype == "ads":
+	if itype == "gas":
 		Afor[i] *= np.sqrt(T)
+	elif itype == "ads":
+		Afor[i] *= np.sqrt(T)/sden
 	elif itype == "lh" or itype == "des":
 		Afor[i] *= (T/sden)
 
@@ -68,12 +70,12 @@ Ea = alpha*(deltaE/eVtokJ) + beta
 Ea = Ea*eVtokJ
 
 Kpi = np.exp(-deltaG/R/T)  # in pressure unit
-Kci = Kpi*(101325/R/T)     # convert to concentration unit
+#Kci = Kpi*(101325/R/T)     # convert to concentration unit
+Kci = Kpi*(R*T/1)     # convert to concentration unit
 
-
-for i, itype in enumerate(Afor_type):
-	if itype == "lh" or itype == "des":
-		Kci[i] *= sden
+#for i, itype in enumerate(Afor_type):
+#	if itype == "ads" or itype == "lh" or itype == "des":
+#		Kci[i] *= sden
 
 tau = Vr/v0  # residence time [sec]
 

@@ -46,8 +46,8 @@ for irxn in range(rxn_num):
 	rad_all = 0
 	d_ave = 0
 	for imol, mol in enumerate(r_ads[irxn]):
-		mol = mol[0]
-		mol = remove_side_and_flip(mol)
+		mol  = mol[0]
+		mol  = remove_side_and_flip(mol)
 		nmol = len(r_ads[irxn])
 
 		if mol == 'surf' or mol == 'def':
@@ -65,13 +65,10 @@ for irxn in range(rxn_num):
 			else:
 				rad_all += rad
 
-			sigma = np.pi*rad_all**2  # sigma = pi*(rA + rB)
+			sigma = np.pi*rad_all**2  # sigma = pi*(rA + rB)^2
 			#rad *= 0.182   # do empirical correction based on He, to match the vdW radius
 
 			d_ave += 2*rad/nmol  # mean diameter
-
-			#sigma = np.pi*rad_all**2  # sigma = pi*(rA + rB)
-			#sigma = rad_all**2  # sigma = pi*(rA + rB)
 
 			mass = sum(tmp.get_masses())
 
@@ -81,8 +78,8 @@ for irxn in range(rxn_num):
 			except:
 				site_pos = "x1y1"
 
-			mass_sum  = mass_sum  + mass
-			mass_prod = mass_prod * mass
+			mass_sum  += mass
+			mass_prod *= mass
 
 			if site == "gas":
 				rxntype.append(site)
@@ -97,7 +94,7 @@ for irxn in range(rxn_num):
 		#
 		Afor_type[irxn] = "gas"
 		red_mass = mass_prod / mass_sum
-		red_mass = red_mass*amu
+		red_mass *= amu
 		#fac_for  = sigma * np.sqrt(8.0*np.pi*kbolt*T / red_mass) * Nav
 		#fac_for  = sigma * np.sqrt(8.0*np.pi*kbolt*T / red_mass) * Nav
 		fac_for  = Nav * d_ave**2 * np.sqrt(8.0*np.pi*kbolt*T / red_mass)  # Eq.3.21 in CHEMKIN Theory manual
@@ -133,17 +130,14 @@ for irxn in range(rxn_num):
 		Afor_type[irxn] = "ads"
 		stick = 0.5
 		red_mass  = mass_prod / mass_sum
-		red_mass *= amu
+		red_mass *= amu  # [kg]
 		#
 		# --- Hertz-Knudsen (in concentration form) acturally same with chemkin
 		#
 		# when having site density information 
-		# fac_for  = (stick/ (sden*10**4) ) * np.sqrt( kbolt*T / (2.0*np.pi*red_mass )) # [mol^-1*m^3*s^-1]
-		# sden is converted from [mol/cm^2] --> [mol/m^2]
-		fac_for  = np.sqrt(kbolt*T / (2.0*np.pi*red_mass))  # [mol^-1*m^3*s^-1]
-		fac_for  = stick*fac_for  # multiplying sticking probability
-		#fac_for *= 10**6  # [mol^-1*m^3*s^-1] --> [mol^-1*cm^3*s^-1]
+		fac_for  = np.sqrt(kbolt*T / (2.0*np.pi*red_mass))  # [J*K/kg]^1/2 = [kg*m^2*s^-2/kg]^1/2 = [m*s^-1]
+		fac_for  = (stick/sden)*fac_for  # multiplying sticking probability and site density: [m*s^-1] --> [m^3/mol/s]
 
 		Afor[irxn] = fac_for
-		
+
 pickle.dump((Afor, Afor_type), open("pre_exp.pickle", "wb"))
