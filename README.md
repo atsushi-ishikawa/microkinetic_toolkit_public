@@ -1,6 +1,7 @@
-### Python script to do high-throughput DFT calculation and constructing reaction rate file (MATLAB). Application intending Oxidative coupling of methane(OCM)
-* These scripts does the first-principle-based microkinetics.
-The corresponding work is 10.1021/acscatal.0c04104.
+# DFT-based microkinetics
+This python script does high-throughput DFT calculation and microineitcs.
+
+## How to run
 
 #### 1. VASP
 `run.sh`
@@ -50,7 +51,9 @@ python rate_for_graph2.py [input.txt] nodes.txt rateconst.txt variables.txt
 python draw_chemical_graph.py input_val.txt coverage.txt
 ```
 
-### Adsorbate specification
+## Files
+
+#### Adsorbate specification
 * cation and anion
 CH3^+1 or CH3^-1
 
@@ -64,3 +67,6 @@ CH4-SIDEy_atop.x1y1 --> CH4 + surf
 CH4-TILT_atop.x1y1  --> CH4 + surf
 CH4-HIGH_atop.x1y1  --> CH4 + surf
 CH4-AIR_atop.x1y1   --> CH4 + surf
+
+## Reference
+https://pubs.acs.org/doi/10.1021/acscatal.0c04104

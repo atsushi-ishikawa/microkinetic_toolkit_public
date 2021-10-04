@@ -13,10 +13,10 @@ eVtokJ = 96.487
 # parameters
 Pin = 1e5    # inlet pressure in Pascal
 T   = 800     # K
-v0  = 1e-6  # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
+v0  = 1e-5  # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
 sden  = 1.0e-05  # site density [mol/m^2]
-w_cat = 0.5e-3   # catalyst weight [kg]
+w_cat = 1.0e-3   # catalyst weight [kg]
 area  = 1000*w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
 
 phi   = 0.5     # porosity
@@ -25,7 +25,7 @@ Vr    = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
 #Vr = 0.01e-6  # [m^3]
 
 alpha = 0.6
-beta  = 1.2
+beta  = 1.0
 
 # read reaction energy
 deltaE = []
