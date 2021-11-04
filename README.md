@@ -24,16 +24,23 @@ python pre_exponential.py input.txt
 python entropy.py input.txt
 ```
 
-#### 5. MATLAB ODE
+#### 5. make matlab or python ODE file
 ```bash
-python make_rate_equation.py input.txt
+python make_rate_equation.py input.txt  # matlab
+python make_rate_equation_python.py input.txt  # python
 ```
 
-#### 6. MATLAB
+#### 6. solve ODE with python or matlab
+##### matlab
 ```bash
 cp pre_exp.txt met001ode.m deltaE.txt deltaS.txt barrier.txt species.txt  MATLAB_dir
 ```
 * `coverage.txt` and `rateconst.txt` are generated
+
+##### python
+```bash
+python ode.py
+```
 
 #### 7. Add rate to reactionfile
 ```bash

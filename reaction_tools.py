@@ -102,15 +102,6 @@ def get_reac_and_prod(reactionfile):
 	p_site = list(range(rxn_num))
 	p_coef = list(range(rxn_num))
 
-# python2?
-#	r_ads  = [ [] for i in range(rxn_num) ]
-#	r_site = [ [] for i in range(rxn_num) ]
-#	r_coef = [ [] for i in range(rxn_num) ]
-
-#	p_ads  = [ [] for i in range(rxn_num) ]
-#	p_site = [ [] for i in range(rxn_num) ]
-#	p_coef = [ [] for i in range(rxn_num) ]
-
 	for irxn, jrnx in enumerate(rxn):
 		ireac = reac[irxn];     iprod = prod[irxn]
 		ireac_num = len(ireac); iprod_num = len(iprod)
@@ -181,7 +172,7 @@ def get_reac_and_prod(reactionfile):
 
 		# print("irxn=%d, %s-->%s, coef: %s-->%s, site:%s-->%s" % (irxn, r_ads[irxn], p_ads[irxn], r_coef[irxn], p_coef[irxn], r_site[irxn], p_site[irxn]))
 
-	return (r_ads, r_site, r_coef,  p_ads, p_site, p_coef)
+	return r_ads, r_site, r_coef, p_ads, p_site, p_coef
 
 
 def get_number_of_reaction(reactionfile):

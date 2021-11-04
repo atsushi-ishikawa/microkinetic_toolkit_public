@@ -72,8 +72,8 @@ if surface:
 
 (r_ads, r_site, r_coef,  p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
-maxoptsteps = 200
-ads_height0 = 1.8
+maxoptsteps = 10
+ads_height0 = 2.0
 ads_pos0 = (0.0, 0.0)
 
 ZPE = {"reactant": False, "product": False}  # whether to include ZPE

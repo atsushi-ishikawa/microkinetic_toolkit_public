@@ -7,13 +7,13 @@ from ode_equation import func
 np.set_printoptions(precision=3, linewidth=100)
 
 # constants
-R   = 8.314*1.0e-3  # kJ/mol/K
+R = 8.314*1.0e-3  # kJ/mol/K
 eVtokJ = 96.487
 
 # parameters
 Pin = 1e5    # inlet pressure in Pascal
-T   = 800     # K
-v0  = 1e-5  # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
+T   = 700    # K
+v0  = 1e-5   # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
 sden  = 1.0e-05  # site density [mol/m^2]
 w_cat = 1.0e-3   # catalyst weight [kg]
@@ -78,6 +78,7 @@ Kci = Kpi*(R*T/1)     # convert to concentration unit
 #		Kci[i] *= sden
 
 tau = Vr/v0  # residence time [sec]
+#tau = 1.0  # residence time [sec]
 
 # output results here
 print("Ea [kJ/mol]:", Ea)
@@ -111,7 +112,7 @@ C0 = x0*C0
 
 soln = solve_ivp(fun=lambda t, C: func(t, C, Afor, Ea, Kci, T, sden, area, Vr, Ngas, Ncomp),
 				 t_span=t_span, t_eval=t_eval, y0=C0,
-				 rtol=1e-5, atol=1e-7, method="LSODA")
+				 rtol=1e-5, atol=1e-7, method="LSODA")  # method = {"BDF" | "Radau" | "LSODA"}
 print(soln.nfev, "evaluations requred.")
 
 fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))
