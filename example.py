@@ -5,23 +5,19 @@ T = 800  # temperature [K]
 P = 100  # total pressure [bar]
 
 # read reactions from file and set Reactions
-reactions = Reactions.from_csv("reactions.csv")
+reactions = Reactions.from_csv("test.csv")
 
 # define surface
 surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
 
-# adsorbate to surface?
-reactions.adsorbate_on_surface(surf)
-
 # get reaction energies for all the elementary reactions
-deltaE = reactions.get_reaction_energies(method=emt)
+deltaEs = reactions.get_reaction_energies(surface=surf, method="emt")
 
 # calculate rate constant from reaction energies
-rateconst = reactions.get_rate_constants(deltaE=deltaE, T=T, P=P)
+rateconsts = reactions.get_rate_constants(deltaEs=deltaEs, T=T, P=P)
 
-# solve rate equations
-rate = reactions.solve_rate_equation(rateconstant=rateconst, T=T, P=P)
+# do_microkinetics
+reactions.do_microkinetics(rateconstants=rateconsts, T=T, P=P)
 
 # draw graph
-reactions.draw_graph(rate)
-
+#reactions.draw_network(rate)
