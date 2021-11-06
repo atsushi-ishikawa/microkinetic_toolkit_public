@@ -1,4 +1,4 @@
-from reactions import Reaction, Reactions
+from microkinetic_toolkit.reactions import Reaction, Reactions
 from ase.build import fcc111
 
 T = 800  # temperature [K]
