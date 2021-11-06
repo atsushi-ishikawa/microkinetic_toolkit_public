@@ -1,3 +1,5 @@
+import os
+import sys
 import re
 import textwrap
 import pandas as pd
@@ -336,7 +338,6 @@ class Reactions:
 		return None
 
 	def make_rate_equation(self, odefile=None):
-		import os, sys, argparse
 		"""
 		 make rate equation for python format
 		"""
