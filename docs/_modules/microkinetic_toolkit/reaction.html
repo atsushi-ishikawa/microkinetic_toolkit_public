@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>microkinetic_toolkit.reaction &mdash; microkinetic_toolkit  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> microkinetic_toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">example module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../microkinetic_toolkit.html">microkinetic_toolkit package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">setup module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">microkinetic_toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>microkinetic_toolkit.reaction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for microkinetic_toolkit.reaction</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">tinydb</span> <span class="kn">import</span> <span class="n">TinyDB</span><span class="p">,</span> <span class="n">Query</span>
+
+<div class="viewcode-block" id="extract_attribute_dict"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.extract_attribute_dict">[docs]</a><span class="k">def</span> <span class="nf">extract_attribute_dict</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+	<span class="n">ddict</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+		<span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+		<span class="n">ddict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+	<span class="k">return</span> <span class="n">ddict</span></div>
+
+<div class="viewcode-block" id="Reaction"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction">[docs]</a><span class="k">class</span> <span class="nc">Reaction</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Elemetary reaction class.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Reaction.IdIterator"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.IdIterator">[docs]</a>	<span class="k">class</span> <span class="nc">IdIterator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+		<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+
+		<span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+			<span class="n">num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">num</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="k">return</span> <span class="n">num</span></div>
+
+	<span class="n">id_iterator</span> <span class="o">=</span> <span class="n">IdIterator</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reaction_str</span><span class="p">,</span> <span class="n">reaction_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_reaction_str</span> <span class="o">=</span> <span class="n">reaction_str</span>
+		<span class="k">if</span> <span class="n">reaction_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">reaction_id</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_iterator</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_reaction_id</span> <span class="o">=</span> <span class="n">reaction_id</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_parse_reaction_str</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="nf">_parse_reaction_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">reactants_str</span><span class="p">,</span> <span class="n">products_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reaction_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_halfside_to_nsp_list</span><span class="p">(</span><span class="n">reactants_str</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">products</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_halfside_to_nsp_list</span><span class="p">(</span><span class="n">products_str</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">_from_halfside_to_nsp_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">halfside_str</span><span class="p">):</span>
+		<span class="n">terms</span> <span class="o">=</span> <span class="n">halfside_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">)</span>
+		<span class="n">list_nspecies</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_change_term_to_coef_and_species</span><span class="p">(</span><span class="n">term</span><span class="p">)</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">list_nspecies</span>
+
+	<span class="k">def</span> <span class="nf">_change_term_to_coef_and_species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term</span><span class="p">):</span>
+		<span class="n">term</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="n">reg</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^[0-9]+&quot;</span><span class="p">)</span>
+		<span class="n">re_match</span> <span class="o">=</span> <span class="n">reg</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">re_match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># has no coefficient</span>
+			<span class="n">sp</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+			<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>  <span class="c1"># has coefficient</span>
+			<span class="n">coef</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">re_match</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">sp</span> <span class="o">=</span> <span class="n">reg</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">term</span><span class="p">)</span>
+			<span class="n">sp</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+			<span class="k">return</span> <span class="n">coef</span><span class="p">,</span> <span class="n">sp</span>
+
+<div class="viewcode-block" id="Reaction.to_dict"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.to_dict">[docs]</a>	<span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="n">extract_attribute_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_attributed_keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reaction.from_dict"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.from_dict">[docs]</a>	<span class="nd">@classmethod</span>
+	<span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ddict</span><span class="p">):</span>
+		<span class="n">reaction_str</span> <span class="o">=</span> <span class="n">ddict</span><span class="p">[</span><span class="s2">&quot;_reaction_str&quot;</span><span class="p">]</span>
+		<span class="n">reaction_id</span>  <span class="o">=</span> <span class="n">ddict</span><span class="p">[</span><span class="s2">&quot;_reaction_id&quot;</span><span class="p">]</span>
+		<span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">reaction_str</span><span class="p">,</span> <span class="n">reaction_id</span><span class="p">)</span></div>
+
+	<span class="c1"># tinyDB</span>
+<div class="viewcode-block" id="Reaction.to_tdb"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.to_tdb">[docs]</a>	<span class="k">def</span> <span class="nf">to_tdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tdb</span><span class="p">):</span>
+		<span class="n">tdb</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Reaction.update_tdb"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.update_tdb">[docs]</a>	<span class="k">def</span> <span class="nf">update_tdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tdb</span><span class="p">):</span>
+		<span class="n">ddict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+		<span class="n">query</span> <span class="o">=</span> <span class="n">Query</span><span class="p">()</span>
+		<span class="n">q_ins</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="s2">&quot;_reaction_id&quot;</span><span class="p">)</span>
+		<span class="n">tdb</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ddict</span><span class="p">,</span> <span class="n">q_ins</span> <span class="o">==</span> <span class="n">ddict</span><span class="p">[</span><span class="s2">&quot;_reaction_id&quot;</span><span class="p">])</span></div>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">base_attributed_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">base_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_reaction_str&quot;</span><span class="p">,</span> <span class="s2">&quot;_reaction_id&quot;</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">base_keys</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">unique_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			Unique chemical species as the list of strings.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">reac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants_species</span>
+		<span class="n">prod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">products_species</span>
+		<span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">reac</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prod</span><span class="p">)))</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">reactants_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			reactant species in the list of strings</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">lst</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">:</span>
+			<span class="n">lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">lst</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">products_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			product species in the list of strings</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">lst</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">:</span>
+			<span class="n">lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">lst</span>
+
+	<span class="c1"># openfoam</span>
+	<span class="k">def</span> <span class="nf">_get_openfoam_react_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="nb">str</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;reac&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;prod&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+		<span class="k">for</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;reac&quot;</span><span class="p">,</span> <span class="s2">&quot;prod&quot;</span><span class="p">]:</span>
+			<span class="n">from_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;reac&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span>
+			<span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">coef</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">from_</span><span class="p">:</span>
+				<span class="n">term</span> <span class="o">=</span> <span class="n">species</span> <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">coef</span><span class="p">,</span> <span class="n">species</span><span class="p">)</span>
+				<span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+			<span class="nb">str</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+		<span class="n">openfoam_reaction_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">[</span><span class="s2">&quot;reac&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">[</span><span class="s2">&quot;prod&quot;</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">openfoam_reaction_str</span>
+
+<div class="viewcode-block" id="Reaction.to_openfoam_paramdict"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.to_openfoam_paramdict">[docs]</a>	<span class="k">def</span> <span class="nf">to_openfoam_paramdict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			dict</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">param_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TestReactionType&quot;</span>
+		<span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;reaction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_openfoam_react_str</span><span class="p">()</span>
+		<span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0e16</span>
+		<span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;Ta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10000</span>
+		<span class="k">return</span> <span class="n">param_dict</span></div>
+
+<div class="viewcode-block" id="Reaction.adsorbate_on_surface"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.adsorbate_on_surface">[docs]</a>	<span class="k">def</span> <span class="nf">adsorbate_on_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+		<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">fcc111</span><span class="p">,</span> <span class="n">add_adsorbate</span><span class="p">,</span> <span class="n">molecule</span>
+		<span class="kn">from</span> <span class="nn">ase.visualize</span> <span class="kn">import</span> <span class="n">view</span>
+
+		<span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;reactants&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;products&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+		<span class="k">if</span> <span class="n">surface</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">surface</span> <span class="o">=</span> <span class="n">fcc111</span><span class="p">(</span><span class="s2">&quot;Au&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">height</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+			<span class="n">height</span> <span class="o">=</span> <span class="mf">2.0</span>
+
+		<span class="k">for</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;reactants&quot;</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">]:</span>
+			<span class="n">sequence</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;reac&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">:</span>
+				<span class="n">_</span><span class="p">,</span> <span class="n">mol</span> <span class="o">=</span> <span class="n">i</span>
+				<span class="n">ads</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+				<span class="n">surf_copy</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+				<span class="c1"># adjust height</span>
+				<span class="n">shift</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+				<span class="n">height</span> <span class="o">-=</span> <span class="n">shift</span>
+				<span class="n">add_adsorbate</span><span class="p">(</span><span class="n">surf_copy</span><span class="p">,</span> <span class="n">ads</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">)</span>
+				<span class="n">surf_copy</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="kc">True</span>
+				<span class="c1">#view(surf_copy)</span>
+
+				<span class="n">atoms</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surf_copy</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">atoms</span></div>
+
+<div class="viewcode-block" id="Reaction.get_reaction_energy"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.get_reaction_energy">[docs]</a>	<span class="k">def</span> <span class="nf">get_reaction_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="kn">from</span> <span class="nn">ase.calculators.emt</span> <span class="kn">import</span> <span class="n">EMT</span>
+		<span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;emt&quot;</span><span class="p">:</span>
+			<span class="n">calc</span> <span class="o">=</span> <span class="n">EMT</span><span class="p">()</span>
+
+		<span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_on_surface</span><span class="p">(</span><span class="n">surface</span><span class="o">=</span><span class="n">surface</span><span class="p">)</span>
+		<span class="c1"># reactant</span>
+		<span class="n">r_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">[</span><span class="s2">&quot;reactants&quot;</span><span class="p">]:</span>
+			<span class="n">i</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+			<span class="n">e</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+			<span class="n">r_energy</span> <span class="o">+=</span> <span class="n">e</span>
+
+		<span class="c1"># product</span>
+		<span class="n">p_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">[</span><span class="s2">&quot;products&quot;</span><span class="p">]:</span>
+			<span class="n">i</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+			<span class="n">e</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+			<span class="n">p_energy</span> <span class="o">+=</span> <span class="n">e</span>
+
+		<span class="n">deltaE</span> <span class="o">=</span> <span class="n">p_energy</span> <span class="o">-</span> <span class="n">r_energy</span>
+
+		<span class="k">return</span> <span class="n">deltaE</span></div>
+
+<div class="viewcode-block" id="Reaction.get_rate_constant"><a class="viewcode-back" href="../../microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.get_rate_constant">[docs]</a>	<span class="k">def</span> <span class="nf">get_rate_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltaE</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">300.0</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Args:</span>
+<span class="sd">			deltaE: reaction energy [eV]</span>
+<span class="sd">			T: temperature [K]</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			rate constant</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+		<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">create_units</span>
+
+		<span class="n">units</span> <span class="o">=</span> <span class="n">create_units</span><span class="p">(</span><span class="s1">&#39;2014&#39;</span><span class="p">)</span>
+		<span class="n">amu</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="s1">&#39;_amu&#39;</span><span class="p">]</span>  <span class="c1"># 1.66e-27 [kg]</span>
+		<span class="n">kB</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="s1">&#39;_k&#39;</span><span class="p">]</span>  <span class="c1"># 1.38e-23 [J/K]</span>
+		<span class="n">hplanck</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="s1">&#39;_hplanck&#39;</span><span class="p">]</span>  <span class="c1"># 6.63e-34 [J*s]</span>
+		<span class="n">Nav</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="s1">&#39;_Nav&#39;</span><span class="p">]</span>
+
+		<span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;LH&quot;</span>
+		<span class="n">sden</span> <span class="o">=</span> <span class="mf">1.0e10</span>  <span class="c1"># site density</span>
+
+		<span class="c1"># calculate Ea from deltaE</span>
+		<span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+		<span class="n">beta</span>  <span class="o">=</span> <span class="mf">1.0</span>
+		<span class="n">Ea</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">*</span><span class="n">deltaE</span> <span class="o">+</span> <span class="n">beta</span>
+
+		<span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;LH&quot;</span><span class="p">:</span>
+			<span class="n">A</span> <span class="o">=</span> <span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="o">/</span><span class="n">hplanck</span><span class="o">/</span><span class="n">sden</span>  <span class="c1"># [s^-1]</span>
+
+		<span class="n">exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">Ea</span><span class="o">/</span><span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="p">)</span>
+
+		<span class="n">rateconst</span> <span class="o">=</span> <span class="n">A</span><span class="o">*</span><span class="n">exp</span>
+
+		<span class="k">return</span> <span class="n">rateconst</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Author.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
