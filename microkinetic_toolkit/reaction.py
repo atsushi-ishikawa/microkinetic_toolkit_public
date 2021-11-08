@@ -14,6 +14,9 @@ def extract_attribute_dict(instance, keys, default=None):
 	return ddict
 
 class Reaction:
+	"""
+	Elemetary reaction class.
+	"""
 	class IdIterator(object):
 		def __init__(self):
 			self.num = 0
@@ -81,12 +84,20 @@ class Reaction:
 
 	@property
 	def unique_species(self):
+		"""
+		Returns:
+			Unique chemical species as the list of strings.
+		"""
 		reac = self.reactants_species
 		prod = self.products_species
 		return list(set(reac).union(set(prod)))
 
 	@property
 	def reactants_species(self):
+		"""
+		Returns:
+			reactant species in the list of strings
+		"""
 		lst = []
 		for i in self.reactants:
 			lst.append(i[1])
@@ -94,6 +105,10 @@ class Reaction:
 
 	@property
 	def products_species(self):
+		"""
+		Returns:
+			product species in the list of strings
+		"""
 		lst = []
 		for i in self.products:
 			lst.append(i[1])
@@ -113,6 +128,10 @@ class Reaction:
 		return openfoam_reaction_str
 
 	def to_openfoam_paramdict(self):
+		"""
+		Returns:
+			dict
+		"""
 		param_dict = {}
 		param_dict["type"] = "TestReactionType"
 		param_dict["reaction"] = self._get_openfoam_react_str()
@@ -175,6 +194,13 @@ class Reaction:
 		return deltaE
 
 	def get_rate_constant(self, deltaE=0.0, T=300.0):
+		"""
+		Args:
+			deltaE: reaction energy [eV]
+			T: temperature [K]
+		Returns:
+			rate constant
+		"""
 		import numpy as np
 		from ase.units import create_units
 

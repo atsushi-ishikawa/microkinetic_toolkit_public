@@ -3,6 +3,9 @@ import os
 import pandas as pd
 
 class Reactions:
+	"""
+	Set of elementary reactions.
+	"""
 	def __init__(self, reaction_list):
 		self.reaction_list = reaction_list
 
@@ -78,6 +81,13 @@ class Reactions:
 
 	@classmethod
 	def from_csv(cls, csv_file):
+		"""
+		Read from CSV.
+		Args:
+			csv_file: CSV file with elementary reactions
+		Returns:
+			Reactions
+		"""
 		df = pd.read_csv(csv_file, index_col=0)
 		reaction_list = []
 		for i, row in df.iterrows():
@@ -108,6 +118,15 @@ class Reactions:
 		return ks
 
 	def do_microkinetics(self, rateconstants=None, T=300.0, P=1.0):
+		"""
+		Do microkinetic analysis.
+		Args:
+			rateconstants: rate constants in forward direction.
+			T: temperature [K]
+			P: total pressure [bar]
+		Returns:
+			None
+		"""
 		if rateconstants is None:
 			print("rate constant not found")
 			exit(1)
@@ -119,7 +138,11 @@ class Reactions:
 
 	def make_rate_equation(self, odefile=None):
 		"""
-		 make rate equation for python format
+		Make rate equation file
+		Args:
+			odefile: filename to write ODE equations.
+		Returns:
+			None
 		"""
 		import microkinetic_toolkit.reaction
 		if odefile is None:
@@ -327,10 +350,19 @@ class Reactions:
 		fout.write("\n")
 		fout.close()
 
-		print("done")
 		return None
 
 	def solve_rate_equation(self, rateconstants=None, odefile=None, T=300.0, P=1.0):
+		"""
+		Solve rate equations.
+		Args:
+			rateconstants: rate constant in forward direction
+			odefile: ODE file
+			T: temperature [K]
+			P: total pressure [bar]
+		Returns:
+			None
+		"""
 		import numpy as np
 		from scipy.integrate import solve_ivp
 		import matplotlib.pyplot as plt
@@ -466,9 +498,6 @@ class Reactions:
 
 
 class ReactionsOld:
-	"""
-	Set of elementary reactions.
-	"""
 	reactions = []
 
 	def __init__(self, name=None):
