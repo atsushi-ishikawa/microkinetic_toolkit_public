@@ -5,7 +5,6 @@ import textwrap
 import pandas as pd
 from pandas import DataFrame
 from tinydb import TinyDB, Query
-from sympy import Symbol
 
 def extract_attribute_dict(instance, keys, default=None):
 	ddict = {}
@@ -31,18 +30,15 @@ class Reaction:
 		if reaction_id is None:
 			reaction_id = next(self.id_iterator)
 		self._reaction_id = reaction_id
-
 		self._parse_reaction_str()
-		self.sympy_reactants = self.reactants
-		self.sympy_products  = self.products
 
 	def _parse_reaction_str(self):
 		reactants_str, products_str = self._reaction_str.split("->")
-		self.reactants = self._from_hside_to_nsp_list(reactants_str)
-		self.products  = self._from_hside_to_nsp_list(products_str)
+		self.reactants = self._from_halfside_to_nsp_list(reactants_str)
+		self.products  = self._from_halfside_to_nsp_list(products_str)
 
-	def _from_hside_to_nsp_list(self, hside_str):
-		terms = hside_str.split("+")
+	def _from_halfside_to_nsp_list(self, halfside_str):
+		terms = halfside_str.split("+")
 		list_nspecies = [self._change_term_to_coef_and_species(term) for term in terms]
 		return list_nspecies
 
@@ -83,43 +79,25 @@ class Reaction:
 		base_keys = ["_reaction_str", "_reaction_id"]
 		return base_keys
 
-	def _get_sympy_hside(self, list_nspecies):
-		hside_expr = 0.0
-		for num, sym in list_nspecies:
-			if " *" in sym:
-				sym = sym.repace("*", "{a}")
-			species = Symbol(sym)
-			term = num * species
-			hside_expr += term
-		return hside_expr
-
-	@property
-	def sympy_reactants(self):
-		return self._sympy_reactants
-
-	@sympy_reactants.setter
-	def sympy_reactants(self, reactants):
-		self._sympy_reactants = self._get_sympy_hside(reactants)
-
-	@property
-	def sympy_products(self):
-		return self._sympy_products
-
-	@sympy_products.setter
-	def sympy_products(self, products):
-		self._sympy_products = self._get_sympy_hside(products)
-
 	@property
 	def unique_species(self):
-		return self.reactants_species.union(self.products_species)
+		reac = self.reactants_species
+		prod = self.products_species
+		return list(set(reac).union(set(prod)))
 
 	@property
 	def reactants_species(self):
-		return self.sympy_reactants.free_symbols
+		lst = []
+		for i in self.reactants:
+			lst.append(i[1])
+		return lst
 
 	@property
 	def products_species(self):
-		return self.sympy_products.free_symbols
+		lst = []
+		for i in self.products:
+			lst.append(i[1])
+		return lst
 
 	# openfoam
 	def _get_openfoam_react_str(self):
@@ -174,7 +152,8 @@ class Reaction:
 
 	def get_reaction_energy(self, surface=None, method=None):
 		from ase.calculators.emt import EMT
-		calc = EMT()
+		if method == "emt":
+			calc = EMT()
 
 		atoms = self.adsorbate_on_surface(surface=surface)
 		# reactant

@@ -1,4 +1,6 @@
-import reaction
+from microkinetic_toolkit.reaction import Reaction
+import os
+import pandas as pd
 
 class Reactions:
 	def __init__(self, reaction_list):
@@ -37,7 +39,7 @@ class Reactions:
 		species_set = set([])
 		for reaction in self.reaction_list:
 			species_set.update(reaction.unique_species)
-		return species_set
+		return list(species_set)
 
 	def _get_openfoam_reactions_info(self):
 		ini = "reaction\n{\n"
@@ -119,6 +121,7 @@ class Reactions:
 		"""
 		 make rate equation for python format
 		"""
+		import microkinetic_toolkit.reaction
 		if odefile is None:
 			raise ValueError("ODE file not found")
 
@@ -132,36 +135,35 @@ class Reactions:
 		# r_ads = [ [['A1'],['B1']] , [['A2'],['B2']] ]
 		# p_ads = [ [['C1'],['D1']] , [['C2'],['D2']] ]
 
-		fout = open(odefile, "w")
+		dirname = os.path.dirname(microkinetic_toolkit.reaction.__file__)
+		fout = open(dirname + "/" + odefile, "w")
 
 		fout.write('import numpy as np')
 		fout.write("\n\n")
-		fout.write('def func(t, c, k, Kc, T, sden, area, Vr, Ngas, Ncomp):')
-		fout.write("\n")
+		fout.write('def func(t, c, kfor, Kc, T, sden, area, Vr, ngas, ncomp):')
+		fout.write("\n\n")
 		#
 		# template - start
 		#
-		template = "\
-		\tR  = 8.314e-3  # kJ/mol/K\n\
-		\n\
-		\tkrev = kfor / Kc\n\
-		\n\
-		\ttheta = c[0:Ncomp]\n\
-		\ttheta = theta * sden\n\
-		\n"
-		fout.write(template)
+		lines = [
+		"\tR = 8.314e-3  # kJ/mol/K\n",
+		"\tkrev = kfor / Kc\n",
+		"\ttheta = c[0:ncomp]\n",
+		"\ttheta = theta * sden\n"
+		]
+		fout.writelines(lines)
 		#
 		# template - end
 		#
-		rxn_num = get_number_of_reaction(reactionfile)
-		spec_num = get_species_num()
+		spec_num = len(self.get_unique_species())
 
 		fout.write("\trate = np.zeros(" + str(spec_num) + ")\n\n")
 
 		dict1 = {}
 		dict2 = {}
-		for irxn in range(rxn_num):
-			rxn_idx = str(irxn)
+		for irxn in range(len(self.reaction_list)):
+			rxn_idx  = str(irxn)
+			reaction = self[irxn]
 
 			# hash-tag based reactant and product species list FOR THIS REACTION
 			list_r = []
@@ -171,99 +173,112 @@ class Reactions:
 			#
 			for side in ["reactant", "product"]:
 				if side == "reactant":
-					mol_set = r_ads.copy()
-					sites = r_site.copy()
+					mol_set = reaction.reactants
+					#mol_set = r_ads.copy()
+					#sites = r_site.copy()
 					list = list_r
 				elif side == "product":
-					mol_set = p_ads.copy()
-					sites = p_site.copy()
+					mol_set = reaction.products
+					#mol_set = p_ads.copy()
+					#sites = p_site.copy()
 					list = list_p
 				else:
 					print("error asdf")
 					exit(1)
 
-				for imols, mols in enumerate(mol_set[irxn]):
-					for imol, mol in enumerate(mols):
-						mol = remove_side_and_flip(mol)
-						site = sites[irxn][imols][imol]
-						if site != 'gas':
-							mol = mol + "_surf"
-						spe = get_species_num(mol)
-						list.append(spe)
-						dict1[spe] = mol
+				for imol, mols in enumerate(mol_set):
+					mol = mols[1]
+					#site = sites[irxn][imols][imol]
+					site = "gas"
+					if site != 'gas':
+						mol = mol + "_surf"
+
+					spe = self.get_unique_species().index(mol)
+					list.append(spe)
+					dict1[spe] = mol
 			# done
 
 			for side in ["reactant", "product"]:
 				for direction in ["forward", "reverse"]:
 					if side == "reactant" and direction == "forward":
-						mol_list1 = r_ads.copy()
-						sites = r_site.copy()
-						coefs = r_coef.copy()
+						mol_list1 = reaction.reactants_species
+						#mol_list1 = r_ads.copy()
+						#sites  = r_site.copy()
+						#coefs  = r_coef.copy()
+						coefs = 1
 						add_to = list_r
-						mol_list2 = r_ads.copy()  # list corresponding to add_to
+						mol_list2 = reaction.reactants
+						#mol_list2 = r_ads.copy()  # list corresponding to add_to
 						term = "kfor[" + rxn_idx + "]"
 						sign = " - "
 					elif side == "reactant" and direction == "reverse":
-						mol_list1 = p_ads.copy()
-						sites = p_site.copy()
-						coefs = p_coef.copy()
+						mol_list1 = reaction.products_species
+						#mol_list1 = r_ads.copy()
+						#mol_list1 = p_ads.copy()
+						#sites = p_site.copy()
+						#coefs = p_coef.copy()
 						add_to = list_r
-						mol_list2 = r_ads.copy()
-						term = "krev[" + rxn_idx + "]"
-						sign = " + "
+						#mol_list2 = r_ads.copy()
+						#term = "krev[" + rxn_idx + "]"
+						#sign = " + "
 					elif side == "product" and direction == "forward":
-						mol_list1 = r_ads.copy()
-						sites = r_site.copy()
-						coefs = r_coef.copy()
+						mol_list1 = reaction.reactants_species
+						#mol_list1 = r_ads.copy()
+						#sites = r_site.copy()
+						#coefs = r_coef.copy()
 						add_to = list_p
-						mol_list2 = p_ads.copy()
-						term = "kfor[" + rxn_idx + "]"
-						sign = " + "
+						#mol_list2 = p_ads.copy()
+						#term = "kfor[" + rxn_idx + "]"
+						#sign = " + "
 					elif side == "product" and direction == "reverse":
-						mol_list1 = p_ads.copy()
-						sites = p_site.copy()
-						coefs = p_coef.copy()
+						mol_list1 = reaction.products_species
+						#mol_list1 = p_ads.copy()
+						#sites = p_site.copy()
+						#coefs = p_coef.copy()
 						add_to = list_p
-						mol_list2 = p_ads.copy()
-						term = "krev[" + rxn_idx + "]"
-						sign = " - "
+						#mol_list2 = p_ads.copy()
+						#term = "krev[" + rxn_idx + "]"
+						#sign = " - "
 
-					for imols, mols in enumerate(mol_list1[irxn]):
-						for imol, mol in enumerate(mols):
-							mol = remove_side_and_flip(mol)
-							site = sites[irxn][imols][imol]
+					for imol, mols in enumerate(mol_list1):
+						#mol = remove_side_and_flip(mol)
+						#site = sites[irxn][imols][imol]
+						site = "gas"
 
-							if site != 'gas':
-								mol = mol + "_surf"
+						if site != "gas":
+							mol = mol + "_surf"
 
-							spe = get_species_num(mol)
-							if site == 'gas':
-								if mol == 'surf':  # bare surface
-									theta = "theta[" + str(spe) + "]"
-								else:  # gas-phase molecule
-									theta = "c[" + str(spe) + "]"
-							else:  # adsorbed species
+						#spe = get_species_num(mol)
+						if site == "gas":
+							if mol == "surf":  # bare surface
 								theta = "theta[" + str(spe) + "]"
+							else:  # gas-phase molecule
+								theta = "c[" + str(spe) + "]"
+						else:  # adsorbed species
+							theta = "theta[" + str(spe) + "]"
 
-							power = coefs[irxn][imols]
-							if power != 1:
-								theta = theta + "**" + str(power)
+						#power = coefs[irxn][imol]
+						power = 1
+						if power != 1:
+							theta = theta + "**" + str(power)
 
-							term = term + "*" + theta
+						term = term + "*" + theta
 
 					for mem in add_to:
 						if dict1[mem] == "surf":
 							continue
 
 						coef = 0
-						for imol, mol in enumerate(mol_list2[irxn]):
+						#for imol, mol in enumerate(mol_list2[irxn]):
+						for imol, mol in enumerate(mol_list2):
 							mol = mol[0]
-							mol = remove_side_and_flip(mol)
+							#mol = remove_side_and_flip(mol)
 
 							adsorbate = dict1[mem].split("_")[0]
 							if mol == adsorbate:
 								coef = coefs[irxn][imol]
 
+						coef = 1  # dummy
 						if coef == 0:
 							print("something wrong at coef 1")
 							exit()
@@ -283,7 +298,7 @@ class Reactions:
 			tmp = ""
 			for imol, mol in enumerate(dict1):
 				comp = dict1[imol]
-				if 'surf' in comp and comp!='surf':
+				if 'surf' in comp and comp != 'surf':
 					tmp = tmp + " -rate[" + str(imol) + "]"
 
 			dict2[len(dict2)] = tmp
@@ -299,18 +314,20 @@ class Reactions:
 		#
 		# tempelate - start
 		#
-		template = "\
-		\tif Ncomp > Ngas:\n\
-		\t\trate[Ngas:Ncomp] = rate[Ngas:Ncomp]*(1/sden)  # surface\n\
-		"
+		lines = [
+		"\tif ncomp > ngas:\n",
+		"\t\trate[ngas:ncomp] = rate[ngas:ncomp]*(1/sden)  # surface\n"
+		]
 		#
 		# tempelate - end
 		#
-		fout.write(template)
+		fout.writelines(lines)
 
 		fout.write("\treturn rate\n")
+		fout.write("\n")
 		fout.close()
 
+		print("done")
 		return None
 
 	def solve_rate_equation(self, rateconstants=None, odefile=None, T=300.0, P=1.0):
@@ -318,7 +335,7 @@ class Reactions:
 		from scipy.integrate import solve_ivp
 		import matplotlib.pyplot as plt
 		import pickle
-		from odefile import func
+		from microkinetic_toolkit.tmpode import func
 
 		if rateconstants is None:
 			raise ValueError("rate constants not found")
@@ -332,8 +349,8 @@ class Reactions:
 		eVtokJ = 96.487
 
 		# parameters
-		PPa = P*1e5  # inlet pressure in Pascal
-		v0  = 1e-5   # volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
+		Pin = P*1e5  # inlet pressure [Pascal]
+		v0  = 1e-5   # vol. flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
 		sden = 1.0e-05  # site density [mol/m^2]
 		w_cat = 1.0e-3  # catalyst weight [kg]
@@ -345,12 +362,10 @@ class Reactions:
 		# Vr = 0.01e-6  # [m^3]
 
 		# read species
-		#speciesfile = "species.pickle"
-		#species = pickle.load(open(speciesfile, "rb"))
 		species = self.get_unique_species()
 
-		Ncomp = len(species)
-		Ngas = len(list(filter(lambda x: "surf" not in x, species)))
+		ncomp = len(species)
+		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
 
 		# read entropy (in eV)
 		#deltaS = pickle.load(open("deltaS.pickle", "rb"))
@@ -367,6 +382,13 @@ class Reactions:
 		#		Afor[i] *= np.sqrt(T) / sden
 		#	elif itype=="lh" or itype=="des":
 		#		Afor[i] *= (T / sden)
+
+		# temporary
+		nrxn = len(self.reaction_list)
+		deltaE = np.zeros(nrxn)
+		deltaG = np.zeros(nrxn)
+		TdeltaS = np.zeros(nrxn)
+		Ea = np.zeros(nrxn)
 
 		# calculate deltaG
 		#deltaG = deltaE - TdeltaS
@@ -387,7 +409,7 @@ class Reactions:
 		print("deltaE [kJ/mol]:", deltaE)
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
-		print("residence time [sec]: {0:5.3e}, GHSV [hour^-1]: {1:3d}".format(tau, int(60 * 60 / tau)))
+		print("residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
 
 		# now solve the ODE
 		t0, tf = 0, tau
@@ -397,33 +419,36 @@ class Reactions:
 
 		print("species:", species)
 		# C0 = PinPa / R*T
-		x0 = np.zeros(Ncomp)
+		x0 = np.zeros(ncomp)
 		x0[1] = 1.0  # CO2
 		x0[2] = 4.0  # H2
 
 		x0[-1] = 1.0  # vacancy
-		C0 = Pin / (R * T * 1e3)  # density calculated from pressure. note that R is defined with kJ/mol/K.
+		C0 = Pin / (R * T * 1e3)  # density calculated from pressure. Note: R is in kJ/mol/K.
 
 		# normalize x0 gas part
-		tot = np.sum(x0[:Ngas])
+		tot = np.sum(x0[:ngas])
 		for i, j in enumerate(x0):
-			if i <= Ngas:
+			if i <= ngas:
 				x0[i] = x0[i] / tot
 
-		C0 = x0 * C0
+		C0 *= x0
 
-		soln = solve_ivp(fun=lambda t, C: func(t, C, Afor, Ea, Kci, T, sden, area, Vr, Ngas, Ncomp),
-			t_span=t_span, t_eval=t_eval, y0=C0,
-			rtol=1e-5, atol=1e-7, method="LSODA")  # method = {"BDF" | "Radau" | "LSODA"}
+		soln = solve_ivp(fun=lambda t, C: func(t, C, rateconstants,
+						Kci, T, sden, area, Vr, ngas, ncomp),
+						t_span=t_span, t_eval=t_eval, y0=C0,
+						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
 		print(soln.nfev, "evaluations requred.")
 
 		fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))
 
 		for i, isp in enumerate(species):
 			if "surf" in isp:
-				fig2.plot(soln.t, soln.y[i], label="theta{}".format(isp.replace("_", "").replace("surf", "")))
+				fig2.plot(soln.t, soln.y[i], label="theta{}".
+						format(isp.replace("_", "").replace("surf", "")))
 			else:
-				fig1.plot(soln.t, soln.y[i], label="{}".format(isp))
+				fig1.plot(soln.t, soln.y[i], label="{}".
+						format(isp))
 
 		fig1.set_xlabel("times /s")
 		fig1.set_ylabel("concentration /arb.units")
@@ -434,7 +459,7 @@ class Reactions:
 
 		plt.show()
 
-		return rate
+		return None
 
 	def draw_network(self, rate=None):
 		pass
