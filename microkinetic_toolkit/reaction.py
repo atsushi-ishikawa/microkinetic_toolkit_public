@@ -47,16 +47,31 @@ class Reaction:
 
 	def _change_term_to_coef_and_species(self, term):
 		term = term.strip()
-		reg = re.compile("^[0-9]+")
-		re_match = reg.match(term)
-		if re_match is None:  # has no coefficient
-			sp = term.strip()
-			return (1, sp)
+
+		# coefficient
+		re_coef = re.compile("^[0-9]+")
+		re_coef_search = re_coef.search(term)
+
+		# site
+		re_site = re.compile("_(atop|fcc|hcp)")
+		re_site_search = re_site.search(term)
+
+		# coef
+		if re_coef_search is None:  # has no coefficient
+			coef = 1
 		else:  # has coefficient
-			coef = int(re_match[0])
-			sp = reg.sub("", term)
-			sp = sp.strip()
-			return coef, sp
+			coef = int(re_coef_search[0])
+
+		# site
+		if re_site_search is None:  # has no site -- gas
+			site = "gas"
+		else:  # has site
+			site = re_coef_search[1]
+
+		spe = re_site.sub("", re_coef.sub("", term))
+		spe = spe.strip()
+
+		return (coef, spe, site)
 
 	def to_dict(self):
 		return extract_attribute_dict(self, self.base_attributed_keys)
@@ -166,7 +181,7 @@ class Reaction:
 		for side in ["reactants", "products"]:
 			sequence  = self.reactants if side == "reac" else self.products
 			for i in sequence:
-				_, mol = i
+				_, mol, _ = i
 				ads = molecule(mol)
 				surf_copy = surface.copy()
 

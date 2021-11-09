@@ -197,9 +197,8 @@ class Reactions:
 		#
 		# template - end
 		#
-		spec_num = len(self.get_unique_species())
-
-		fout.write("\trate = np.zeros(" + str(spec_num) + ")\n\n")
+		nspecies = len(self.get_unique_species())
+		fout.write("\trate = np.zeros(" + str(nspecies) + ")\n\n")
 
 		dict1 = {}
 		dict2 = {}
@@ -215,92 +214,73 @@ class Reactions:
 			#
 			for side in ["reactant", "product"]:
 				if side == "reactant":
-					mol_set = reaction.reactants
-					#mol_set = r_ads.copy()
-					#sites = r_site.copy()
+					terms = reaction.reactants
 					list = list_r
 				elif side == "product":
-					mol_set = reaction.products
-					#mol_set = p_ads.copy()
-					#sites = p_site.copy()
+					terms = reaction.products
 					list = list_p
 				else:
 					print("error asdf")
 					exit(1)
 
-				for imol, mols in enumerate(mol_set):
-					mol = mols[1]
-					#site = sites[irxn][imols][imol]
-					site = "gas"
+				for term in terms:
+					spe, site = term[1], term[2]
 					if site != 'gas':
-						mol = mol + "_surf"
+						spe += "_surf"
 
-					spe = self.get_unique_species().index(mol)
-					list.append(spe)
-					dict1[spe] = mol
+					spe_num = self.get_unique_species().index(spe)
+					list.append(spe_num)
+					dict1[spe_num] = spe
 			# done for dict1
 
 			for side in ["reactant", "product"]:
 				for direction in ["forward", "reverse"]:
 					if side == "reactant" and direction == "forward":
-						mol_list1 = reaction.reactants_species
-						#mol_list1 = r_ads.copy()
-						#sites  = r_site.copy()
-						#coefs  = r_coef.copy()
-						coefs = 1
+						mol_list1 = reaction.reactants
 						add_to = list_r
-						mol_list2 = reaction.reactants
-						#mol_list2 = r_ads.copy()  # list corresponding to add_to
+						mol_list2 = reaction.reactants  # list corresponding to add_to
+						coefs = [i[0] for i in mol_list2]
 						term = "kfor[" + rxn_idx + "]"
 						sign = " - "
 					elif side == "reactant" and direction == "reverse":
-						mol_list1 = reaction.products_species
-						#mol_list1 = r_ads.copy()
-						#mol_list1 = p_ads.copy()
-						#sites = p_site.copy()
-						#coefs = p_coef.copy()
+						mol_list1 = reaction.products
 						add_to = list_r
-						#mol_list2 = r_ads.copy()
-						#term = "krev[" + rxn_idx + "]"
-						#sign = " + "
+						mol_list2 = reaction.reactants
+						coefs = [i[0] for i in mol_list2]
+						term = "krev[" + rxn_idx + "]"
+						sign = " + "
 					elif side == "product" and direction == "forward":
-						mol_list1 = reaction.reactants_species
-						#mol_list1 = r_ads.copy()
-						#sites = r_site.copy()
-						#coefs = r_coef.copy()
+						mol_list1 = reaction.reactants
 						add_to = list_p
-						#mol_list2 = p_ads.copy()
-						#term = "kfor[" + rxn_idx + "]"
-						#sign = " + "
+						mol_list2 = reaction.products
+						coefs = [i[0] for i in mol_list2]
+						term = "kfor[" + rxn_idx + "]"
+						sign = " + "
 					elif side == "product" and direction == "reverse":
-						mol_list1 = reaction.products_species
-						#mol_list1 = p_ads.copy()
-						#sites = p_site.copy()
-						#coefs = p_coef.copy()
+						mol_list1 = reaction.products
 						add_to = list_p
-						#mol_list2 = p_ads.copy()
-						#term = "krev[" + rxn_idx + "]"
-						#sign = " - "
+						mol_list2 = reaction.products
+						coefs = [i[0] for i in mol_list2]
+						term = "krev[" + rxn_idx + "]"
+						sign = " - "
 
-					for imol, mols in enumerate(mol_list1):
-						#mol = remove_side_and_flip(mol)
-						#site = sites[irxn][imols][imol]
-						site = "gas"
+					# making single term
+					for mol in mol_list1:
+						coef, spe, site = mol[0], mol[1], mol[2]
 
 						if site != "gas":
-							mol = mol + "_surf"
+							spe += "_surf"
 
-						#spe = get_species_num(mol)
+						spe_num = self.get_unique_species().index(spe)
 						if site == "gas":
-							if mol == "surf":  # bare surface
-								theta = "theta[" + str(spe) + "]"
+							if spe == "surf":  # bare surface
+								theta = "theta[" + str(spe_num) + "]"
 							else:  # gas-phase molecule
-								theta = "c[" + str(spe) + "]"
+								theta = "c[" + str(spe_num) + "]"
 						else:  # adsorbed species
-							theta = "theta[" + str(spe) + "]"
+							theta = "theta[" + str(spe_num) + "]"
 
-						#power = coefs[irxn][imol]
-						power = 1
+						power = coef
 						if power != 1:
 							theta = theta + "**" + str(power)
 
@@ -308,19 +288,16 @@ class Reactions:
 
 					for mem in add_to:
 						if dict1[mem] == "surf":
-							continue
+							continue  # bare surface ... skip
 
+						# CHECK
 						coef = 0
-						#for imol, mol in enumerate(mol_list2[irxn]):
 						for imol, mol in enumerate(mol_list2):
-							mol = mol[0]
-							#mol = remove_side_and_flip(mol)
-
+							spe = mol[1]
 							adsorbate = dict1[mem].split("_")[0]
-							if mol == adsorbate:
-								coef = coefs[irxn][imol]
+							if spe == adsorbate:
+								coef    = coefs[imol]
 
-						coef = 1  # dummy
 						if coef == 0:
 							print("something wrong at coef 1")
 							exit()
