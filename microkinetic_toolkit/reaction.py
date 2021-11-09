@@ -85,8 +85,9 @@ class Reaction:
 	@property
 	def unique_species(self):
 		"""
+		Get unique species in an elementary reaction.
 		Returns:
-			Unique chemical species as the list of strings.
+			Unique chemical species -- list of strings.
 		"""
 		reac = self.reactants_species
 		prod = self.products_species
@@ -95,6 +96,7 @@ class Reaction:
 	@property
 	def reactants_species(self):
 		"""
+		Get reactant chemical species.
 		Returns:
 			reactant species in the list of strings
 		"""
@@ -106,6 +108,7 @@ class Reaction:
 	@property
 	def products_species(self):
 		"""
+		Get product chemical species.
 		Returns:
 			product species in the list of strings
 		"""
@@ -129,6 +132,7 @@ class Reaction:
 
 	def to_openfoam_paramdict(self):
 		"""
+		Get openfoam paramter as dict.
 		Returns:
 			dict
 		"""
@@ -141,6 +145,14 @@ class Reaction:
 		return param_dict
 
 	def adsorbate_on_surface(self, surface=None, height=0.0):
+		"""
+		Adsorbate molecule on surface.
+		Args:
+			surface:
+			height:
+		Returns:
+			atoms:
+		"""
 		from ase.build import fcc111, add_adsorbate, molecule
 		from ase.visualize import view
 
@@ -170,6 +182,14 @@ class Reaction:
 		return atoms
 
 	def get_reaction_energy(self, surface=None, method=None):
+		"""
+		Calculate reaction energy for an elementary reaction.
+		Args:
+			surface: Atoms
+			method: emt
+		Returns:
+			deltaE (float)
+		"""
 		from ase.calculators.emt import EMT
 		if method == "emt":
 			calc = EMT()
@@ -195,6 +215,7 @@ class Reaction:
 
 	def get_rate_constant(self, deltaE=0.0, T=300.0):
 		"""
+		Calculate rate constant from reaction energy (deltaE).
 		Args:
 			deltaE: reaction energy [eV]
 			T: temperature [K]

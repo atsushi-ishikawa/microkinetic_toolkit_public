@@ -39,6 +39,11 @@ class Reactions:
 		return species_info
 
 	def get_unique_species(self):
+		"""
+		Get unique chemical species.
+		Returns:
+			list of string
+		"""
 		species_set = set([])
 		for reaction in self.reaction_list:
 			species_set.update(reaction.unique_species)
@@ -97,11 +102,25 @@ class Reactions:
 		return cls(reaction_list)
 
 	def adsorbate_on_surface(self, surface=None):
+		"""
+		Make surface with adsorbates.
+		Args:
+			surface:
+		Returns:
+		"""
 		for reaction in self.reaction_list:
 			reac, prod = reaction.adsorbate_on_surface(surface)
 		pass
 
 	def get_reaction_energies(self, surface=None, method=None):
+		"""
+		Calculate the reaction energies (deltaEs) for all the elementary reactions.
+		Args:
+			surface: Atoms
+			method: emt
+		Returns:
+			deltaEs: list of float
+		"""
 		deltaEs = []
 		for reaction in self.reaction_list:
 			deltaE = reaction.get_reaction_energy(surface=surface, method=method)
@@ -219,7 +238,7 @@ class Reactions:
 					spe = self.get_unique_species().index(mol)
 					list.append(spe)
 					dict1[spe] = mol
-			# done
+			# done for dict1
 
 			for side in ["reactant", "product"]:
 				for direction in ["forward", "reverse"]:
