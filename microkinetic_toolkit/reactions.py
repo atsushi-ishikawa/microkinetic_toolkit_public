@@ -1,5 +1,6 @@
 from microkinetic_toolkit.reaction import Reaction
 import os
+import numpy as np
 import pandas as pd
 
 class Reactions:
@@ -114,18 +115,30 @@ class Reactions:
 
 	def get_reaction_energies(self, surface=None, method=None):
 		"""
-		Calculate the reaction energies (deltaEs) for all the elementary reactions.
+		Calculate the reaction energies (deltaE) for all the elementary reactions.
 		Args:
 			surface: Atoms
 			method: emt
 		Returns:
-			deltaEs: list of float
+			deltaEs: numpy array
 		"""
-		deltaEs = []
+		deltaEs = np.zeros(len(self.reaction_list))
 		for reaction in self.reaction_list:
-			deltaE = reaction.get_reaction_energy(surface=surface, method=method)
-			deltaEs.append(deltaE)
+			deltaE  = reaction.get_reaction_energy(surface=surface, method=method)
+			deltaEs = np.append(deltaEs, deltaE)
 		return deltaEs
+
+	def get_entropy_differences(self):
+		"""
+		Calculate the entropy difference (deltaS, in eV/K) for all the elementary reactions.
+		Returns:
+			deltaSs: numpy array
+		"""
+		deltaSs = np.zeros(len(self.reaction_list))
+		for reaction in self.reaction_list:
+			deltaS  = reaction.get_entropy_difference()
+			deltaSs = np.append(deltaSs, deltaS)
+		return deltaSs
 
 	def get_rate_constants(self, deltaEs=None, T=300.0, P=1.0):
 		ks = []
@@ -377,12 +390,17 @@ class Reactions:
 		eVtokJ = 96.487
 
 		# parameters
+		# TODO: make it a class property
 		Pin = P*1e5  # inlet pressure [Pascal]
 		v0  = 1e-5   # vol. flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
-		sden = 1.0e-05  # site density [mol/m^2]
+		sden  = 1.0e-05  # site density [mol/m^2]
 		w_cat = 1.0e-3  # catalyst weight [kg]
-		area = 1000 * w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
+		area  = 1000 * w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
+
+		# Bronsted-Evans-Polanyi rule ... in eV unit
+		alpha = 1.0
+		beta  = 1.0
 
 		phi = 0.5  # porosity
 		rho_b = 1.0e3  # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
@@ -394,11 +412,6 @@ class Reactions:
 
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
-
-		# read entropy (in eV)
-		#deltaS = pickle.load(open("deltaS.pickle", "rb"))
-		#TdeltaS = T * deltaS
-		#TdeltaS = TdeltaS * eVtokJ
 
 		# read pre-exponential (in [m, mol, s])
 		#Afor, Afor_type = pickle.load(open("pre_exp.pickle", "rb"))
@@ -412,18 +425,23 @@ class Reactions:
 		#		Afor[i] *= (T / sden)
 
 		# temporary
+		method = "emt"
 		nrxn = len(self.reaction_list)
-		deltaE = np.zeros(nrxn)
-		deltaG = np.zeros(nrxn)
-		TdeltaS = np.zeros(nrxn)
-		Ea = np.zeros(nrxn)
+
+		deltaE = self.get_reaction_energies(method=method)
+		deltaS = self.get_entropy_differences()
+		TdeltaS = T*deltaS
+		TdeltaS = TdeltaS * eVtokJ
 
 		# calculate deltaG
-		#deltaG = deltaE - TdeltaS
+		deltaG = deltaE - TdeltaS
+
+		print("stopped")
+		quit()
 
 		# get Ea
-		#Ea = alpha * (deltaE / eVtokJ) + beta
-		#Ea = Ea * eVtokJ
+		Ea = alpha * (deltaE / eVtokJ) + beta
+		Ea = Ea * eVtokJ
 
 		Kpi = np.exp(-deltaG / R / T)  # in pressure unit
 		# Kci = Kpi*(101325/R/T)     # convert to concentration unit
