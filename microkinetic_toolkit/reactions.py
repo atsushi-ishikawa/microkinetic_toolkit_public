@@ -123,9 +123,8 @@ class Reactions:
 			deltaEs: numpy array
 		"""
 		deltaEs = np.zeros(len(self.reaction_list))
-		for reaction in self.reaction_list:
-			deltaE  = reaction.get_reaction_energy(surface=surface, method=method)
-			deltaEs = np.append(deltaEs, deltaE)
+		for i, reaction in enumerate(self.reaction_list):
+			deltaEs[i] = reaction.get_reaction_energy(surface=surface, method=method)
 		return deltaEs
 
 	def get_entropy_differences(self):
@@ -135,9 +134,8 @@ class Reactions:
 			deltaSs: numpy array
 		"""
 		deltaSs = np.zeros(len(self.reaction_list))
-		for reaction in self.reaction_list:
-			deltaS  = reaction.get_entropy_difference()
-			deltaSs = np.append(deltaSs, deltaS)
+		for i, reaction in enumerate(self.reaction_list):
+			deltaSs[i] = reaction.get_entropy_difference()
 		return deltaSs
 
 	def get_rate_constants(self, deltaEs=None, T=300.0, P=1.0):
@@ -389,8 +387,8 @@ class Reactions:
 		R = 8.314 * 1.0e-3  # kJ/mol/K
 		eVtokJ = 96.487
 
-		# parameters
-		# TODO: make it a class property
+		### parameters
+		# TODO: make it class properties
 		Pin = P*1e5  # inlet pressure [Pascal]
 		v0  = 1e-5   # vol. flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 
@@ -406,6 +404,7 @@ class Reactions:
 		rho_b = 1.0e3  # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
 		Vr = (w_cat / rho_b) * (1 - phi)  # reactor volume [m^3], calculated from w_cat.
 		# Vr = 0.01e-6  # [m^3]
+		### parameters end
 
 		# read species
 		species = self.get_unique_species()
@@ -426,7 +425,6 @@ class Reactions:
 
 		# temporary
 		method = "emt"
-		nrxn = len(self.reaction_list)
 
 		deltaE = self.get_reaction_energies(method=method)
 		deltaS = self.get_entropy_differences()
@@ -435,9 +433,6 @@ class Reactions:
 
 		# calculate deltaG
 		deltaG = deltaE - TdeltaS
-
-		print("stopped")
-		quit()
 
 		# get Ea
 		Ea = alpha * (deltaE / eVtokJ) + beta
