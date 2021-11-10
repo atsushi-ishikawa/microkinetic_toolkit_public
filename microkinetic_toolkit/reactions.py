@@ -25,6 +25,11 @@ class Reactions:
 				reaction.to_tdb(tdb)
 
 	def to_openfoam(self, file):
+		"""
+		Generate openFOAM input file.
+		Args:
+			file: name of the generated openFOAM input file
+		"""
 		with open(file, "w") as write:
 			species_info = self._get_openfoam_species_info()
 			write.write(species_info)
@@ -82,13 +87,18 @@ class Reactions:
 			yield ddict
 
 	def to_csv(self, file):
+		"""
+		Generate csv file containing elemtary reactions.
+		Args:
+			file: csv file name
+		"""
 		df = DataFrame(self._generate_reactions_dict())
 		df.to_csv(file)
 
 	@classmethod
 	def from_csv(cls, csv_file):
 		"""
-		Read from CSV.
+		Read elementary reactions from CSV.
 		Args:
 			csv_file: CSV file with elementary reactions
 		Returns:
@@ -139,12 +149,21 @@ class Reactions:
 		return deltaSs
 
 	def get_rate_constants(self, deltaEs=None, T=300.0, P=1.0):
-		ks = []
-		for reaction in self.reaction_list:
-			index = reaction._reaction_id
+		"""
+		Calculate rate constants for all the elementary reactions.
+		Args:
+			deltaEs:
+			T:
+			P:
+		Returns:
+			ks: rate constants (numpy array)
+
+		"""
+		ks = np.zeros(len(self.reaction_list))
+		for i, reaction in enumerate(self.reaction_list):
+			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
-			k = reaction.get_rate_constant(deltaE)
-			ks.append(k)
+			ks[i]  = reaction.get_rate_constant(deltaE)
 		return ks
 
 	def calculate_volume_and_entropy(self):
@@ -180,7 +199,6 @@ class Reactions:
 			basis = "6-31G*"
 		else:
 			raise RuntimeError('molecular volume only implemented in Gaussian')
-
 		#
 		# add volume and entropy information for all the molecules in database
 		#
