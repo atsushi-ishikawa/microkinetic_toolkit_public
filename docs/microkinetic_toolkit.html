@@ -41,13 +41,13 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">microkinetic_toolkit package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-microkinetic_toolkit.add_volume_and_entropy">microkinetic_toolkit.add_volume_and_entropy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-add-volume-and-entropy-module">microkinetic_toolkit.add_volume_and_entropy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-ads-module">microkinetic_toolkit.ads module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-adsorption-module">microkinetic_toolkit.adsorption module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-check-coord-module">microkinetic_toolkit.check_coord module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-count-mass-module">microkinetic_toolkit.count_mass module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-count-species-module">microkinetic_toolkit.count_species module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-microkinetic_toolkit.create_input">microkinetic_toolkit.create_input module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-create-input-module">microkinetic_toolkit.create_input module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-draw-chemical-graph-module">microkinetic_toolkit.draw_chemical_graph module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-entropy-module">microkinetic_toolkit.entropy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#microkinetic-toolkit-gaussian-module">microkinetic_toolkit.gaussian module</a></li>
@@ -105,8 +105,8 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
 </section>
-<section id="module-microkinetic_toolkit.add_volume_and_entropy">
-<span id="microkinetic-toolkit-add-volume-and-entropy-module"></span><h2>microkinetic_toolkit.add_volume_and_entropy module<a class="headerlink" href="#module-microkinetic_toolkit.add_volume_and_entropy" title="Permalink to this headline"></a></h2>
+<section id="microkinetic-toolkit-add-volume-and-entropy-module">
+<h2>microkinetic_toolkit.add_volume_and_entropy module<a class="headerlink" href="#microkinetic-toolkit-add-volume-and-entropy-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="microkinetic-toolkit-ads-module">
 <h2>microkinetic_toolkit.ads module<a class="headerlink" href="#microkinetic-toolkit-ads-module" title="Permalink to this headline"></a></h2>
@@ -123,125 +123,8 @@
 <section id="microkinetic-toolkit-count-species-module">
 <h2>microkinetic_toolkit.count_species module<a class="headerlink" href="#microkinetic-toolkit-count-species-module" title="Permalink to this headline"></a></h2>
 </section>
-<section id="module-microkinetic_toolkit.create_input">
-<span id="microkinetic-toolkit-create-input-module"></span><h2>microkinetic_toolkit.create_input module<a class="headerlink" href="#module-microkinetic_toolkit.create_input" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">microkinetic_toolkit.create_input.</span></span><span class="sig-name descname"><span class="pre">GenerateVaspInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.check_xc">
-<span class="sig-name descname"><span class="pre">check_xc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.check_xc" title="Permalink to this definition"></a></dt>
-<dd><p>Make sure the calculator has functional &amp; pseudopotentials set up</p>
-<p>If no XC combination, GGA functional or POTCAR type is specified,
-default to PW91. Otherwise, try to guess the desired pseudopotentials.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.clean">
-<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.clean" title="Permalink to this definition"></a></dt>
-<dd><p>Method which cleans up after a calculation.</p>
-<p>The default files generated by Vasp will be deleted IF this
-method is called.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.initialize" title="Permalink to this definition"></a></dt>
-<dd><p>Initialize a VASP calculation</p>
-<p>Constructs the POTCAR file (does not actually write it).
-User should specify the PATH
-to the pseudopotentials in VASP_PP_PATH environment variable</p>
-<p>The pseudopotentials are expected to be in:
-LDA:  $VASP_PP_PATH/potpaw/
-PBE:  $VASP_PP_PATH/potpaw_PBE/
-PW91: $VASP_PP_PATH/potpaw_GGA/</p>
-<p>if your pseudopotentials are somewhere else, or named
-differently you may make symlinks at the paths above that
-point to the right place. Alternatively, you may pass the full
-name of a folder on the VASP_PP_PATH to the ‘pp’ parameter.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.read_incar">
-<span class="sig-name descname"><span class="pre">read_incar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'INCAR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.read_incar" title="Permalink to this definition"></a></dt>
-<dd><p>Method that imports settings from INCAR file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.read_kpoints">
-<span class="sig-name descname"><span class="pre">read_kpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'KPOINTS'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.read_kpoints" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.read_potcar">
-<span class="sig-name descname"><span class="pre">read_potcar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.read_potcar" title="Permalink to this definition"></a></dt>
-<dd><p>Read the pseudopotential XC functional from POTCAR file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.set">
-<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.set" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.set_xc_params">
-<span class="sig-name descname"><span class="pre">set_xc_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.set_xc_params" title="Permalink to this definition"></a></dt>
-<dd><p>Set parameters corresponding to XC functional</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.setups_defaults">
-<span class="sig-name descname"><span class="pre">setups_defaults</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'Ba':</span> <span class="pre">'_sv',</span> <span class="pre">'Ca':</span> <span class="pre">'_pv',</span> <span class="pre">'Cs':</span> <span class="pre">'_sv',</span> <span class="pre">'Fr':</span> <span class="pre">'_sv',</span> <span class="pre">'K':</span> <span class="pre">'_pv',</span> <span class="pre">'Nb':</span> <span class="pre">'_pv',</span> <span class="pre">'Ra':</span> <span class="pre">'_sv',</span> <span class="pre">'Rb':</span> <span class="pre">'_pv',</span> <span class="pre">'Sc':</span> <span class="pre">'_sv',</span> <span class="pre">'Sr':</span> <span class="pre">'_sv',</span> <span class="pre">'Y':</span> <span class="pre">'_sv',</span> <span class="pre">'Zr':</span> <span class="pre">'_sv'}</span></em><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.setups_defaults" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.todict">
-<span class="sig-name descname"><span class="pre">todict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.todict" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a dictionary of all parameters
-that can be used to construct a new calculator object</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.write_incar">
-<span class="sig-name descname"><span class="pre">write_incar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.write_incar" title="Permalink to this definition"></a></dt>
-<dd><p>Writes the INCAR file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.write_input">
-<span class="sig-name descname"><span class="pre">write_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.write_input" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.write_kpoints">
-<span class="sig-name descname"><span class="pre">write_kpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.write_kpoints" title="Permalink to this definition"></a></dt>
-<dd><p>Writes the KPOINTS file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.write_potcar">
-<span class="sig-name descname"><span class="pre">write_potcar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.write_potcar" title="Permalink to this definition"></a></dt>
-<dd><p>Writes the POTCAR file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.write_sort_file">
-<span class="sig-name descname"><span class="pre">write_sort_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.write_sort_file" title="Permalink to this definition"></a></dt>
-<dd><p>Writes a sortings file.</p>
-<p>This file contains information about how the atoms are sorted in
-the first column and how they should be resorted in the second
-column. It is used for restart purposes to get sorting right
-when reading in an old calculation to ASE.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="microkinetic_toolkit.create_input.GenerateVaspInput.xc_defaults">
-<span class="sig-name descname"><span class="pre">xc_defaults</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'am05':</span> <span class="pre">{'gga':</span> <span class="pre">'AM'},</span> <span class="pre">'b3lyp':</span> <span class="pre">{'aexx':</span> <span class="pre">0.2,</span> <span class="pre">'aggac':</span> <span class="pre">0.81,</span> <span class="pre">'aggax':</span> <span class="pre">0.72,</span> <span class="pre">'aldac':</span> <span class="pre">0.19,</span> <span class="pre">'gga':</span> <span class="pre">'B3',</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'beef-vdw':</span> <span class="pre">{'gga':</span> <span class="pre">'BF',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True,</span> <span class="pre">'zab_vdw':</span> <span class="pre">-1.8867},</span> <span class="pre">'hf':</span> <span class="pre">{'aexx':</span> <span class="pre">1.0,</span> <span class="pre">'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'aldac':</span> <span class="pre">0.0,</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'hse03':</span> <span class="pre">{'gga':</span> <span class="pre">'PE',</span> <span class="pre">'hfscreen':</span> <span class="pre">0.3,</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'hse06':</span> <span class="pre">{'gga':</span> <span class="pre">'PE',</span> <span class="pre">'hfscreen':</span> <span class="pre">0.2,</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'hsesol':</span> <span class="pre">{'gga':</span> <span class="pre">'PS',</span> <span class="pre">'hfscreen':</span> <span class="pre">0.2,</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'lda':</span> <span class="pre">{'pp':</span> <span class="pre">'LDA'},</span> <span class="pre">'m06l':</span> <span class="pre">{'metagga':</span> <span class="pre">'M06L'},</span> <span class="pre">'ms0':</span> <span class="pre">{'metagga':</span> <span class="pre">'MS0'},</span> <span class="pre">'ms1':</span> <span class="pre">{'metagga':</span> <span class="pre">'MS1'},</span> <span class="pre">'ms2':</span> <span class="pre">{'metagga':</span> <span class="pre">'MS2'},</span> <span class="pre">'optb86b-vdw':</span> <span class="pre">{'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'gga':</span> <span class="pre">'MK',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True,</span> <span class="pre">'param1':</span> <span class="pre">0.1234,</span> <span class="pre">'param2':</span> <span class="pre">1.0},</span> <span class="pre">'optb88-vdw':</span> <span class="pre">{'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'gga':</span> <span class="pre">'BO',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True,</span> <span class="pre">'param1':</span> <span class="pre">0.18333333333333335,</span> <span class="pre">'param2':</span> <span class="pre">0.22},</span> <span class="pre">'optpbe-vdw':</span> <span class="pre">{'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'gga':</span> <span class="pre">'OR',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True},</span> <span class="pre">'pbe':</span> <span class="pre">{'gga':</span> <span class="pre">'PE',</span> <span class="pre">'pp':</span> <span class="pre">'PBE'},</span> <span class="pre">'pbe0':</span> <span class="pre">{'gga':</span> <span class="pre">'PE',</span> <span class="pre">'lhfcalc':</span> <span class="pre">True},</span> <span class="pre">'pbesol':</span> <span class="pre">{'gga':</span> <span class="pre">'PS'},</span> <span class="pre">'pw91':</span> <span class="pre">{'gga':</span> <span class="pre">'91',</span> <span class="pre">'pp':</span> <span class="pre">'pw91'},</span> <span class="pre">'revpbe':</span> <span class="pre">{'gga':</span> <span class="pre">'RE'},</span> <span class="pre">'revtpss':</span> <span class="pre">{'metagga':</span> <span class="pre">'RTPSS'},</span> <span class="pre">'rpbe':</span> <span class="pre">{'gga':</span> <span class="pre">'RP'},</span> <span class="pre">'scan':</span> <span class="pre">{'metagga':</span> <span class="pre">'SCAN'},</span> <span class="pre">'scan-rvv10':</span> <span class="pre">{'bparam':</span> <span class="pre">15.7,</span> <span class="pre">'luse_vdw':</span> <span class="pre">True,</span> <span class="pre">'metagga':</span> <span class="pre">'SCAN'},</span> <span class="pre">'tpss':</span> <span class="pre">{'metagga':</span> <span class="pre">'TPSS'},</span> <span class="pre">'vdw-df':</span> <span class="pre">{'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'gga':</span> <span class="pre">'RE',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True},</span> <span class="pre">'vdw-df2':</span> <span class="pre">{'aggac':</span> <span class="pre">0.0,</span> <span class="pre">'gga':</span> <span class="pre">'ML',</span> <span class="pre">'luse_vdw':</span> <span class="pre">True,</span> <span class="pre">'zab_vdw':</span> <span class="pre">-1.8867}}</span></em><a class="headerlink" href="#microkinetic_toolkit.create_input.GenerateVaspInput.xc_defaults" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="microkinetic-toolkit-create-input-module">
+<h2>microkinetic_toolkit.create_input module<a class="headerlink" href="#microkinetic-toolkit-create-input-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="microkinetic-toolkit-draw-chemical-graph-module">
 <h2>microkinetic_toolkit.draw_chemical_graph module<a class="headerlink" href="#microkinetic-toolkit-draw-chemical-graph-module" title="Permalink to this headline"></a></h2>
@@ -303,7 +186,18 @@ when reading in an old calculation to ASE.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.adsorbate_on_surface">
 <span class="sig-name descname"><span class="pre">adsorbate_on_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.adsorbate_on_surface" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Adsorbate molecule on surface.
+:param surface:
+:param height:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>atoms</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.base_attributed_keys">
@@ -316,17 +210,21 @@ when reading in an old calculation to ASE.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.get_entropy_difference">
+<span class="sig-name descname"><span class="pre">get_entropy_difference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.get_entropy_difference" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate entropy difference (deltaS, in eV/K) along the reaction.
+:returns: deltaS (float)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.get_rate_constant">
 <span class="sig-name descname"><span class="pre">get_rate_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.get_rate_constant" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>deltaE</strong> – reaction energy [eV]</p></li>
-<li><p><strong>T</strong> – temperature [K]</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>rate constant</p>
+<dd><p>Calculate rate constant from reaction energy (deltaE).
+:param deltaE: reaction energy [eV]
+:param T: temperature [K]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>rate constant</p>
 </dd>
 </dl>
 </dd></dl>
@@ -334,7 +232,15 @@ when reading in an old calculation to ASE.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.get_reaction_energy">
 <span class="sig-name descname"><span class="pre">get_reaction_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.get_reaction_energy" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Calculate reaction energy for an elementary reaction.
+:param surface: Atoms
+:param method: emt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>deltaE (float)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.id_iterator">
@@ -344,15 +250,15 @@ when reading in an old calculation to ASE.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.products_species">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">products_species</span></span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.products_species" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:
-product species in the list of strings</p>
+<dd><p>Get product chemical species.
+:returns: product species in the list of strings</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.reactants_species">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">reactants_species</span></span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.reactants_species" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:
-reactant species in the list of strings</p>
+<dd><p>Get reactant chemical species.
+:returns: reactant species in the list of strings</p>
 </dd></dl>
 
 <dl class="py method">
@@ -363,11 +269,8 @@ reactant species in the list of strings</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.to_openfoam_paramdict">
 <span class="sig-name descname"><span class="pre">to_openfoam_paramdict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.to_openfoam_paramdict" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
+<dd><p>Get openfoam paramter as dict.
+:returns: dict</p>
 </dd></dl>
 
 <dl class="py method">
@@ -378,8 +281,8 @@ reactant species in the list of strings</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reaction.Reaction.unique_species">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">unique_species</span></span><a class="headerlink" href="#microkinetic_toolkit.reaction.Reaction.unique_species" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:
-Unique chemical species as the list of strings.</p>
+<dd><p>Get unique species in an elementary reaction.
+:returns: Unique chemical species – list of strings.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -501,7 +404,17 @@ Unique chemical species as the list of strings.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.adsorbate_on_surface">
 <span class="sig-name descname"><span class="pre">adsorbate_on_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.adsorbate_on_surface" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Make surface with adsorbates.
+:param surface:</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.calculate_volume_and_entropy">
+<span class="sig-name descname"><span class="pre">calculate_volume_and_entropy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.calculate_volume_and_entropy" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate volume and entropy for all the molecules in the current reaction set.
+Returns:</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.do_microkinetics">
@@ -535,6 +448,14 @@ Unique chemical species as the list of strings.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.get_entropy_differences">
+<span class="sig-name descname"><span class="pre">get_entropy_differences</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.get_entropy_differences" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the entropy difference (deltaS, in eV/K) for all the elementary reactions.
+:returns: numpy array
+:rtype: deltaSs</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.get_rate_constants">
 <span class="sig-name descname"><span class="pre">get_rate_constants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deltaEs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.get_rate_constants" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -542,12 +463,25 @@ Unique chemical species as the list of strings.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.get_reaction_energies">
 <span class="sig-name descname"><span class="pre">get_reaction_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.get_reaction_energies" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Calculate the reaction energies (deltaE) for all the elementary reactions.
+:param surface: Atoms
+:param method: emt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>deltaEs</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.get_unique_species">
 <span class="sig-name descname"><span class="pre">get_unique_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#microkinetic_toolkit.reactions.Reactions.get_unique_species" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get unique chemical species.
+:returns: list of string</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="microkinetic_toolkit.reactions.Reactions.make_rate_equation">

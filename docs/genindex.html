@@ -82,8 +82,6 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
- | <a href="#W"><strong>W</strong></a>
- | <a href="#X"><strong>X</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -113,12 +111,10 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.check_xc">check_xc() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
+      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.Reactions.calculate_volume_and_entropy">calculate_volume_and_entropy() (microkinetic_toolkit.reactions.Reactions method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.clean">clean() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.ReactionsOld.count_species">count_species() (microkinetic_toolkit.reactions.ReactionsOld method)</a>
 </li>
   </ul></td>
@@ -178,9 +174,11 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput">GenerateVaspInput (class in microkinetic_toolkit.create_input)</a>
-</li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction_tools.get_adsorption_sites">get_adsorption_sites() (in module microkinetic_toolkit.reaction_tools)</a>
+</li>
+      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.get_entropy_difference">get_entropy_difference() (microkinetic_toolkit.reaction.Reaction method)</a>
+</li>
+      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.Reactions.get_entropy_differences">get_entropy_differences() (microkinetic_toolkit.reactions.Reactions method)</a>
 </li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction_tools.get_number_of_reaction">get_number_of_reaction() (in module microkinetic_toolkit.reaction_tools)</a>
 </li>
@@ -215,10 +213,6 @@
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.id_iterator">id_iterator (microkinetic_toolkit.reaction.Reaction attribute)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.initialize">initialize() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -233,20 +227,6 @@
 
       <ul>
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit">module</a>
-</li>
-      </ul></li>
-      <li>
-    microkinetic_toolkit.add_volume_and_entropy
-
-      <ul>
-        <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.add_volume_and_entropy">module</a>
-</li>
-      </ul></li>
-      <li>
-    microkinetic_toolkit.create_input
-
-      <ul>
-        <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.create_input">module</a>
 </li>
       </ul></li>
       <li>
@@ -301,10 +281,6 @@
 </li>
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit">microkinetic_toolkit</a>
 </li>
-        <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.add_volume_and_entropy">microkinetic_toolkit.add_volume_and_entropy</a>
-</li>
-        <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.create_input">microkinetic_toolkit.create_input</a>
-</li>
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.make_site_info">microkinetic_toolkit.make_site_info</a>
 </li>
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.ode_equation">microkinetic_toolkit.ode_equation</a>
@@ -316,8 +292,6 @@
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.reactions">microkinetic_toolkit.reactions</a>
 </li>
         <li><a href="microkinetic_toolkit.html#module-microkinetic_toolkit.tmpode">microkinetic_toolkit.tmpode</a>
-</li>
-        <li><a href="setup.html#module-setup">setup</a>
 </li>
       </ul></li>
   </ul></td>
@@ -358,14 +332,8 @@
 </li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.ReactionsOld.read_from_file">read_from_file() (microkinetic_toolkit.reactions.ReactionsOld method)</a>
 </li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.read_incar">read_incar() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.read_kpoints">read_kpoints() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.read_potcar">read_potcar() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction_tools.read_reactionfile">read_reactionfile() (in module microkinetic_toolkit.reaction_tools)</a>
 
       <ul>
@@ -392,23 +360,10 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.set">set() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.set_xc_params">set_xc_params() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li>
-    setup
-
-      <ul>
-        <li><a href="setup.html#module-setup">module</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.setups_defaults">setups_defaults (microkinetic_toolkit.create_input.GenerateVaspInput attribute)</a>
-</li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.ReactionsOld.solve_ode">solve_ode() (microkinetic_toolkit.reactions.ReactionsOld method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.Reactions.solve_rate_equation">solve_rate_equation() (microkinetic_toolkit.reactions.Reactions method)</a>
 </li>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction_tools.sort_atoms_by_z">sort_atoms_by_z() (in module microkinetic_toolkit.reaction_tools)</a>
@@ -435,8 +390,6 @@
         <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reactions.Reactions.to_tdb">(microkinetic_toolkit.reactions.Reactions method)</a>
 </li>
       </ul></li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.todict">todict() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -448,32 +401,6 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.reaction.Reaction.update_tdb">update_tdb() (microkinetic_toolkit.reaction.Reaction method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="W">W</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.write_incar">write_incar() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.write_input">write_input() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.write_kpoints">write_kpoints() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.write_potcar">write_potcar() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.write_sort_file">write_sort_file() (microkinetic_toolkit.create_input.GenerateVaspInput method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="X">X</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="microkinetic_toolkit.html#microkinetic_toolkit.create_input.GenerateVaspInput.xc_defaults">xc_defaults (microkinetic_toolkit.create_input.GenerateVaspInput attribute)</a>
 </li>
   </ul></td>
 </tr></table>
