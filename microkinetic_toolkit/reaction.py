@@ -197,7 +197,11 @@ class Reaction:
 
 		return atoms_dict
 
-	def get_reaction_energy(self, surface=None, method=None):
+	def search_energy_from_ase_db(ase_db):
+		energy = 0.0
+		return energy
+
+	def get_reaction_energy(self, surface=None, method=None, ase_db=None):
 		"""
 		Calculate reaction energy for an elementary reaction.
 		Args:
@@ -212,15 +216,19 @@ class Reaction:
 			calc = EMT()
 
 		atoms_dict = self.adsorbate_on_surface(surface=surface)
-		energy_dict = {"reactants": 0.0, "product": 0.0}
-
-		# try to loopup database
+		energy_dict = {"reactants": 0.0, "products": 0.0}
 
 		for side in ["reactants", "products"]:
 			for iatom in atoms_dict[side]:
-				iatom.calc = calc
-				e = iatom.get_potential_energy()
-				energy_dict[side] += e
+				try:
+					print("found in ase_db:{}".format(ase_db))
+					energy = searh_energy_from_ase_db(ase_db)
+				except:
+					print("not found in ase_db:{} --- calc".format(ase_db))
+					iatom.calc = calc
+					energy = iatom.get_potential_energy()
+
+				energy_dict[side] += energy
 
 		deltaE = energy_dict["products"] - energy_dict["reactants"]
 

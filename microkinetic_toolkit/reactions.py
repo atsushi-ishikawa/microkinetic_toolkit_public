@@ -9,12 +9,21 @@ class Reactions:
 	"""
 	def __init__(self, reaction_list):
 		self.reaction_list = reaction_list
+		self._ase_db = None
 
 	def __getitem__(self, index):
 		return self.reaction_list[index]
 
 	def __len__(self):
 		return len(self.reaction_list)
+
+	@property
+	def ase_db(self):
+		return self._ase_db
+
+	@ase_db.setter
+	def ase_db(self, db_file):
+		self._ase_db = db_file
 
 	def to_tdb(self, db_file, update=False):
 		tdb = TinyDB(db_file)
@@ -134,7 +143,8 @@ class Reactions:
 		"""
 		deltaEs = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
-			deltaEs[i] = reaction.get_reaction_energy(surface=surface, method=method)
+			deltaEs[i] = reaction.get_reaction_energy(surface=surface, method=method,
+													  ase_db=self._ase_db)
 		return deltaEs
 
 	def get_entropy_differences(self):
@@ -218,11 +228,13 @@ class Reactions:
 					tmp.get_potential_energy()
 					vol = tmp.get_molecular_volume()
 				if not add_volume and add_entropy:
-					tmp.calc = Gaussian(method=method, basis=basis, force=None, freq='noraman')
+					tmp.calc = Gaussian(method=method, basis=basis,
+										force=None, freq='noraman')
 					tmp.get_potential_energy()
 					entropy = tmp.get_molecular_entropy()
 				if add_volume and add_entropy:
-					tmp.calc = Gaussian(method=method, basis=basis, volume='tight', force=None, freq='noraman')
+					tmp.calc = Gaussian(method=method, basis=basis, volume='tight',
+										force=None, freq='noraman')
 					tmp.get_potential_energy()
 					vol = tmp.get_molecular_volume()
 					entropy = tmp.get_molecular_entropy()
@@ -238,7 +250,8 @@ class Reactions:
 				# now write to database
 				if add_volume and add_entropy:
 					db2.write(tmp, key_value_pairs={'name': mol,
-													'molecular_volume': vol, 'molecular_entropy': entropy})
+													'molecular_volume': vol,
+													'molecular_entropy': entropy})
 				elif add_volume and not add_entropy:
 					db2.write(tmp, key_value_pairs={'name': mol,
 													'molecular_volume': vol})
@@ -554,7 +567,7 @@ class Reactions:
 		print("deltaE [kJ/mol]:", deltaE)
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
-		print("residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
+		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
 
 		# now solve the ODE
 		t0, tf = 0, tau

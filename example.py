@@ -14,7 +14,7 @@ surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
 deltaEs = reactions.get_reaction_energies(surface=surf, method="emt")
 
 # calculate rate constant from reaction energies
-rateconsts = reactions.get_rate_constants(deltaEs=deltaEs, T=T, P=P)
+rateconsts = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 
 # do_microkinetics
 reactions.do_microkinetics(rateconstants=rateconsts, T=T, P=P)
