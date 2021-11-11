@@ -7,13 +7,6 @@ import pandas as pd
 from pandas import DataFrame
 from tinydb import TinyDB, Query
 
-def extract_attribute_dict(instance, keys, default=None):
-	ddict = {}
-	for key in keys:
-		val = getattr(instance, key, default)
-		ddict[key] = val
-	return ddict
-
 class Reaction:
 	"""
 	Elemetary reaction class.
@@ -75,6 +68,16 @@ class Reaction:
 		return (coef, spe, site)
 
 	def to_dict(self):
+		"""
+		convert to dict.
+		Returns: base_attributed dict
+		"""
+		def extract_attribute_dict(instance, keys, default=None):
+			ddict = {}
+			for key in keys:
+				val = getattr(instance, key, default)
+				ddict[key] = val
+			return ddict
 		return extract_attribute_dict(self, self.base_attributed_keys)
 
 	@classmethod
@@ -197,34 +200,50 @@ class Reaction:
 
 		return atoms_dict
 
-	def search_energy_from_ase_db(ase_db):
-		energy = 0.0
-		return energy
-
-	def get_reaction_energy(self, surface=None, method=None, ase_db=None):
+	def get_reaction_energy(self, surface=None, calculator=None, ase_db=None):
 		"""
 		Calculate reaction energy for an elementary reaction.
 		Args:
 			surface: Atoms
-			method: emt
+			calculator: currently Vasp or EMT
+			ase_db: ASE database file for existing calculation
+			        Expects energy is stored by
+			        db.write(atoms, data={"energy": -123.4, ...})
 		Returns:
 			deltaE (float)
 		"""
 		from ase.calculators.emt import EMT
 
-		if method == "emt":
+		def search_energy_from_ase_db(atom, ase_db):
+			from ase.db import connect
+
+			db = connect(ase_db)
+			formula = atom.get_chemical_formula()
+			try:
+				energy = db.get(name=formula).data.energy
+			except:
+				print("{0:} is not found in {1:}.".format(formula, db))
+				energy = 0.0
+
+			return energy
+
+		# set calculator
+		if calculator == "vasp":
+			# TODO: do vasp setting
+			pass
+		elif calculator == "emt":
 			calc = EMT()
+		else:
+			raise Exception("use vasp or emt for calculator")
 
 		atoms_dict = self.adsorbate_on_surface(surface=surface)
 		energy_dict = {"reactants": 0.0, "products": 0.0}
 
 		for side in ["reactants", "products"]:
 			for iatom in atoms_dict[side]:
-				try:
-					print("found in ase_db:{}".format(ase_db))
-					energy = searh_energy_from_ase_db(ase_db)
-				except:
-					print("not found in ase_db:{} --- calc".format(ase_db))
+				if ase_db is not None:
+					energy = search_energy_from_ase_db(iatom, ase_db)
+				else:
 					iatom.calc = calc
 					energy = iatom.get_potential_energy()
 

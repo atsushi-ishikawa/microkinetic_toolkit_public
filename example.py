@@ -10,14 +10,19 @@ reactions = Reactions.from_csv("test.csv")
 # define surface
 surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
 
-# get reaction energies for all the elementary reactions
-deltaEs = reactions.get_reaction_energies(surface=surf, method="emt")
+# --- get reaction energies for all the elementary reactions
+reactions.calculator = "emt"
+
+# if you have pre-calculated ase.db
+#reactions.ase_db = "ase.db"
+
+deltaEs = reactions.get_reaction_energies(surface=surf)
 
 # calculate rate constant from reaction energies
-rateconsts = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
+ks = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 
 # do_microkinetics
-reactions.do_microkinetics(rateconstants=rateconsts, T=T, P=P)
+reactions.do_microkinetics(deltaEs=deltaEs, ks=ks, T=T, P=P)
 
 # draw graph
 #reactions.draw_network(rate)

@@ -10,12 +10,21 @@ class Reactions:
 	def __init__(self, reaction_list):
 		self.reaction_list = reaction_list
 		self._ase_db = None
+		self._calculator = None
 
 	def __getitem__(self, index):
 		return self.reaction_list[index]
 
 	def __len__(self):
 		return len(self.reaction_list)
+
+	@property
+	def calculator(self):
+		return self._calculator
+
+	@calculator.setter
+	def calculator(self, calculator_by_str):
+		self._calculator = calculator_by_str
 
 	@property
 	def ase_db(self):
@@ -132,18 +141,18 @@ class Reactions:
 			reac, prod = reaction.adsorbate_on_surface(surface)
 		pass
 
-	def get_reaction_energies(self, surface=None, method=None):
+	def get_reaction_energies(self, surface=None):
 		"""
-		Calculate the reaction energies (deltaE) for all the elementary reactions.
+		Calculate the reaction energies (deltaEs) for all the elementary reactions.
 		Args:
 			surface: Atoms
-			method: emt
 		Returns:
 			deltaEs: numpy array
 		"""
 		deltaEs = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
-			deltaEs[i] = reaction.get_reaction_energy(surface=surface, method=method,
+			deltaEs[i] = reaction.get_reaction_energy(surface=surface,
+													  calculator=self._calculator,
 													  ase_db=self._ase_db)
 		return deltaEs
 
@@ -264,23 +273,24 @@ class Reactions:
 		return None
 
 	# microkinetics
-	def do_microkinetics(self, rateconstants=None, T=300.0, P=1.0):
+	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0):
 		"""
 		Do microkinetic analysis.
 		Args:
-			rateconstants: rate constants in forward direction.
+			deltaEs: reaction energies.
+			ks: rate constants in forward direction.
 			T: temperature [K]
 			P: total pressure [bar]
 		Returns:
 			None
 		"""
-		if rateconstants is None:
+		if ks is None:
 			print("rate constant not found")
 			exit(1)
 
 		odefile = "tmpode.py"
 		self.make_rate_equation(odefile=odefile)
-		self.solve_rate_equation(odefile=odefile, rateconstants=rateconstants, T=T, P=P)
+		self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, ks=ks, T=T, P=P)
 		return None
 
 	def make_rate_equation(self, odefile=None):
@@ -476,11 +486,12 @@ class Reactions:
 
 		return None
 
-	def solve_rate_equation(self, rateconstants=None, odefile=None, T=300.0, P=1.0):
+	def solve_rate_equation(self, deltaEs=None, ks=None, odefile=None, T=300.0, P=1.0):
 		"""
 		Solve rate equations.
 		Args:
-			rateconstants: rate constant in forward direction
+			deltaEs: reaction energies [eV]
+			ks: rate constant in forward direction
 			odefile: ODE file
 			T: temperature [K]
 			P: total pressure [bar]
@@ -493,7 +504,7 @@ class Reactions:
 		import pickle
 		from microkinetic_toolkit.tmpode import func
 
-		if rateconstants is None:
+		if ks is None:
 			raise ValueError("rate constants not found")
 		if odefile is None:
 			raise ValueError("ODE file not found")
@@ -540,19 +551,16 @@ class Reactions:
 		#	elif itype=="lh" or itype=="des":
 		#		Afor[i] *= (T / sden)
 
-		# temporary
-		method = "emt"
-
-		deltaE = self.get_reaction_energies(method=method)
-		deltaS = self.get_entropy_differences()
+		# entropy
+		deltaS  = self.get_entropy_differences()
 		TdeltaS = T*deltaS
 		TdeltaS = TdeltaS * eVtokJ
 
 		# calculate deltaG
-		deltaG = deltaE - TdeltaS
+		deltaG = deltaEs - TdeltaS
 
 		# get Ea
-		Ea = alpha * (deltaE / eVtokJ) + beta
+		Ea = alpha * (deltaEs / eVtokJ) + beta
 		Ea = Ea * eVtokJ
 
 		Kpi = np.exp(-deltaG / R / T)  # in pressure unit
@@ -564,7 +572,7 @@ class Reactions:
 
 		# output results here
 		print("Ea [kJ/mol]:", Ea)
-		print("deltaE [kJ/mol]:", deltaE)
+		print("deltaEs [kJ/mol]:", deltaEs)
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
 		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
@@ -592,11 +600,14 @@ class Reactions:
 
 		C0 *= x0
 
-		soln = solve_ivp(fun=lambda t, C: func(t, C, rateconstants,
+		soln = solve_ivp(fun=lambda t, C: func(t, C, ks,
 						Kci, T, sden, area, Vr, ngas, ncomp),
 						t_span=t_span, t_eval=t_eval, y0=C0,
 						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
 		print(soln.nfev, "evaluations requred.")
+
+		show_figure = False
+		save_figure = True
 
 		fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))
 
@@ -615,7 +626,10 @@ class Reactions:
 		fig1.legend()
 		fig2.legend()
 
-		plt.show()
+		if show_figure:
+			plt.show()
+		if save_figure:
+			plt.savefig("microkinetics_result.png")
 
 		return None
 
