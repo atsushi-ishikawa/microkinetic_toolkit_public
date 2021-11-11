@@ -148,22 +148,20 @@ class Reactions:
 			deltaSs[i] = reaction.get_entropy_difference()
 		return deltaSs
 
-	def get_rate_constants(self, deltaEs=None, T=300.0, P=1.0):
+	def get_rate_constants(self, deltaEs=None, T=300.0):
 		"""
 		Calculate rate constants for all the elementary reactions.
 		Args:
-			deltaEs:
-			T:
-			P:
+			deltaEs: reaction energies [eV]
+			T: temperature [K]
 		Returns:
 			ks: rate constants (numpy array)
-
 		"""
 		ks = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
 			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
-			ks[i]  = reaction.get_rate_constant(deltaE)
+			ks[i]  = reaction.get_rate_constant(deltaE, T)
 		return ks
 
 	def calculate_volume_and_entropy(self):
@@ -180,7 +178,7 @@ class Reactions:
 		# calculate reaction energy
 		# molecule's data should be stored in "methane.json"
 		#
-		calculator = "gau";
+		calculator = "gau"
 		calculator = calculator.lower()
 
 		oldjson = "tmp.json"
@@ -209,14 +207,12 @@ class Reactions:
 				mol = db1.get(id=id).name
 				tmp = db1.get_atoms(id=id)
 				print("adding volume and entropy", mol)
-				magmom = tmp.get_initial_magnetic_moments()
 
 				# do geometry optimization first
 				tmp.calc = Gaussian(method=method, basis=basis)
 				BFGS(tmp).run(fmax=0.05)
-				#
+
 				# volume and molecular total entropy calculation
-				#
 				if add_volume and not add_entropy:
 					tmp.calc = Gaussian(method=method, basis=basis, volume='tight')
 					tmp.get_potential_energy()
@@ -230,25 +226,25 @@ class Reactions:
 					tmp.get_potential_energy()
 					vol = tmp.get_molecular_volume()
 					entropy = tmp.get_molecular_entropy()
-				#
+
 				# look for magmom
-				#
 				try:
 					magmom = tmp.get_magnetic_moments()
 				except:
 					magmom = tmp.get_initial_magnetic_moments()
 
 				tmp.set_initial_magnetic_moments(magmom)
-				#
-				# now write to database
-				#
-				if add_volume and add_entropy:
-					db2.write(tmp, key_value_pairs={'name': mol, 'molecular_volume': vol, 'molecular_entropy': entropy})
-				elif add_volume and not add_entropy:
-					db2.write(tmp, key_value_pairs={'name': mol, 'molecular_volume': vol})
-				elif not add_volume and add_entropy:
-					db2.write(tmp, key_value_pairs={'name': mol, 'molecular_entropy': entropy})
 
+				# now write to database
+				if add_volume and add_entropy:
+					db2.write(tmp, key_value_pairs={'name': mol,
+													'molecular_volume': vol, 'molecular_entropy': entropy})
+				elif add_volume and not add_entropy:
+					db2.write(tmp, key_value_pairs={'name': mol,
+													'molecular_volume': vol})
+				elif not add_volume and add_entropy:
+					db2.write(tmp, key_value_pairs={'name': mol,
+													'molecular_entropy': entropy})
 			except:
 				print("has nothing --- go to next")
 
