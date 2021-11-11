@@ -167,12 +167,12 @@ class Reaction:
 			surface:
 			height:
 		Returns:
-			atoms:
+			atoms_dict: {"reactants": ASE Atoms for reactants, "products": for products}
 		"""
 		from ase.build import fcc111, add_adsorbate, molecule
 		from ase.visualize import view
 
-		atoms = {"reactants": [], "products": []}
+		atoms_dict = {"reactants": [], "products": []}
 
 		if surface is None:
 			surface = fcc111("Au", size=[2, 2, 3], vacuum=10.0)
@@ -193,9 +193,9 @@ class Reaction:
 				surf_copy.pbc = True
 				#view(surf_copy)
 
-				atoms[side].append(surf_copy)
+				atoms_dict[side].append(surf_copy)
 
-		return atoms
+		return atoms_dict
 
 	def get_reaction_energy(self, surface=None, method=None):
 		"""
@@ -207,25 +207,22 @@ class Reaction:
 			deltaE (float)
 		"""
 		from ase.calculators.emt import EMT
+
 		if method == "emt":
 			calc = EMT()
 
-		atoms = self.adsorbate_on_surface(surface=surface)
-		# reactant
-		r_energy = 0.0
-		for i in atoms["reactants"]:
-			i.calc = calc
-			e = i.get_potential_energy()
-			r_energy += e
+		atoms_dict = self.adsorbate_on_surface(surface=surface)
+		energy_dict = {"reactants": 0.0, "product": 0.0}
 
-		# product
-		p_energy = 0.0
-		for i in atoms["products"]:
-			i.calc = calc
-			e = i.get_potential_energy()
-			p_energy += e
+		# try to loopup database
 
-		deltaE = p_energy - r_energy
+		for side in ["reactants", "products"]:
+			for iatom in atoms_dict[side]:
+				iatom.calc = calc
+				e = iatom.get_potential_energy()
+				energy_dict[side] += e
+
+		deltaE = energy_dict["products"] - energy_dict["reactants"]
 
 		return deltaE
 
