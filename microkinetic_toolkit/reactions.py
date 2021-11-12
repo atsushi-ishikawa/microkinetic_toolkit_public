@@ -3,6 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 
+R = 8.314 * 1.0e-3  # gas constant [kJ/mol/K]
+eVtokJ = 96.487
+
 class Reactions:
 	"""
 	Set of elementary reactions.
@@ -45,6 +48,7 @@ class Reactions:
 	def to_openfoam(self, file):
 		"""
 		Generate openFOAM input file.
+
 		Args:
 			file: name of the generated openFOAM input file
 		"""
@@ -65,6 +69,7 @@ class Reactions:
 	def get_unique_species(self):
 		"""
 		Get unique chemical species.
+
 		Returns:
 			list of string
 		"""
@@ -107,6 +112,7 @@ class Reactions:
 	def to_csv(self, file):
 		"""
 		Generate csv file containing elemtary reactions.
+
 		Args:
 			file: csv file name
 		"""
@@ -117,6 +123,7 @@ class Reactions:
 	def from_csv(cls, csv_file):
 		"""
 		Read elementary reactions from CSV.
+
 		Args:
 			csv_file: CSV file with elementary reactions
 		Returns:
@@ -133,6 +140,7 @@ class Reactions:
 	def get_reaction_energies(self, surface=None):
 		"""
 		Calculate the reaction energies (deltaEs) for all the elementary reactions.
+
 		Args:
 			surface: Atoms
 		Returns:
@@ -148,6 +156,7 @@ class Reactions:
 	def get_entropy_differences(self):
 		"""
 		Calculate the entropy difference (deltaS, in eV/K) for all the elementary reactions.
+
 		Returns:
 			deltaSs: numpy array
 		"""
@@ -159,6 +168,7 @@ class Reactions:
 	def get_rate_constants(self, deltaEs=None, T=300.0):
 		"""
 		Calculate rate constants for all the elementary reactions.
+
 		Args:
 			deltaEs: reaction energies [eV]
 			T: temperature [K]
@@ -176,6 +186,7 @@ class Reactions:
 	def calculate_volume_and_entropy(self):
 		"""
 		Calculate volume and entropy for all the molecules in the current reaction set.
+
 		Returns:
 		"""
 		from ase import Atoms, Atom
@@ -266,6 +277,7 @@ class Reactions:
 	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Do microkinetic analysis.
+
 		Args:
 			deltaEs: reaction energies.
 			ks: rate constants in forward direction.
@@ -287,6 +299,7 @@ class Reactions:
 	def make_rate_equation(self, odefile=None):
 		"""
 		Make rate equation file
+
 		Args:
 			odefile: filename to write ODE equations.
 		Returns:
@@ -479,6 +492,7 @@ class Reactions:
 	def solve_rate_equation(self, deltaEs=None, ks=None, odefile=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Solve rate equations.
+
 		Args:
 			deltaEs: reaction energies [eV]
 			ks: rate constant in forward direction
@@ -491,7 +505,6 @@ class Reactions:
 		"""
 		import numpy as np
 		from scipy.integrate import solve_ivp
-		import matplotlib.pyplot as plt
 		import pickle
 		from microkinetic_toolkit.tmpode import func
 
@@ -501,10 +514,6 @@ class Reactions:
 			raise ValueError("ODE file not found")
 
 		np.set_printoptions(precision=3, linewidth=100)
-
-		# constants
-		R = 8.314*1.0e-3  # kJ/mol/K
-		eVtokJ = 96.487
 
 		### parameters
 		# TODO: make it class properties
@@ -528,38 +537,37 @@ class Reactions:
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
 
-		# read pre-exponential (in [m, mol, s])
-		#Afor, Afor_type = pickle.load(open("pre_exp.pickle", "rb"))
-		# multipy temperature and surface density
-		#for i, itype in enumerate(Afor_type):
-		#	if itype=="gas":
-		#		Afor[i] *= np.sqrt(T)
-		#	elif itype=="ads":
-		#		Afor[i] *= np.sqrt(T) / sden
-		#	elif itype=="lh" or itype=="des":
-		#		Afor[i] *= (T / sden)
+		#
+		# thermodynamics
+		#
+
+		# reaction energy
+		deltaEs *= eVtokJ
 
 		# entropy
 		deltaS  = self.get_entropy_differences()
+		deltaS *= eVtokJ
 		TdeltaS = T*deltaS
-		TdeltaS = TdeltaS * eVtokJ
 
-		# calculate deltaG
+		# Gibbs energy
 		deltaG = deltaEs - TdeltaS
 
 		Kpi = np.exp(-deltaG/R/T)  # in pressure unit
 		# Kci = Kpi*(101325/R/T)     # convert to concentration unit
 		Kci = Kpi*(R*T/1)  # convert to concentration unit
 
-		tau = Vr/v0  # residence time [sec]
-		# tau = 1.0  # residence time [sec]
+		# tau = Vr/v0  # residence time [sec]
+		tau = 100.0  # residence time [sec]
+
+		# empirical correction
+		ks *= 1.0e10
 
 		# output results here
 		print("deltaEs [kJ/mol]:", deltaEs)
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
 		print("ks [-]:", ks)
-		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
+		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
 
 		# now solve the ODE
 		t0, tf = 0, tau
@@ -591,18 +599,35 @@ class Reactions:
 						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
 		print(soln.nfev, "evaluations requred.")
 
-		show_figure = True
-		save_figure = False
+		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
+		return None
+
+	def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="microkinetic_result.png"):
+		"""
+		Draw molar fraction change with time.
+
+		Args:
+			soln: solution from solve_ivp
+			showfigure: whether to show figure
+			savefigure: whether to save figure
+			filename: file name when saving figure
+		"""
+		import matplotlib.pyplot as plt
+
+		if soln is None:
+			raise Exception("Nothing to plot")
+
+		species = self.get_unique_species()
 
 		fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))
 
 		for i, isp in enumerate(species):
 			if "surf" in isp:
 				fig2.plot(soln.t, soln.y[i], label="theta{}".
-						format(isp.replace("_", "").replace("surf", "")))
+					format(isp.replace("_", "").replace("surf", "")))
 			else:
 				fig1.plot(soln.t, soln.y[i], label="{}".
-						format(isp))
+					format(isp))
 
 		fig1.set_xlabel("times /s")
 		fig1.set_ylabel("concentration /arb.units")
@@ -611,10 +636,10 @@ class Reactions:
 		fig1.legend()
 		fig2.legend()
 
-		if show_figure:
+		if showfigure:
 			plt.show()
-		if save_figure:
-			plt.savefig("microkinetics_result.png")
+		if savefigure:
+			plt.savefig(filename)
 
 		return None
 
