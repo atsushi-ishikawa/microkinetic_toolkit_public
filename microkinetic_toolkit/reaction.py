@@ -163,43 +163,6 @@ class Reaction:
 		param_dict["Ta"] = 10000
 		return param_dict
 
-	def adsorbate_on_surface(self, surface=None, height=0.0):
-		"""
-		Adsorbate molecule on surface.
-		Args:
-			surface:
-			height:
-		Returns:
-			atoms_dict: {"reactants": ASE Atoms for reactants, "products": for products}
-		"""
-		from ase.build import fcc111, add_adsorbate, molecule
-		from ase.visualize import view
-
-		atoms_dict = {"reactants": [], "products": []}
-
-		if surface is None:
-			surface = fcc111("Au", size=[2, 2, 3], vacuum=10.0)
-		if height == 0.0:
-			height = 2.0
-
-		for side in ["reactants", "products"]:
-			sequence  = self.reactants if side == "reac" else self.products
-			for i in sequence:
-				_, mol, _ = i
-				ads = molecule(mol)
-				surf_copy = surface.copy()
-
-				# adjust height
-				shift = min(ads.positions[:, 2])
-				height -= shift
-				add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
-				surf_copy.pbc = True
-				#view(surf_copy)
-
-				atoms_dict[side].append(surf_copy)
-
-		return atoms_dict
-
 	def get_reaction_energy(self, surface=None, calculator=None, ase_db=None):
 		"""
 		Calculate reaction energy for an elementary reaction.
@@ -213,6 +176,7 @@ class Reaction:
 			deltaE (float)
 		"""
 		from ase.calculators.emt import EMT
+		from ase.build import molecule
 
 		def search_energy_from_ase_db(atom, ase_db):
 			from ase.db import connect
@@ -227,6 +191,30 @@ class Reaction:
 
 			return energy
 
+		def adsorbate_on_surface(ads=None, surface=None, height=2.0):
+			"""
+			Adsorbate molecule on surface.
+			Args:
+				ads:
+				surface:
+				height:
+			Returns:
+				atoms_dict: {"reactants": ASE Atoms for reactants, "products": for products}
+			"""
+			from ase.build import add_adsorbate
+			from ase.visualize import view
+
+			surf_copy = surface.copy()
+
+			# adjust height
+			shift = min(ads.positions[:, 2])
+			height -= shift
+			add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
+			surf_copy.pbc = True
+			# view(surf_copy)
+
+			return surf_copy
+
 		# set calculator
 		if calculator == "vasp":
 			# TODO: do vasp setting
@@ -236,16 +224,24 @@ class Reaction:
 		else:
 			raise Exception("use vasp or emt for calculator")
 
-		atoms_dict = self.adsorbate_on_surface(surface=surface)
+		# now calculate
 		energy_dict = {"reactants": 0.0, "products": 0.0}
-
 		for side in ["reactants", "products"]:
-			for iatom in atoms_dict[side]:
-				if ase_db is not None:
-					energy = search_energy_from_ase_db(iatom, ase_db)
+			sequence = self.reactants if side == "reactants" else self.products
+			for i in sequence:
+				_, mol, site = i
+				ads = molecule(mol)
+				if site == "gas":
+					atom = ads
 				else:
-					iatom.calc = calc
-					energy = iatom.get_potential_energy()
+					atom = adsorbate_on_surface(ads=ads, surface=surface, height=1.5)
+
+				# look up ase database
+				if ase_db is not None:
+					energy = search_energy_from_ase_db(atom, ase_db)
+				else:
+					atom.calc = calc
+					energy = atom.get_potential_energy()
 
 				energy_dict[side] += energy
 
@@ -296,7 +292,7 @@ class Reaction:
 		deltaS = np.sum(prod_S) - np.sum(reac_S)
 		return deltaS
 
-	def get_rate_constant(self, deltaE=0.0, T=300.0):
+	def get_rate_constant(self, deltaE=None, T=300.0):
 		"""
 		Calculate rate constant from reaction energy (deltaE).
 		Args:
@@ -308,25 +304,32 @@ class Reaction:
 		import numpy as np
 		from ase.units import create_units
 
+		eVtoJ = 96.487*1.0e3
+
 		units = create_units('2014')
-		amu = units['_amu']  # 1.66e-27 [kg]
+		# amu = units['_amu']  # 1.66e-27 [kg]
 		kB = units['_k']  # 1.38e-23 [J/K]
 		hplanck = units['_hplanck']  # 6.63e-34 [J*s]
 		Nav = units['_Nav']
+		R = kB*Nav  # R (gas constant) [J/mol/K]
 
-		type = "LH"
+		type = "gas"
 		sden = 1.0e10  # site density
 
 		# calculate Ea from deltaE
-		alpha = 1.0
-		beta  = 1.0
-		Ea = alpha*deltaE + beta
+		alpha = 0.5
+		beta  = 2.5
+		Ea  = alpha*deltaE + beta
+		Ea *= eVtoJ
 
 		if type == "LH":
 			A = kB*T/hplanck/sden  # [s^-1]
+		elif type == "gas":
+			A = 1.0e24  # [s^-1]
+		else:
+			raise Exception("set type for pre-exponential")
 
-		exp = np.exp(-Ea/kB*T)
-
+		exp = np.exp(-Ea/R/T)
 		rateconst = A*exp
 
 		return rateconst

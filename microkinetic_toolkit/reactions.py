@@ -130,17 +130,6 @@ class Reactions:
 			reaction_list.append(reaction)
 		return cls(reaction_list)
 
-	def adsorbate_on_surface(self, surface=None):
-		"""
-		Make surface with adsorbates.
-		Args:
-			surface:
-		Returns:
-		"""
-		for reaction in self.reaction_list:
-			reac, prod = reaction.adsorbate_on_surface(surface)
-		pass
-
 	def get_reaction_energies(self, surface=None):
 		"""
 		Calculate the reaction energies (deltaEs) for all the elementary reactions.
@@ -181,6 +170,7 @@ class Reactions:
 			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
 			ks[i]  = reaction.get_rate_constant(deltaE, T)
+
 		return ks
 
 	def calculate_volume_and_entropy(self):
@@ -273,7 +263,7 @@ class Reactions:
 		return None
 
 	# microkinetics
-	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0):
+	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Do microkinetic analysis.
 		Args:
@@ -281,6 +271,7 @@ class Reactions:
 			ks: rate constants in forward direction.
 			T: temperature [K]
 			P: total pressure [bar]
+			ratio: pressure ratio of inlet (dict) [-]
 		Returns:
 			None
 		"""
@@ -290,7 +281,7 @@ class Reactions:
 
 		odefile = "tmpode.py"
 		self.make_rate_equation(odefile=odefile)
-		self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, ks=ks, T=T, P=P)
+		self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, ks=ks, T=T, P=P, ratio=ratio)
 		return None
 
 	def make_rate_equation(self, odefile=None):
@@ -326,7 +317,6 @@ class Reactions:
 		# template - start
 		#
 		lines = [
-		"\tR = 8.314e-3  # kJ/mol/K\n",
 		"\tkrev = kfor / Kc\n",
 		"\ttheta = c[0:ncomp]\n",
 		"\ttheta = theta * sden\n"
@@ -486,7 +476,7 @@ class Reactions:
 
 		return None
 
-	def solve_rate_equation(self, deltaEs=None, ks=None, odefile=None, T=300.0, P=1.0):
+	def solve_rate_equation(self, deltaEs=None, ks=None, odefile=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Solve rate equations.
 		Args:
@@ -495,6 +485,7 @@ class Reactions:
 			odefile: ODE file
 			T: temperature [K]
 			P: total pressure [bar]
+			ratio: pressure ratio of inlet (dict) [-]
 		Returns:
 			None
 		"""
@@ -512,7 +503,7 @@ class Reactions:
 		np.set_printoptions(precision=3, linewidth=100)
 
 		# constants
-		R = 8.314 * 1.0e-3  # kJ/mol/K
+		R = 8.314*1.0e-3  # kJ/mol/K
 		eVtokJ = 96.487
 
 		### parameters
@@ -522,20 +513,17 @@ class Reactions:
 
 		sden  = 1.0e-05  # site density [mol/m^2]
 		w_cat = 1.0e-3  # catalyst weight [kg]
-		area  = 1000 * w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
-
-		# Bronsted-Evans-Polanyi rule ... in eV unit
-		alpha = 1.0
-		beta  = 1.0
+		area  = 1000*w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
 
 		phi = 0.5  # porosity
 		rho_b = 1.0e3  # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
-		Vr = (w_cat / rho_b) * (1 - phi)  # reactor volume [m^3], calculated from w_cat.
+		Vr = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
 		# Vr = 0.01e-6  # [m^3]
 		### parameters end
 
 		# read species
 		species = self.get_unique_species()
+		print("species:", species)
 
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
@@ -559,22 +547,18 @@ class Reactions:
 		# calculate deltaG
 		deltaG = deltaEs - TdeltaS
 
-		# get Ea
-		Ea = alpha * (deltaEs / eVtokJ) + beta
-		Ea = Ea * eVtokJ
-
-		Kpi = np.exp(-deltaG / R / T)  # in pressure unit
+		Kpi = np.exp(-deltaG/R/T)  # in pressure unit
 		# Kci = Kpi*(101325/R/T)     # convert to concentration unit
-		Kci = Kpi * (R * T / 1)  # convert to concentration unit
+		Kci = Kpi*(R*T/1)  # convert to concentration unit
 
-		tau = Vr / v0  # residence time [sec]
+		tau = Vr/v0  # residence time [sec]
 		# tau = 1.0  # residence time [sec]
 
 		# output results here
-		print("Ea [kJ/mol]:", Ea)
 		print("deltaEs [kJ/mol]:", deltaEs)
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
+		print("ks [-]:", ks)
 		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2 / tau)))
 
 		# now solve the ODE
@@ -583,14 +567,14 @@ class Reactions:
 		t_span = (t0, tf)
 		t_eval = np.arange(t0, tf, dt)
 
-		print("species:", species)
 		# C0 = PinPa / R*T
 		x0 = np.zeros(ncomp)
-		x0[1] = 1.0  # CO2
-		x0[2] = 4.0  # H2
+		for i, j in enumerate(species):
+			val = ratio.get(j)
+			x0[i] = val if val is not None else 0.0
 
-		x0[-1] = 1.0  # vacancy
-		C0 = Pin / (R * T * 1e3)  # density calculated from pressure. Note: R is in kJ/mol/K.
+		if ncomp > ngas:
+			x0[-1] = 1.0  # surface exists ... put vacancy at last
 
 		# normalize x0 gas part
 		tot = np.sum(x0[:ngas])
@@ -598,6 +582,7 @@ class Reactions:
 			if i <= ngas:
 				x0[i] = x0[i] / tot
 
+		C0 = Pin/(R*T*1e3)  # density calculated from pressure. Note: R is in kJ/mol/K.
 		C0 *= x0
 
 		soln = solve_ivp(fun=lambda t, C: func(t, C, ks,
@@ -606,8 +591,8 @@ class Reactions:
 						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
 		print(soln.nfev, "evaluations requred.")
 
-		show_figure = False
-		save_figure = True
+		show_figure = True
+		save_figure = False
 
 		fig, [fig1, fig2] = plt.subplots(ncols=2, figsize=(10, 4))
 
