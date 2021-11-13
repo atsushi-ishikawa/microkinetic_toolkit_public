@@ -183,8 +183,6 @@ class Reactions:
 
 		return ks
 
-
-
 	# microkinetics
 	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0, ratio=1.0):
 		"""
