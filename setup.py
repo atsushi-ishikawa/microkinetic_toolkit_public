@@ -10,5 +10,6 @@ setup(
 
 	packages=[
 		"microkinetic_toolkit"
+		"microkinetic_toolkit.preparation"
 	]
 )

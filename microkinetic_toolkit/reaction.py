@@ -329,7 +329,6 @@ class Reaction:
 	def get_preexponential(self, T=300.0):
 		"""
 		Calculate pre-exponential factor.
-
 		Note on revserse reaction:
 		Pre-exponential factor for reverse reaction is generally not needed
 		since reverse pre-exponential is calculated from forward one and equilibrium constant.
