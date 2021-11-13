@@ -10,7 +10,7 @@ class Reactions:
 	"""
 	Set of elementary reactions.
 	"""
-	def __init__(self, reaction_list):
+	def __init__(self, reaction_list: list):
 		self.reaction_list = reaction_list
 		self._ase_db = None
 		self._calculator = None
@@ -26,18 +26,18 @@ class Reactions:
 		return self._calculator
 
 	@calculator.setter
-	def calculator(self, calculator_by_str):
-		self._calculator = calculator_by_str
+	def calculator(self, calculator: str):
+		self._calculator = calculator
 
 	@property
 	def ase_db(self):
 		return self._ase_db
 
 	@ase_db.setter
-	def ase_db(self, db_file):
+	def ase_db(self, db_file: str):
 		self._ase_db = db_file
 
-	def to_tdb(self, db_file, update=False):
+	def to_tdb(self, db_file: str, update=False):
 		tdb = TinyDB(db_file)
 		for reaction in self.reaction_list:
 			if update:
@@ -45,7 +45,7 @@ class Reactions:
 			else:
 				reaction.to_tdb(tdb)
 
-	def to_openfoam(self, file):
+	def to_openfoam(self, file: str):
 		"""
 		Generate openFOAM input file.
 
@@ -109,7 +109,7 @@ class Reactions:
 			ddict = reaction.to_dict()
 			yield ddict
 
-	def to_csv(self, file):
+	def to_csv(self, file: str):
 		"""
 		Generate csv file containing elemtary reactions.
 
@@ -120,7 +120,7 @@ class Reactions:
 		df.to_csv(file)
 
 	@classmethod
-	def from_csv(cls, csv_file):
+	def from_csv(cls, csv_file: str):
 		"""
 		Read elementary reactions from CSV.
 
