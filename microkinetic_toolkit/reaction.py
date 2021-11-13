@@ -312,7 +312,6 @@ class Reaction:
 		Returns:
 			rate constant
 		"""
-		sden = 1.0e10  # site density
 
 		# calculate Ea from deltaE
 		alpha = 0.5
