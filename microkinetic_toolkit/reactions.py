@@ -183,7 +183,6 @@ class Reactions:
 
 		return ks
 
-	# microkinetics
 	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Do microkinetic analysis.
@@ -218,8 +217,6 @@ class Reactions:
 		import microkinetic_toolkit.reaction
 		if odefile is None:
 			raise ValueError("ODE file not found")
-
-		#(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 
 		# r_ads and p_ads are species list of ALL the elementary reactions.
 		# e.g. if inputfile contains
@@ -258,9 +255,8 @@ class Reactions:
 			# hash-tag based reactant and product species list FOR THIS REACTION
 			list_r = []
 			list_p = []
-			#
+
 			# making dict1, a dictionary with hash of species-number and molecule
-			#
 			for side in ["reactant", "product"]:
 				if side == "reactant":
 					terms = reaction.reactants
@@ -379,16 +375,14 @@ class Reactions:
 		comment += "\n"
 
 		fout.write(comment)
-		#
+
 		# tempelate - start
-		#
 		lines = [
 		"\tif ncomp > ngas:\n",
 		"\t\trate[ngas:ncomp] = rate[ngas:ncomp]*(1/sden)  # surface\n"
 		]
-		#
 		# tempelate - end
-		#
+
 		fout.writelines(lines)
 
 		fout.write("\treturn rate\n")
