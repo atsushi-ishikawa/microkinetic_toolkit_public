@@ -272,6 +272,7 @@ class Reaction:
 	def get_entropy_difference(self):
 		"""
 		Calculate entropy difference (deltaS, in eV/K) along the reaction.
+		Moleclar entropy should be prepared beforehand.
 
 		Returns:
 			deltaS (float)
