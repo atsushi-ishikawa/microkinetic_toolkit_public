@@ -540,21 +540,16 @@ class Reactions:
 		#
 		# thermodynamics
 		#
+		deltaEs *= eVtokJ  # reaction energy
+		deltaS   = self.get_entropy_differences()  # entropy
+		deltaS  *= eVtokJ
+		TdeltaS  = T*deltaS
+		deltaG   = deltaEs - TdeltaS  # Gibbs energy
 
-		# reaction energy
-		deltaEs *= eVtokJ
-
-		# entropy
-		deltaS  = self.get_entropy_differences()
-		deltaS *= eVtokJ
-		TdeltaS = T*deltaS
-
-		# Gibbs energy
-		deltaG = deltaEs - TdeltaS
-
+		# equilibrium constants
 		Kpi = np.exp(-deltaG/R/T)  # in pressure unit
-		# Kci = Kpi*(101325/R/T)     # convert to concentration unit
-		Kci = Kpi*(R*T/1)  # convert to concentration unit
+		# Kci = Kpi*(101325/R/T)   # convert to concentration unit
+		Kci = Kpi*(R*T/1)          # convert to concentration unit
 
 		# tau = Vr/v0  # residence time [sec]
 		tau = 100.0  # residence time [sec]
@@ -602,7 +597,7 @@ class Reactions:
 		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
 		return None
 
-	def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="microkinetic_result.png"):
+	def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="result.png"):
 		"""
 		Draw molar fraction change with time.
 

@@ -119,6 +119,7 @@ class Reaction:
 	def unique_species(self):
 		"""
 		Get unique species in an elementary reaction.
+
 		Returns:
 			Unique chemical species -- list of strings.
 		"""
@@ -280,36 +281,24 @@ class Reaction:
 		reac_S = 0.0
 		prod_S = 0.0
 
-		# reactants
-		for mol in self.reactants:
-			spe, site = mol[0], mol[1]
+		entropies = {"reactants": 0.0, "products": 0.0}
+		for side in ["reactants", "products"]:
+			sequence = self.reactants if side == "reactants" else self.products
+			for mol in sequence:
+				spe, site = mol[0], mol[1]
 
-			if site != 'gas' or spe == 'surf' or spe == 'def':
-				# surface species
-				entropy = 0.0
-			else:
-				try:
-					entropy = methane.data[spe]['molecular_entropy']
-				except:
-					entropy = 1.0e-3  # rough entropy estimation ... 1 meV/K
-
-			reac_S += entropy
-
-		# products
-		for mol in self.products:
-			spe, site = mol[0], mol[1]
-
-			if site != 'gas' or spe == 'surf' or spe == 'def':
-				entropy = 0.0
-			else:
-				try:
-					entropy = methane.data[spe]['molecular_entropy']
-				except:
+				if site != 'gas' or spe == 'surf' or spe == 'def':
+					# surface species
 					entropy = 0.0
+				else:
+					try:
+						entropy = methane.data[spe]['molecular_entropy']
+					except:
+						entropy = 1.0e-3  # rough entropy estimation ... 1 meV/K
 
-			prod_S += entropy
+				entropies[side] += entropy
 
-		deltaS = np.sum(prod_S) - np.sum(reac_S)
+		deltaS = entropies["products"] - entropies["reactants"]
 		return deltaS
 
 	def get_rate_constant(self, deltaE=None, T=300.0):
@@ -331,7 +320,6 @@ class Reaction:
 		Ea *= eVtoJ
 
 		A = self.get_preexponential(T=T)
-		print("{:e}".format(A))
 
 		exp = np.exp(-Ea/R/T)
 		rateconst = A*exp
@@ -341,7 +329,6 @@ class Reaction:
 	def get_preexponential(self, T=300.0):
 		"""
 		Calculate pre-exponential factor.
-		Note that temperature should be multiplied at MATLAB
 
 		Note on revserse reaction:
 		Pre-exponential factor for reverse reaction is generally not needed
