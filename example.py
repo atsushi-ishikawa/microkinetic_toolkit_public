@@ -9,6 +9,8 @@ ratio = {"H2": 1.1, "CO2": 1.0}  # partial pressure ratio
 #
 reactions = Reactions.from_csv("test.csv")
 
+reactions.set_parameters(alpha=0.5, beta=2.5, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3)
+
 # define surface if you like
 #surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
 

@@ -14,6 +14,15 @@ class Reactions:
 		self.reaction_list = reaction_list
 		self._ase_db = None
 		self._calculator = None
+		self._alpha = None
+		self._beta  = None
+		self._sden  = None
+		self._v0    = None
+		self._wcat  = None
+		self._area  = None
+		self._phi   = None
+		self._rho_b = None
+		self._Vr    = None
 
 	def __getitem__(self, index):
 		return self.reaction_list[index]
@@ -26,8 +35,8 @@ class Reactions:
 		return self._calculator
 
 	@calculator.setter
-	def calculator(self, calculator: str):
-		self._calculator = calculator
+	def calculator(self, calculator_str: str):
+		self._calculator = calculator_str
 
 	@property
 	def ase_db(self):
@@ -36,6 +45,32 @@ class Reactions:
 	@ase_db.setter
 	def ase_db(self, db_file: str):
 		self._ase_db = db_file
+
+	def set_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
+		"""
+		set various parameters.
+
+		Args:
+			alpha: BEP alpha
+			beta: BEP beta
+			sden: side density [mol/m^2]
+			v0: volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
+			wcat: catalyst weight [kg]
+			phi: porosity
+			rho_b: density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
+		"""
+		self._alpha = alpha
+		self._beta  = beta
+		self._sden  = sden
+		self._v0    = v0
+		self._wcat  = wcat
+		self._area  = 1000*wcat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
+		self._phi   = phi
+		self._rho_b = rho_b
+		self._Vr    = (wcat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
+		#self._Vr  = 0.01e-6  # [m^3]
+
+		return None
 
 	def to_tdb(self, db_file: str, update=False):
 		tdb = TinyDB(db_file)
@@ -165,13 +200,14 @@ class Reactions:
 			deltaSs[i] = reaction.get_entropy_difference()
 		return deltaSs
 
-	def get_rate_constants(self, deltaEs=None, T=300.0):
+	def get_rate_constants(self, deltaEs=None, T=300.0, sden=1.0e-5):
 		"""
 		Calculate rate constants for all the elementary reactions.
 
 		Args:
 			deltaEs: reaction energies [eV]
 			T: temperature [K]
+			sden: site density [mol/m^2]
 		Returns:
 			ks: rate constants (numpy array)
 		"""
@@ -179,7 +215,7 @@ class Reactions:
 		for i, reaction in enumerate(self.reaction_list):
 			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
-			ks[i]  = reaction.get_rate_constant(deltaE, T)
+			ks[i]  = reaction.get_rate_constant(deltaE, T, alpha=self._alpha, beta=self._beta, sden=self._sden)
 
 		return ks
 
@@ -417,20 +453,7 @@ class Reactions:
 
 		np.set_printoptions(precision=3, linewidth=100)
 
-		### parameters
-		# TODO: make it class properties
 		Pin = P*1e5  # inlet pressure [Pascal]
-		v0  = 1e-5   # vol. flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
-
-		sden  = 1.0e-05  # site density [mol/m^2]
-		w_cat = 1.0e-3  # catalyst weight [kg]
-		area  = 1000*w_cat  # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
-
-		phi = 0.5  # porosity
-		rho_b = 1.0e3  # density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
-		Vr = (w_cat/rho_b)*(1-phi)  # reactor volume [m^3], calculated from w_cat.
-		# Vr = 0.01e-6  # [m^3]
-		### parameters end
 
 		# read species
 		species = self.get_unique_species()
@@ -452,7 +475,7 @@ class Reactions:
 		# Kci = Kpi*(101325/R/T)   # convert to concentration unit
 		Kci = Kpi*(R*T/1)          # convert to concentration unit
 
-		# tau = Vr/v0  # residence time [sec]
+		# tau = self._Vr/self._v0  # residence time [sec]
 		tau = 100.0  # residence time [sec]
 
 		# empirical correction
@@ -490,7 +513,7 @@ class Reactions:
 		C0 *= x0
 
 		soln = solve_ivp(fun=lambda t, C: func(t, C, ks,
-						Kci, T, sden, area, Vr, ngas, ncomp),
+						Kci, T, self._sden, self._area, self._Vr, ngas, ncomp),
 						t_span=t_span, t_eval=t_eval, y0=C0,
 						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
 		print(soln.nfev, "evaluations requred.")

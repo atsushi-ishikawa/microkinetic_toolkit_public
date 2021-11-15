@@ -219,7 +219,7 @@ class Reaction:
 				surface:
 				height:
 			Returns:
-				atoms_dict: {"reactants": ASE Atoms for reactants, "products": for products}
+				atoms
 			"""
 			from ase.build import add_adsorbate
 			from ase.visualize import view
@@ -279,21 +279,18 @@ class Reaction:
 		"""
 		from ase.collections import methane
 
-		reac_S = 0.0
-		prod_S = 0.0
-
 		entropies = {"reactants": 0.0, "products": 0.0}
 		for side in ["reactants", "products"]:
 			sequence = self.reactants if side == "reactants" else self.products
 			for mol in sequence:
 				spe, site = mol[0], mol[1]
 
-				if site != 'gas' or spe == 'surf' or spe == 'def':
+				if site != "gas" or spe == "surf":
 					# surface species
 					entropy = 0.0
 				else:
 					try:
-						entropy = methane.data[spe]['molecular_entropy']
+						entropy = methane.data[spe]["molecular_entropy"]
 					except:
 						entropy = 1.0e-3  # rough entropy estimation ... 1 meV/K
 
@@ -302,31 +299,31 @@ class Reaction:
 		deltaS = entropies["products"] - entropies["reactants"]
 		return deltaS
 
-	def get_rate_constant(self, deltaE=None, T=300.0):
+	def get_rate_constant(self, deltaE=None, T=300.0, alpha=1.0, beta=1.0, sden=1.0e-5):
 		"""
 		Calculate rate constant from reaction energy (deltaE).
 
 		Args:
 			deltaE: reaction energy [eV]
 			T: temperature [K]
+			alpha: BEP alpha (for eV unit)
+			beta: BEP beta (for eV unit)
+			sden: site density [mol/m^2]
 		Returns:
 			rate constant
 		"""
-
 		# calculate Ea from deltaE
-		alpha = 0.5
-		beta  = 2.5
 		Ea  = alpha*deltaE + beta
 		Ea *= eVtoJ
 
-		A = self.get_preexponential(T=T)
+		A = self.get_preexponential(T=T, sden=sden)
 
 		exp = np.exp(-Ea/R/T)
 		rateconst = A*exp
 
 		return rateconst
 
-	def get_preexponential(self, T=300.0):
+	def get_preexponential(self, T=300.0, sden=1.0e-5):
 		"""
 		Calculate pre-exponential factor.
 		Note on revserse reaction:
@@ -335,6 +332,7 @@ class Reaction:
 
 		Args:
 			T: temperature [K]
+			sden: site density [mol/m^2]
 		Returns:
 			A: pre-exponential factor (float)
 
