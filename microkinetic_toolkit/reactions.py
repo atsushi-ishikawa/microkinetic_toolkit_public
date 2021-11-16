@@ -46,7 +46,7 @@ class Reactions:
 	def ase_db(self, db_file: str):
 		self._ase_db = db_file
 
-	def set_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
+	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
 		"""
 		set various parameters.
 
@@ -200,7 +200,7 @@ class Reactions:
 			deltaSs[i] = reaction.get_entropy_difference()
 		return deltaSs
 
-	def get_rate_constants(self, deltaEs=None, T=300.0, sden=1.0e-5):
+	def get_rate_constants(self, deltaEs=None, T=300.0):
 		"""
 		Calculate rate constants for all the elementary reactions.
 
