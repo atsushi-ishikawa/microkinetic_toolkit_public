@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Introduction &mdash; microkinetic_toolkit  documentation</title>
@@ -94,25 +94,36 @@ based on the ab initio calculation such as density functional theory (DFT).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">microkinetic_toolkit.reactions</span> <span class="kn">import</span> <span class="n">Reactions</span>
 <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">fcc111</span>
 
+<span class="c1"># preparation</span>
 <span class="n">T</span> <span class="o">=</span> <span class="mi">800</span>  <span class="c1"># temperature [K]</span>
 <span class="n">P</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># total pressure [bar]</span>
+<span class="n">ratio</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span> <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>  <span class="c1"># partial pressure ratio</span>
 
-<span class="c1"># read reactions from file and set Reactions</span>
+
+<span class="c1">## read reactions from file and set Reactions</span>
 <span class="n">reactions</span> <span class="o">=</span> <span class="n">Reactions</span><span class="o">.</span><span class="n">from_csv</span><span class="p">(</span><span class="s2">&quot;test.csv&quot;</span><span class="p">)</span>
 
-<span class="c1"># define surface</span>
-<span class="n">surf</span> <span class="o">=</span> <span class="n">fcc111</span><span class="p">(</span><span class="s2">&quot;Ni&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="c1">## define surface if you like</span>
+<span class="c1">#surf = fcc111(&quot;Ni&quot;, size=[3, 3, 4], vacuum=10.0)</span>
 
-<span class="c1"># get reaction energies for all the elementary reactions</span>
-<span class="n">deltaEs</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_reaction_energies</span><span class="p">(</span><span class="n">surface</span><span class="o">=</span><span class="n">surf</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;emt&quot;</span><span class="p">)</span>
+<span class="c1">## if you have pre-calculated ase.db</span>
+<span class="c1">#reactions.ase_db = &quot;ase.db&quot;</span>
 
-<span class="c1"># calculate rate constant from reaction energies</span>
-<span class="n">rateconsts</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_rate_constants</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">)</span>
+<span class="c1"># reaction energy evaluation</span>
+<span class="n">reactions</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="s2">&quot;emt&quot;</span>
+<span class="n">deltaEs</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_reaction_energies</span><span class="p">()</span>
 
-<span class="c1"># do_microkinetics</span>
-<span class="n">reactions</span><span class="o">.</span><span class="n">do_microkinetics</span><span class="p">(</span><span class="n">rateconstants</span><span class="o">=</span><span class="n">rateconsts</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">)</span>
+<span class="c1"># microkinetic analysis</span>
+<span class="c1">## set parameters for kinetics</span>
+<span class="n">reactions</span><span class="o">.</span><span class="n">set_kinetic_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">sden</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span> <span class="n">wcat</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span> <span class="n">phi</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">rho_b</span><span class="o">=</span><span class="mf">1.0e3</span><span class="p">)</span>
 
-<span class="c1"># draw graph</span>
+<span class="c1">## calculate rate constant from reaction energies</span>
+<span class="n">ks</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_rate_constants</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+
+<span class="c1">## do_microkinetics</span>
+<span class="n">reactions</span><span class="o">.</span><span class="n">do_microkinetics</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">ks</span><span class="o">=</span><span class="n">ks</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">)</span>
+
+<span class="c1">## draw graph</span>
 <span class="c1">#reactions.draw_network(rate)</span>
 </pre></div>
 </div>
@@ -137,9 +148,12 @@ based on the ab initio calculation such as density functional theory (DFT).</p>
   <hr/>
 
   <div role="contentinfo">
-    <p></p>
+    <p>&#169; Copyright 2021, Atsushi Ishikawa.</p>
   </div>
 
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
    
 
 </footer>
