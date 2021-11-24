@@ -21,7 +21,8 @@ deltaEs = reactions.get_reaction_energies()
 
 # microkinetic analysis
 ## set parameters for kinetics
-reactions.set_kinetic_parameters(alpha=0.5, beta=2.5, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3)
+reactions.set_kinetic_parameters(alpha=0.5, beta=2.5, sden=1.0e-5,
+								 v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3)
 
 ## calculate rate constant from reaction energies
 ks = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
