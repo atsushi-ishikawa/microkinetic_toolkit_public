@@ -48,7 +48,7 @@ class Reactions:
 
 	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
 		"""
-		set various parameters.
+		Set various parameters.
 
 		Args:
 			alpha: BEP alpha
@@ -58,6 +58,8 @@ class Reactions:
 			wcat: catalyst weight [kg]
 			phi: porosity
 			rho_b: density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
+		Returns:
+			None:
 		"""
 		self._alpha = alpha
 		self._beta  = beta
@@ -563,6 +565,9 @@ class Reactions:
 		return None
 
 	def draw_network(self, rate=None):
+		pass
+
+	def do_preparation(self):
 		pass
 
 
