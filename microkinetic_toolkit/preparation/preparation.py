@@ -1,4 +1,6 @@
-def calculate_volume_and_entropy(self):
+import numpy as np
+
+def calculate_volume_and_entropy():
 	"""
 	Calculate volume and entropy for all the molecules in the current reaction set.
 
@@ -82,3 +84,27 @@ def calculate_volume_and_entropy(self):
 			print("has nothing --- go to next")
 
 	return None
+
+def make_atoms_with_standard_alignment(atoms):
+	"""
+	Make atoms to standard alignment.
+	Copied from oda-sans make_atoms_with_stdpos in libs/rot_control.py
+
+	Args:
+		atoms:
+	Returns:
+		atoms:
+	"""
+	from numpy import linalg
+	w_cov = np.cov(atoms.positions.T, bias=True, aweights=atoms.get_masses())
+	_, v_ = linalg.eig(w_cov)
+	ids = np.argsort(w_)[::-1]
+
+	# the max variance of atoms is along z-axis.
+	v_ = v_[ids]
+	T_mat = linal.inv(v_)
+	atoms_copy = atoms.copy()
+	new_pos = np.dot(cp_atoms.positions, T_mat)
+	atoms_copy.positions = new_pos
+
+	return cp_atoms
