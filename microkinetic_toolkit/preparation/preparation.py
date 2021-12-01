@@ -108,3 +108,8 @@ def make_atoms_with_standard_alignment(atoms):
 	atoms_copy.positions = new_pos
 
 	return cp_atoms
+
+def prepare(species):
+	print(species)
+	quit()
+	return None

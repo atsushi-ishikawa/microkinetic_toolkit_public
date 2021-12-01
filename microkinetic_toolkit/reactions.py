@@ -568,6 +568,9 @@ class Reactions:
 		pass
 
 	def do_preparation(self):
+		from .preparation import preparation
+		# should pass the adsorbate set
+		preparation.prepare(self.get_unique_species())
 		pass
 
 
