@@ -85,7 +85,7 @@ def calculate_volume_and_entropy():
 
 	return None
 
-def make_atoms_with_standard_alignment(atoms):
+def make_atoms_with_standard_alignment(atoms, direction=None):
 	"""
 	Make atoms to standard alignment.
 	Copied from oda-sans make_atoms_with_stdpos in libs/rot_control.py
@@ -96,20 +96,35 @@ def make_atoms_with_standard_alignment(atoms):
 		atoms:
 	"""
 	from numpy import linalg
+
 	w_cov = np.cov(atoms.positions.T, bias=True, aweights=atoms.get_masses())
-	_, v_ = linalg.eig(w_cov)
-	ids = np.argsort(w_)[::-1]
+	w_, v_ = linalg.eig(w_cov)
+	if direction == "side":
+		ids = np.argsort(w_)[::-1]  # ::-1 means reverse
+	else:
+		ids = np.argsort(w_)
 
 	# the max variance of atoms is along z-axis.
 	v_ = v_[ids]
-	T_mat = linal.inv(v_)
+	T_mat = linalg.inv(v_)
 	atoms_copy = atoms.copy()
-	new_pos = np.dot(cp_atoms.positions, T_mat)
+	new_pos = np.dot(atoms_copy.positions, T_mat)
 	atoms_copy.positions = new_pos
 
-	return cp_atoms
+	return atoms_copy
 
 def prepare(species):
-	print(species)
+	from ase import Atoms
+	from ase.build import molecule
+	from ase.visualize import view
+
+	for mol in species:
+		print(mol)
+		atoms = Atoms(molecule(mol))
+		print(atoms.positions)
+		#view(atoms)
+		rotated = make_atoms_with_standard_alignment(atoms, direction="side")
+		print(rotated.positions)
+		view(rotated)
 	quit()
 	return None
