@@ -84,7 +84,7 @@ class Reaction:
 		"""
 		convert to dict.
 
-		Returns: base_attributed dict
+		Returns: base_key (dict)
 		"""
 		def extract_attribute_dict(instance, keys, default=None):
 			ddict = {}
@@ -92,7 +92,7 @@ class Reaction:
 				val = getattr(instance, key, default)
 				ddict[key] = val
 			return ddict
-		return extract_attribute_dict(self, self.base_attributed_keys)
+		return extract_attribute_dict(self, self.base_keys)
 
 	@classmethod
 	def from_dict(cls, ddict):
@@ -101,17 +101,17 @@ class Reaction:
 		return cls(reaction_str, reaction_id)
 
 	# tinyDB
-	def to_tdb(self, tdb):
-		tdb.insert(self.to_dict())
+	def to_tinydb(self, tinydb):
+		tinydb.insert(self.to_dict())
 
-	def update_tdb(self, tdb):
+	def update_tinydb(self, tinydb):
 		ddict = self.to_dict()
 		query = Query()
 		q_ins = getattr(query, "_reaction_id")
-		tdb.update(ddict, q_ins == ddict["_reaction_id"])
+		tinydb.update(ddict, q_ins == ddict["_reaction_id"])
 
 	@property
-	def base_attributed_keys(self):
+	def base_keys(self):
 		base_keys = ["_reaction_str", "_reaction_id"]
 		return base_keys
 
@@ -223,12 +223,19 @@ class Reaction:
 			"""
 			from ase.build import add_adsorbate
 			from ase.visualize import view
+			from .preparation import rot_control
 
 			surf_copy = surface.copy()
 
 			# adjust height
 			shift = min(ads.positions[:, 2])
 			height -= shift
+
+			# rotate atom
+			print("asdf")
+			ads = make_atoms_in_standard_alignment(ads)
+			quit()
+
 			add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
 			surf_copy.pbc = True
 			# view(surf_copy)

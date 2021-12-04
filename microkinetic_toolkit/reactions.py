@@ -14,6 +14,7 @@ class Reactions:
 		self.reaction_list = reaction_list
 		self._ase_db = None
 		self._calculator = None
+		self._surface = None
 		self._alpha = None
 		self._beta  = None
 		self._sden  = None
@@ -45,6 +46,14 @@ class Reactions:
 	@ase_db.setter
 	def ase_db(self, db_file: str):
 		self._ase_db = db_file
+
+	@property
+	def surface(self):
+		return self._surface
+
+	@surface.setter
+	def surface(self, surface):
+		self._surface = surface
 
 	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
 		"""
@@ -174,18 +183,16 @@ class Reactions:
 			reaction_list.append(reaction)
 		return cls(reaction_list)
 
-	def get_reaction_energies(self, surface=None):
+	def get_reaction_energies(self):
 		"""
 		Calculate the reaction energies (deltaEs) for all the elementary reactions.
 
-		Args:
-			surface: Atoms
 		Returns:
 			deltaEs: numpy array
 		"""
 		deltaEs = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
-			deltaEs[i] = reaction.get_reaction_energy(surface=surface,
+			deltaEs[i] = reaction.get_reaction_energy(surface=self._surface,
 													  calculator=self._calculator,
 													  ase_db=self._ase_db)
 		return deltaEs

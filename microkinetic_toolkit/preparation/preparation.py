@@ -85,7 +85,7 @@ def calculate_volume_and_entropy():
 
 	return None
 
-def make_atoms_with_standard_alignment(atoms, direction=None):
+def make_atoms_in_standard_alignment(atoms, direction=None):
 	"""
 	Make atoms to standard alignment.
 	Copied from oda-sans make_atoms_with_stdpos in libs/rot_control.py
@@ -124,18 +124,9 @@ def rotate_atoms_accoridngto_rotvec(atoms, rotvec):
 		atoms_copy.rotate(deg_angle, rotaxis, center=com)
 	return atoms_copy
 
-def get_qternion_from_v1tov2(v1, v2):
-	rotaxis = np.cross(v1, v2)
-	rotaxis = rot_axis / np.linalg.norm(rotaxis)
-	rad = calc_angle(v1, v2)
-	rotvec = rad*rotaxis
-	qternion = quaternion.from_rotation_vector(rotvec)
-	return qternion
-
 def get_rotvec_from_v1tov2(v1, v2):
-	qternion = get_qternion_from_v1tov2(v1, v2)
-	rotvec = quaternion.as_rotation_vector(qternion)
-	return rotvec
+	# waiting for oda-san
+	return None
 
 def get_rotvec_into_minus_z(atoms, atom_id=0, rotaxis=None):
 	target_atom_pos = atoms.positions[atom_id]
@@ -168,16 +159,15 @@ def rotate_atoms_into_minus_z(atoms, atoms_id=0, rotaxis=None):
 
 def prepare(species):
 	from ase import Atoms
+	from ase.calculators.emt import EMT
 	from ase.build import molecule
 	from ase.visualize import view
 
 	for mol in species:
-		print(mol)
 		atoms = Atoms(molecule(mol))
-		print(atoms.positions)
-		#view(atoms)
-		rotated = make_atoms_with_standard_alignment(atoms, direction="side")
-		print(rotated.positions)
-		view(rotated)
-	quit()
+		atoms = make_atoms_with_standard_alignment(atoms, direction="side")
+		atoms.calc = EMT()
+		atoms.get_potential_energy()
+		quit()
+
 	return None

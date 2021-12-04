@@ -10,13 +10,11 @@ ratio = {"H2": 1.1, "CO2": 1.0}  # partial pressure ratio
 reactions = Reactions.from_csv("test.csv")
 
 ## define surface if you like
-#surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
+reactions.surf = fcc111("Ni", size=[3, 3, 4], vacuum=10.0)
 
 I_have_precalculated_database = False
 if I_have_precalculated_database:
 	reactions.ase_db = "ase.db"
-else:
-	reactions.do_preparation()
 
 # reaction energy evaluation
 reactions.calculator = "emt"
