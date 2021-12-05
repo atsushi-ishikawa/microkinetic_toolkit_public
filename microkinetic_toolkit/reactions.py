@@ -216,7 +216,6 @@ class Reactions:
 		Args:
 			deltaEs: reaction energies [eV]
 			T: temperature [K]
-			sden: site density [mol/m^2]
 		Returns:
 			ks: rate constants (numpy array)
 		"""
@@ -242,8 +241,7 @@ class Reactions:
 			None
 		"""
 		if ks is None:
-			print("rate constant not found")
-			exit(1)
+			raise ValueError("rate constant not found")
 
 		odefile = "tmpode.py"
 		self.make_rate_equation(odefile=odefile)
@@ -310,14 +308,12 @@ class Reactions:
 					terms = reaction.products
 					list = list_p
 				else:
-					print("error asdf")
-					exit(1)
+					raise ValueError("asdf")
 
 				for term in terms:
 					spe, site = term[1], term[2]
-					if site != 'gas':
-						spe += "_surf"
-
+					#if site != 'gas':
+					#	spe += "_surf"
 					spe_num = self.get_unique_species().index(spe)
 					list.append(spe_num)
 					dict1[spe_num] = spe
@@ -357,11 +353,12 @@ class Reactions:
 					# making single term
 					for mol in mol_list1:
 						coef, spe, site = mol[0], mol[1], mol[2]
+						print(coef, spe, site)
 
-						if site != "gas":
-							spe += "_surf"
-
+						#if site != "gas":
+						#	spe += "_surf"
 						spe_num = self.get_unique_species().index(spe)
+
 						if site == "gas":
 							if spe == "surf":  # bare surface
 								theta = "theta[" + str(spe_num) + "]"
@@ -384,13 +381,12 @@ class Reactions:
 						coef = 0
 						for imol, mol in enumerate(mol_list2):
 							spe = mol[1]
-							adsorbate = dict1[mem].split("_")[0]
+							adsorbate = dict1[mem]
 							if spe == adsorbate:
-								coef    = coefs[imol]
+								coef = coefs[imol]
 
 						if coef == 0:
-							print("something wrong at coef 1")
-							exit()
+							raise ValueError("something wrong")
 
 						sto_coef = str(float(coef))
 

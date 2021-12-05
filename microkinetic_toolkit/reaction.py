@@ -73,10 +73,14 @@ class Reaction:
 		if re_site_search is None:  # has no site -- gas
 			site = "gas"
 		else:  # has site
-			site = re_coef_search[1]
+			site = re_site_search[1]
 
 		spe = re_site.sub("", re_coef.sub("", term))
 		spe = spe.strip()
+
+		# add "_surf" for surface species
+		if re_site_search is not None:  # has site
+			spe += "_surf"
 
 		return (coef, spe, site)
 
@@ -116,18 +120,6 @@ class Reaction:
 		return base_keys
 
 	@property
-	def unique_species(self):
-		"""
-		Get unique species in an elementary reaction.
-
-		Returns:
-			Unique chemical species -- list of strings.
-		"""
-		reac = self.reactants_species
-		prod = self.products_species
-		return list(set(reac).union(set(prod)))
-
-	@property
 	def reactants_species(self):
 		"""
 		Get reactant chemical species.
@@ -152,6 +144,18 @@ class Reaction:
 		for i in self.products:
 			lst.append(i[1])
 		return lst
+
+	@property
+	def unique_species(self):
+		"""
+		Get unique species in an elementary reaction.
+
+		Returns:
+			Unique chemical species -- list of strings.
+		"""
+		reac = self.reactants_species
+		prod = self.products_species
+		return list(set(reac).union(set(prod)))
 
 	# openfoam
 	def _get_openfoam_react_str(self):
@@ -181,6 +185,21 @@ class Reaction:
 		param_dict["Ta"] = 10000
 		return param_dict
 
+	def get_molecule_name_from_adsorbate(self, specie, site):
+		"""
+		Returns H from H_surf.
+
+		Args:
+			specie:
+			site:
+		Returns:
+
+		"""
+		if site == "gas":
+			return specie
+		else:
+			return specie.split("_")[0]
+
 	def get_reaction_energy(self, surface=None, calculator=None, ase_db=None):
 		"""
 		Calculate reaction energy for an elementary reaction.
@@ -194,8 +213,8 @@ class Reaction:
 		Returns:
 			deltaE (float)
 		"""
+		import ase.build
 		from ase.calculators.emt import EMT
-		from ase.build import molecule
 
 		def search_energy_from_ase_db(atom, ase_db):
 			from ase.db import connect
@@ -221,9 +240,9 @@ class Reaction:
 			Returns:
 				atoms
 			"""
-			from ase.build import add_adsorbate
+			import ase.build
 			from ase.visualize import view
-			from .preparation import rot_control
+			from .preparation.rot_control import make_atoms_with_standard_alignment
 
 			surf_copy = surface.copy()
 
@@ -232,16 +251,15 @@ class Reaction:
 			height -= shift
 
 			# rotate atom
-			print("asdf")
-			ads = make_atoms_in_standard_alignment(ads)
-			quit()
+			ads = make_atoms_with_standard_alignment(ads)
 
-			add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
+			ase.build.add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
 			surf_copy.pbc = True
 			# view(surf_copy)
 
 			return surf_copy
 
+		# main
 		# set calculator
 		if calculator == "vasp":
 			# TODO: do vasp setting
@@ -257,11 +275,11 @@ class Reaction:
 			sequence = self.reactants if side == "reactants" else self.products
 			for i in sequence:
 				_, mol, site = i
-				ads = molecule(mol)
-				if site == "gas":
-					atom = ads
-				else:
-					atom = adsorbate_on_surface(ads=ads, surface=surface, height=1.5)
+				mol = self.get_molecule_name_from_adsorbate(mol, site)
+				atom = ase.build.molecule(mol)
+
+				if site != "gas":
+					atom = adsorbate_on_surface(ads=atom, surface=surface, height=1.5)
 
 				# look up ase database
 				if ase_db is not None:
@@ -356,6 +374,7 @@ class Reaction:
 		for mol in self.reactants:
 			coef, spe, site  = mol
 			nmol = len(self.reactants)
+			spe = self.get_molecule_name_from_adsorbate(spe, site)
 			spe_atom = ase.build.molecule(spe)
 
 			if site == "surf":
