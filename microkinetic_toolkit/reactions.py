@@ -575,6 +575,42 @@ class Reactions:
 		preparation.prepare(self.get_unique_species())
 		pass
 
+	def sort_atoms_by_z(self, atoms):
+		from ase import Atoms
+		import copy
+
+		dtype = [("idx", int), ("z", float)]
+
+		# get set of chemical symbols
+		atoms_copy = copy.deepcopy(atoms)
+		symbols = atoms_copy.get_chemical_symbols()
+		elements = sorted(set(symbols), key=symbols.index)
+		num_elem = []
+		for i in elements:
+			num_elem.append(symbols.count(i))
+
+		iatm = 0
+		zcount = []
+		newatoms = Atoms()
+		for inum in num_elem:
+			zlist = np.array([], dtype=dtype)
+			for idx in range(inum):
+				tmp = np.array([(iatm, atoms_copy[iatm].z)], dtype=dtype)
+				zlist = np.append(zlist, tmp)
+				iatm += 1
+
+			zlist = np.sort(zlist, order="z")
+
+			for i in zlist:
+				idx = i[0]
+				newatoms.append(atoms[idx])
+
+		newatoms.tags = atoms_copy.tags
+		newatoms.pbc = atoms_copy.pbc
+		newatoms.cell = atoms_copy.cell
+
+		return newatoms
+
 
 class ReactionsOld:
 	reactions = []

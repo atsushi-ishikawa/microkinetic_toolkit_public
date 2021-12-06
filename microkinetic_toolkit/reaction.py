@@ -185,20 +185,27 @@ class Reaction:
 		param_dict["Ta"] = 10000
 		return param_dict
 
-	def get_molecule_name_from_adsorbate(self, specie, site):
+	def get_atoms_from_adsorbate(self, specie, site, surface=None):
 		"""
-		Returns H from H_surf.
+		Returns Atoms(H) from H_surf.
 
 		Args:
 			specie:
 			site:
+			surface:
 		Returns:
 
 		"""
+		import ase.build
+
 		if site == "gas":
-			return specie
+			if specie == "surf":
+				return surface  # already atoms
+			else:
+				return ase.build.molecule(specie)
 		else:
-			return specie.split("_")[0]
+			spe = specie.split("_")[0]
+			return ase.build.molecule(spe)
 
 	def get_reaction_energy(self, surface=None, calculator=None, ase_db=None):
 		"""
@@ -289,8 +296,7 @@ class Reaction:
 			sequence = self.reactants if side == "reactants" else self.products
 			for i in sequence:
 				_, mol, site = i
-				mol = self.get_molecule_name_from_adsorbate(mol, site)
-				atoms = ase.build.molecule(mol)
+				atoms = self.get_atoms_from_adsorbate(mol, site, surface=surface)
 
 				if site != "gas":
 					atoms = adsorb_on_surface(ads=atoms, surface=surface, height=1.5)
@@ -389,8 +395,7 @@ class Reaction:
 		for mol in self.reactants:
 			coef, spe, site  = mol
 			nmol = len(self.reactants)
-			spe = self.get_molecule_name_from_adsorbate(spe, site)
-			spe_atom = ase.build.molecule(spe)
+			spe_atom = self.get_atoms_from_adsorbate(spe, site)
 
 			if site == "surf":
 				# bare surface
@@ -412,7 +417,10 @@ class Reaction:
 
 				d_ave += 2*rad/nmol  # mean diameter
 
-				mass = sum(spe_atom.get_masses())
+				if spe_atom is None:
+					mass = 0.0  # bare surface
+				else:
+					mass = sum(spe_atom.get_masses())
 
 				mass_sum  += mass
 				mass_prod *= mass
