@@ -53,6 +53,14 @@ class Reactions:
 
 	@surface.setter
 	def surface(self, surface):
+		# shift
+		zmin = np.min(surface.positions[:, 2])
+		surface.translate([0, 0, -zmin + 0.1])
+
+		# sort
+		surface = self.sort_atoms_by_z(surface)
+		print(surface.positions)
+		quit()
 		self._surface = surface
 
 	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
@@ -590,7 +598,6 @@ class Reactions:
 			num_elem.append(symbols.count(i))
 
 		iatm = 0
-		zcount = []
 		newatoms = Atoms()
 		for inum in num_elem:
 			zlist = np.array([], dtype=dtype)
@@ -605,9 +612,9 @@ class Reactions:
 				idx = i[0]
 				newatoms.append(atoms[idx])
 
-		newatoms.tags = atoms_copy.tags
-		newatoms.pbc = atoms_copy.pbc
-		newatoms.cell = atoms_copy.cell
+		newatoms.tags = atoms_copy.get_tags()
+		newatoms.pbc = atoms_copy.get_pbc()
+		newatoms.cell = atoms_copy.get_cell()
 
 		return newatoms
 
