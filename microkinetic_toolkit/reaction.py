@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-import textwrap
+import copy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -229,9 +229,9 @@ class Reaction:
 
 			return energy
 
-		def adsorbate_on_surface(ads=None, surface=None, height=2.0):
+		def adsorb_on_surface(ads=None, surface=None, height=2.0):
 			"""
-			Adsorbate molecule on surface.
+			Adsorb molecule on surface.
 
 			Args:
 				ads:
@@ -241,10 +241,11 @@ class Reaction:
 				atoms
 			"""
 			import ase.build
-			from ase.visualize import view
+			from ase.visualize.plot import plot_atoms
 			from .preparation.rot_control import make_atoms_with_standard_alignment
+			import matplotlib.pyplot as plt
 
-			surf_copy = surface.copy()
+			surf_copy = copy.deepcopy(surface)
 
 			# adjust height
 			shift = min(ads.positions[:, 2])
@@ -255,9 +256,23 @@ class Reaction:
 
 			ase.build.add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
 			surf_copy.pbc = True
-			# view(surf_copy)
+
+			fig, ax = plt.subplots()
+			plot_atoms(surf_copy)
+			ax.set_axis_off()
+			fig.savefig(surf_copy.get_chemical_formula() + ".png")
+			plt.close()
 
 			return surf_copy
+
+		def optimize_geometry(atoms):
+			import ase.optimize
+
+			atoms_copy = copy.deepcopy(atoms)
+			opt = ase.optimize.bfgs.BFGS(atoms_copy, maxstep=0.1)
+			opt.run(steps=20)
+
+			return atoms_copy
 
 		# main
 		# set calculator
@@ -269,24 +284,24 @@ class Reaction:
 		else:
 			raise Exception("use vasp or emt for calculator")
 
-		# now calculate
 		energy_dict = {"reactants": 0.0, "products": 0.0}
 		for side in ["reactants", "products"]:
 			sequence = self.reactants if side == "reactants" else self.products
 			for i in sequence:
 				_, mol, site = i
 				mol = self.get_molecule_name_from_adsorbate(mol, site)
-				atom = ase.build.molecule(mol)
+				atoms = ase.build.molecule(mol)
 
 				if site != "gas":
-					atom = adsorbate_on_surface(ads=atom, surface=surface, height=1.5)
+					atoms = adsorb_on_surface(ads=atoms, surface=surface, height=1.5)
 
 				# look up ase database
 				if ase_db is not None:
-					energy = search_energy_from_ase_db(atom, ase_db)
+					energy = search_energy_from_ase_db(atoms, ase_db)
 				else:
-					atom.calc = calc
-					energy = atom.get_potential_energy()
+					atoms.set_calculator(calc)
+					atoms = optimize_geometry(atoms)
+					energy = atoms.get_potential_energy()
 
 				energy_dict[side] += energy
 

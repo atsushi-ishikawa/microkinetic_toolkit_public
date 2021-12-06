@@ -353,7 +353,6 @@ class Reactions:
 					# making single term
 					for mol in mol_list1:
 						coef, spe, site = mol[0], mol[1], mol[2]
-						print(coef, spe, site)
 
 						#if site != "gas":
 						#	spe += "_surf"
@@ -598,10 +597,8 @@ class ReactionsOld:
 
 	def add_reaction(self, rxn):
 		self.reactions.append(rxn)
-		print(self.reactions)
 
 	def read_from_file(self, file):
-		print("read from", file)
 		self.file = file
 		r_ads, r_site, r_coef, p_ads, p_site, p_coef = self._get_reac_and_prod()
 		self.r_ads = r_ads
