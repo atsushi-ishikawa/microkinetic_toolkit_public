@@ -1,5 +1,6 @@
 from microkinetic_toolkit.reaction import Reaction
 import os
+import copy
 import numpy as np
 import pandas as pd
 
@@ -59,8 +60,6 @@ class Reactions:
 
 		# sort
 		surface = self.sort_atoms_by_z(surface)
-		print(surface.positions)
-		quit()
 		self._surface = surface
 
 	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
@@ -191,6 +190,23 @@ class Reactions:
 			reaction_list.append(reaction)
 		return cls(reaction_list)
 
+	def freeze_surface(self):
+		def set_tags(surface):
+			tags = surface.get_tags()
+			surface_copy = copy.deepcopy(surface)
+			maxval = max(tags)
+			newtags = list(map(lambda x: 0 if x > maxval//2 else 1, tags))
+			newtags = np.array(newtags)
+			surface_copy.set_tags(newtags)
+			return surface_copy
+
+		import ase.constraints
+		surface = copy.deepcopy(self._surface)
+		surface = set_tags(surface)
+		c = ase.constraints.FixAtoms(indices=[atom.index for atom in surface if atom.tag == 0])
+		surface.set_constraint(c)
+		return surface
+
 	def get_reaction_energies(self):
 		"""
 		Calculate the reaction energies (deltaEs) for all the elementary reactions.
@@ -198,9 +214,12 @@ class Reactions:
 		Returns:
 			deltaEs: numpy array
 		"""
+		# free first here
+		surface = self.freeze_surface()
+
 		deltaEs = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
-			deltaEs[i] = reaction.get_reaction_energy(surface=self._surface,
+			deltaEs[i] = reaction.get_reaction_energy(surface=surface,
 													  calculator=self._calculator,
 													  ase_db=self._ase_db)
 		return deltaEs
@@ -327,6 +346,7 @@ class Reactions:
 					dict1[spe_num] = spe
 			# done for dict1
 
+			# making dict2
 			for side in ["reactant", "product"]:
 				for direction in ["forward", "reverse"]:
 					if side == "reactant" and direction == "forward":
@@ -380,8 +400,10 @@ class Reactions:
 
 						term = term + "*" + theta
 
+					print("---", add_to)
 					for mem in add_to:
 						if dict1[mem] == "surf":
+							print("surface")
 							continue  # bare surface ... skip
 
 						# CHECK
@@ -398,12 +420,16 @@ class Reactions:
 						sto_coef = str(float(coef))
 
 						if mem in dict2:
+							print("add tod dict2, 0")
 							dict2[mem] = dict2[mem] + sign + sto_coef + "*" + term  # NEGATIVE
 						else:
+							print("add tod dict2, 1")
 							dict2[mem] = sign + sto_coef + "*" + term
 
 						if "theta" in dict2[mem]:
 							dict2[mem] = dict2[mem] + "*" + "(area/Vr)"
+
+		quit()
 
 		# vacancy site
 		if 'surf' in dict1.values():  # only when surface is involved
@@ -418,6 +444,7 @@ class Reactions:
 		comment = "\n\t# species --- "
 
 		for imol, mol in enumerate(dict2):
+			print(imol, dict2[imol])  # some error in dict2
 			fout.write("\trate[{0}] ={1}  # {2}\n".format(imol, dict2[imol], dict1[imol]))
 			comment += "%s = %s " % (imol, dict1[imol])
 		comment += "\n"
@@ -584,7 +611,7 @@ class Reactions:
 		pass
 
 	def sort_atoms_by_z(self, atoms):
-		from ase import Atoms
+		import ase
 		import copy
 
 		dtype = [("idx", int), ("z", float)]
@@ -598,7 +625,7 @@ class Reactions:
 			num_elem.append(symbols.count(i))
 
 		iatm = 0
-		newatoms = Atoms()
+		newatoms = ase.Atoms()
 		for inum in num_elem:
 			zlist = np.array([], dtype=dtype)
 			for idx in range(inum):

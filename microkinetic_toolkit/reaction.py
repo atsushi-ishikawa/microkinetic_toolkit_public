@@ -277,7 +277,7 @@ class Reaction:
 
 			atoms_copy = copy.deepcopy(atoms)
 			opt = ase.optimize.bfgs.BFGS(atoms_copy, maxstep=0.1)
-			opt.run(steps=20)
+			opt.run(steps=10)
 
 			return atoms_copy
 
@@ -418,7 +418,7 @@ class Reaction:
 				d_ave += 2*rad/nmol  # mean diameter
 
 				if spe_atom is None:
-					mass = 0.0  # bare surface
+					pass  # bare surface
 				else:
 					mass = sum(spe_atom.get_masses())
 
