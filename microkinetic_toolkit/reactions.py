@@ -602,8 +602,344 @@ class Reactions:
 
 		return None
 
-	def draw_network(self, rate=None):
-		pass
+	def get_rate_for_graph(self):
+		import argparse
+		import pickle
+
+		parser = argparse.ArgumentParser()
+		parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
+		parser.add_argument("--coveragefile", default="nodes.txt", help="time-dependent coverage")
+		argvs = parser.parse_args()
+
+		reactionfile = argvs.reactionfile
+		coveragefile = "nodes.txt"
+
+		rateconstfile = "rateconst.pickle"
+		variablefile = "variables.pickle"  # sden, area, Vr
+
+		(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
+		rxn_num = get_number_of_reaction(reactionfile)
+		spe_num = len(self.get_unique_species())
+
+		Nrxn = 0
+
+		# read coverage
+		cov = [[] for i in range(spe_num)]
+
+		with open(coveragefile, 'r') as f:
+			lines = f.readlines()
+			lines = lines[1:]
+
+		for iline, line in enumerate(lines):
+			name = str(line.split()[0])
+			if "R" not in name:
+				spe = int(line.split()[1]) - 1  # Matlab --> python
+				conc = float(line.split()[2])
+				time = float(line.split()[3])
+
+				cov[spe].append([name, conc, time])
+			else:
+				Nrxn += 1
+
+		max_time = (len(lines) - Nrxn) // spe_num
+
+		# read rate constants
+		kfor, krev = pickle.load(open(rateconstfile, "rb"))
+
+		AoverV = self._area / self._Vr
+
+		# output information for graph
+		rates = {"forward": None, "reverse": None}
+		for direction in ["forward", "reverse"]:
+			if direction == "forward":
+				mols = r_ads.copy()
+				sites = r_site.copy()
+				coefs = r_coef.copy()
+				k = kfor.copy()
+			elif direction == "reverse":
+				mols = p_ads.copy()
+				sites = p_site.copy()
+				coefs = p_coef.copy()
+				k = krev.copy()
+
+			rate = np.zeros((max_time, rxn_num))
+			for istep in range(max_time):
+				for irxn in range(rxn_num):
+
+					conc_all = 1.0
+					for imol, mol in enumerate(mols[irxn]):
+						mol = mol[0]
+						mol = remove_side_and_flip(mol)
+						site = sites[irxn][imol]
+
+						if 'gas' not in site:  # surface species
+							mol += '_surf'
+							spe = get_species_num(mol)
+							name, conc, time = cov[spe][istep]
+							conc *= self._sden * AoverV
+						else:  # gas
+							spe = get_species_num(mol)
+							name, conc, time = cov[spe][istep]
+
+						power = coefs[irxn][imol]
+
+						if power != 1:
+							conc = conc ** power
+
+						conc_all = conc_all * conc
+
+					rate[istep][irxn] = k[irxn] * conc_all
+
+				rates[direction] = rate
+		#
+		# now write to file
+
+		# time-dependent case
+		edgefile = "edges.txt"
+		f = open(edgefile, "w")
+		f.write("    from       to         rate         time\n")
+
+		for direction in ["forward", "reverse"]:
+			if direction == "forward":
+				mols = r_ads.copy()
+				sites = r_site.copy()
+			elif direction == "reverse":
+				mols = p_ads.copy()
+				sites = p_site.copy()
+
+			for istep in range(max_time):
+				for irxn in range(rxn_num):
+					now = 'R%03d' % irxn  # current reaction
+
+					for imol, mol in enumerate(mols[irxn]):
+						mol = remove_side_and_flip(mol[0])
+						site = sites[irxn][imol]
+
+						if 'gas' not in site:
+							mol = mol + '_surf'
+
+						spe = get_species_num(mol)
+						name, conc, time = cov[spe][istep]
+
+						if direction == "forward":
+							f.write("%10s %10s %12.4e %12.4e\n" % (name, now, rates[direction][istep][irxn], time))
+						elif direction == "product":
+							f.write("%10s %10s %12.4e %12.4e\n" % (now, name, rates[direction][istep][irxn], time))
+
+		f.close()
+
+		# time-independent case
+		reactionfile_out = reactionfile.split('.')[0] + '_val.txt'
+		f = open(reactionfile_out, 'w')
+		lines = return_lines_of_reactionfile(reactionfile)
+
+		for iline, line in enumerate(lines):
+			text = line.replace('\n', '')
+			total_rate = rates["forward"][-1][iline] - rates["reverse"][-1][iline]
+			f.write('{0:<80s}:{1:12.4e}\n'.format(text, total_rate))
+
+		f.close()
+
+	def draw_network(self):
+		import matplotlib.pyplot as plt
+		import networkx as nx
+		from math import log10
+
+		argvs = sys.argv
+
+		if len(argvs) == 3:  # read coverage
+			coverage = True
+			cov_file = argvs[2]
+		else:
+			coverage = False
+
+		inp = argvs[1]  # elementary reactions with reaction rate
+
+		label_rxn = False
+		directed = False
+
+		eps = 1.0e-10
+
+		edge_scale = 0.5
+		rate_thre = -15  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+
+		os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
+		os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
+
+		numlines = sum(1 for line in open("reaction3.txt"))
+
+		f = open("reaction3.txt", "r")
+		lines = f.readlines()
+		# os.system('rm reaction2.txt reaction3.txt')
+
+		reac = [0 for i in range(numlines)]
+		rxn = [0 for i in range(numlines)]
+		prod = [0 for i in range(numlines)]
+		value = [0 for i in range(numlines)]
+
+		for i, line in enumerate(lines):
+			# find reaction rate
+			if ':' in line:
+				comp, rate = line.split(':')
+				rate = rate.replace('\n', '')
+				rate = float(rate)
+				if rate >= 0.0:
+					rate = log10(rate) if rate > eps else 1.0
+				else:
+					# rate = -1.0*log10(abs(rate))
+					rate = rate_thre
+			else:
+				comp = line
+				rate = 1.0
+
+			comp = comp.replace('\n', '').replace('>', '').replace(' ', '').split('--')
+
+			reac_tmp = comp[0]
+			reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
+			reac_tmp = remove_side_and_flip(reac_tmp)
+			reac_tmp = reac_tmp.split(".")[0] if "." in reac_tmp else reac_tmp
+
+			prod_tmp = comp[2]
+			prod_tmp = prod_tmp.split("*")[1] if "*" in prod_tmp else prod_tmp
+			prod_tmp = remove_side_and_flip(prod_tmp)
+			prod_tmp = prod_tmp.split(".")[0] if "." in prod_tmp else prod_tmp
+
+			if rate >= rate_thre:
+				reac[i] = reac_tmp.split("+")
+				rxn[i] = 'rxn' + str(i + 1)
+				prod[i] = prod_tmp.split("+")
+				value[i] = rate * edge_scale
+
+		# drop 0 from list, as these are smaller than rate_thre
+		reac = list(filter(lambda x: x != 0, reac))
+		rxn = list(filter(lambda x: x != 0, rxn))
+		prod = list(filter(lambda x: x != 0, prod))
+		value = list(filter(lambda x: x != 0, value))
+
+		c_siz = 200
+		c_col = "blue"
+		r_siz = 10
+		r_col = "black"
+
+		if coverage:
+			cov_dict = {}
+			fcov = open(cov_file, "r")
+			lines = fcov.readlines()
+			for iline, line in enumerate(lines):
+				cov = line.split()[1]
+				cov = cov.replace(' ', '').replace('\n', '')
+				cov_dict[iline] = float(cov)
+
+		nodeA = 200.0
+		nodeB = 11.0
+		surf_scale = 0.01
+
+		if directed:
+			G = nx.DiGraph()
+		else:
+			G = nx.Graph()
+
+		print("number of reactions:", len(list(rxn)))
+
+		for i, j in enumerate(rxn):
+			G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
+			for ireac, j1 in enumerate(reac[i]):
+				if coverage:
+					# node size
+					mol = reac[i][ireac]
+					mol = remove_side_and_flip(mol)
+					if '_' in mol:
+						mol = mol.split('_')[0] + '_surf'
+					spe = get_species_num(mol)
+					size = cov_dict[spe] if cov_dict[spe] > eps else eps
+					size = nodeA * (nodeB + log10(size))
+					if '_' in mol:
+						size = size * surf_scale
+					size = int(size)
+				else:
+					size = c_siz
+
+				G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
+
+				if directed and value[i] < 0:
+					G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
+				else:
+					G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
+
+			for iprod, j2 in enumerate(prod[i]):
+				if coverage:
+					# node size
+					mol = prod[i][iprod]
+					mol = remove_side_and_flip(mol)
+					if '_' in mol:
+						mol = mol.split('_')[0] + '_surf'
+					spe = get_species_num(mol)
+					size = cov_dict[spe] if cov_dict[spe] > eps else eps
+					size = nodeA * (nodeB + log10(size))
+					if '_' in mol:
+						size = size * surf_scale
+					size = int(size)
+				else:
+					size = c_siz
+
+				G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
+
+				if directed and value[i] < 0:
+					G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
+				else:
+					G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
+		#
+		# drawing
+		#
+		siz = nx.get_node_attributes(G, 'size')
+		col = nx.get_node_attributes(G, 'color')
+
+		# pos = nx.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
+		pos = nx.drawing.nx_pydot.graphviz_layout(G, prog='fdp')  # prog='neato' is also a good choice
+		nx.draw_networkx_nodes(G, pos, nodelist=list(siz.keys()),
+			node_size=list(siz.values()), node_color=list(col.values()), alpha=0.8)
+		edges = G.edges()
+		weights = [G[u][v]['weight'] for u, v in edges]
+
+		nx.draw_networkx_edges(G, pos, edge_color='gray', alpha=0.6, width=weights)
+
+		# compound labels
+		if directed:
+			Gcomp = nx.DiGraph()
+		else:
+			Gcomp = nx.Graph()
+
+		for n, typ in G.nodes.data('typ'):
+			if typ == 'comp':
+				Gcomp.add_node(n)
+
+		nx.draw_networkx_labels(Gcomp, pos, font_size=14, font_family='Gill Sans MT')
+
+		# reaction labels
+		if label_rxn:
+			rxn_label_size = 12
+		else:
+			rxn_label_size = 0
+
+		if directed:
+			Grxn = nx.DiGraph()
+		else:
+			Grxn = nx.Graph()
+		#
+		for n, typ in G.nodes.data('typ'):
+			if typ == 'rxn':
+				Grxn.add_node(n)
+
+		nx.draw_networkx_labels(Grxn, pos, font_size=rxn_label_size, font_family='Gill Sans MT')
+
+		plt.xticks([])
+		plt.yticks([])
+		plt.show()
+
+		plt.figure(figsize=(16, 10))
+		# plt.savefig("graph.eps", format="eps")
+
+		nx.write_gexf(G, 'test.gexf')
 
 	def do_preparation(self):
 		from .preparation import preparation

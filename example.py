@@ -31,7 +31,6 @@ rho_b = 1.0e3  # density
 
 reactions.set_kinetic_parameters(bep_param=bep_param, sden=sden, v0=v0, wcat=wcat, phi=phi, rho_b=rho_b)
 
-
 ## calculate rate constant from reaction energies
 ks = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 
