@@ -129,6 +129,14 @@ class Reactions:
 		species_set = set([])
 		for reaction in self.reaction_list:
 			species_set.update(reaction.unique_species)
+		species_set = list(species_set)
+		species_set = sorted(species_set)
+
+		# move "surf" to last
+		if "surf" in species_set:
+			species_set.remove("surf")
+			species_set.append("surf")
+
 		return list(species_set)
 
 	def _get_openfoam_reactions_info(self):
@@ -339,8 +347,6 @@ class Reactions:
 
 				for term in terms:
 					spe, site = term[1], term[2]
-					#if site != 'gas':
-					#	spe += "_surf"
 					spe_num = self.get_unique_species().index(spe)
 					list.append(spe_num)
 					dict1[spe_num] = spe
@@ -351,28 +357,28 @@ class Reactions:
 				for direction in ["forward", "reverse"]:
 					if side == "reactant" and direction == "forward":
 						mol_list1 = reaction.reactants
-						add_to = list_r
-						mol_list2 = reaction.reactants  # list corresponding to add_to
+						current_list = list_r
+						mol_list2 = reaction.reactants  # list corresponding to current_list
 						coefs = [i[0] for i in mol_list2]
 						term = "kfor[" + rxn_idx + "]"
 						sign = " - "
 					elif side == "reactant" and direction == "reverse":
 						mol_list1 = reaction.products
-						add_to = list_r
+						current_list = list_r
 						mol_list2 = reaction.reactants
 						coefs = [i[0] for i in mol_list2]
 						term = "krev[" + rxn_idx + "]"
 						sign = " + "
 					elif side == "product" and direction == "forward":
 						mol_list1 = reaction.reactants
-						add_to = list_p
+						current_list = list_p
 						mol_list2 = reaction.products
 						coefs = [i[0] for i in mol_list2]
 						term = "kfor[" + rxn_idx + "]"
 						sign = " + "
 					elif side == "product" and direction == "reverse":
 						mol_list1 = reaction.products
-						add_to = list_p
+						current_list = list_p
 						mol_list2 = reaction.products
 						coefs = [i[0] for i in mol_list2]
 						term = "krev[" + rxn_idx + "]"
@@ -381,36 +387,27 @@ class Reactions:
 					# making single term
 					for mol in mol_list1:
 						coef, spe, site = mol[0], mol[1], mol[2]
-
-						#if site != "gas":
-						#	spe += "_surf"
 						spe_num = self.get_unique_species().index(spe)
 
-						if site == "gas":
-							if spe == "surf":  # bare surface
-								theta = "theta[" + str(spe_num) + "]"
-							else:  # gas-phase molecule
-								theta = "c[" + str(spe_num) + "]"
-						else:  # adsorbed species
-							theta = "theta[" + str(spe_num) + "]"
+						if site == "gas" and spe != "surf":
+							theta = "c[" + str(spe_num) + "]"      # gas-phase molecule
+						else:
+							theta = "theta[" + str(spe_num) + "]"  # adsorbed species or bare surface
 
 						power = coef
 						if power != 1:
-							theta = theta + "**" + str(power)
+							theta += "**" + str(power)
 
-						term = term + "*" + theta
+						term += "*" + theta
 
-					print("---", add_to)
-					for mem in add_to:
-						if dict1[mem] == "surf":
-							print("surface")
+					for i in current_list:
+						if dict1[i] == "surf":
 							continue  # bare surface ... skip
 
-						# CHECK
 						coef = 0
 						for imol, mol in enumerate(mol_list2):
 							spe = mol[1]
-							adsorbate = dict1[mem]
+							adsorbate = dict1[i]
 							if spe == adsorbate:
 								coef = coefs[imol]
 
@@ -419,32 +416,36 @@ class Reactions:
 
 						sto_coef = str(float(coef))
 
-						if mem in dict2:
-							print("add tod dict2, 0")
-							dict2[mem] = dict2[mem] + sign + sto_coef + "*" + term  # NEGATIVE
+						if i in dict2:
+							dict2[i] += sign + sto_coef + "*" + term  # NEGATIVE
 						else:
-							print("add tod dict2, 1")
-							dict2[mem] = sign + sto_coef + "*" + term
+							dict2[i] = sign + sto_coef + "*" + term
 
-						if "theta" in dict2[mem]:
-							dict2[mem] = dict2[mem] + "*" + "(area/Vr)"
+						if "theta" in dict2[i]:
+							dict2[i] += "*" + "(area/Vr)"
+					# loop for current_list
+				# direction
+			# side
+		# loop over elementary reactions
 
-		quit()
-
-		# vacancy site
-		if 'surf' in dict1.values():  # only when surface is involved
+		# term for the vacant site
+		#   formation/consumption rates for all the surface species should be
+		#   subtracted from the vacant site.
+		if "surf" in dict1.values():
+			# surface reaction
 			tmp = ""
+			ind = [key for key, value in dict1.items() if value == "surf"][0]  # index for "surf"
+
 			for imol, mol in enumerate(dict1):
 				comp = dict1[imol]
-				if 'surf' in comp and comp != 'surf':
-					tmp = tmp + " -rate[" + str(imol) + "]"
+				if "surf" in comp and comp != "surf":  # surface reaction but not surface itself
+					tmp += " -rate[" + str(imol) + "]"
 
-			dict2[len(dict2)] = tmp
+			dict2[ind] = tmp
 
 		comment = "\n\t# species --- "
 
 		for imol, mol in enumerate(dict2):
-			print(imol, dict2[imol])  # some error in dict2
 			fout.write("\trate[{0}] ={1}  # {2}\n".format(imol, dict2[imol], dict1[imol]))
 			comment += "%s = %s " % (imol, dict1[imol])
 		comment += "\n"
@@ -492,7 +493,7 @@ class Reactions:
 
 		np.set_printoptions(precision=3, linewidth=100)
 
-		Pin = P*1e5  # inlet pressure [Pascal]
+		Pin = P*1.0e5  # inlet pressure converted from bar to Pascal
 
 		# read species
 		species = self.get_unique_species()
@@ -511,14 +512,14 @@ class Reactions:
 
 		# equilibrium constants
 		Kpi = np.exp(-deltaG/R/T)  # in pressure unit
-		# Kci = Kpi*(101325/R/T)   # convert to concentration unit
-		Kci = Kpi*(R*T/1)          # convert to concentration unit
+		#Kci = Kpi*(101325/R/T)    # convert to concentration unit (when using atm)
+		Kci = Kpi*((R*1.0e3)*T/1)  # convert to concentration unit (note: R is in kJ/mol/K)
 
-		# tau = self._Vr/self._v0  # residence time [sec]
-		tau = 100.0  # residence time [sec]
+		tau = self._Vr/self._v0  # residence time [sec]
+		# tau = 1.0  # residence time [sec]
 
 		# empirical correction
-		ks *= 1.0e10
+		#ks *= 1.0e0
 
 		# output results here
 		print("deltaEs [kJ/mol]:", deltaEs)
