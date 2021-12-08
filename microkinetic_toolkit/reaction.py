@@ -329,7 +329,7 @@ class Reaction:
 		for side in ["reactants", "products"]:
 			sequence = self.reactants if side == "reactants" else self.products
 			for mol in sequence:
-				spe, site = mol[0], mol[1]
+				_, spe, site = mol
 
 				if site != "gas" or spe == "surf":
 					# surface species
@@ -345,21 +345,20 @@ class Reaction:
 		deltaS = entropies["products"] - entropies["reactants"]
 		return deltaS
 
-	def get_rate_constant(self, deltaE=None, T=300.0, alpha=1.0, beta=1.0, sden=1.0e-5):
+	def get_rate_constant(self, deltaE=None, T=300.0, bep_param=None, sden=1.0e-5):
 		"""
 		Calculate rate constant from reaction energy (deltaE).
 
 		Args:
 			deltaE: reaction energy [eV]
 			T: temperature [K]
-			alpha: BEP alpha (for eV unit)
-			beta: BEP beta (for eV unit)
+			bep_param: BEP alpha and beta (for eV unit)
 			sden: site density [mol/m^2]
 		Returns:
 			rate constant
 		"""
 		# calculate Ea from deltaE
-		Ea  = alpha*deltaE + beta
+		Ea  = bep_param["alpha"]*deltaE + bep_param["beta"]
 		Ea *= eVtoJ
 
 		A = self.get_preexponential(T=T, sden=sden)

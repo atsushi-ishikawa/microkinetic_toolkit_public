@@ -16,8 +16,7 @@ class Reactions:
 		self._ase_db = None
 		self._calculator = None
 		self._surface = None
-		self._alpha = None
-		self._beta  = None
+		self._bep_param = None
 		self._sden  = None
 		self._v0    = None
 		self._wcat  = None
@@ -62,13 +61,12 @@ class Reactions:
 		surface = self.sort_atoms_by_z(surface)
 		self._surface = surface
 
-	def set_kinetic_parameters(self, alpha=1.0, beta=1.0, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
+	def set_kinetic_parameters(self, bep_param=None, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
 		"""
 		Set various parameters.
 
 		Args:
-			alpha: BEP alpha
-			beta: BEP beta
+			bep_param: BEP alpha and beta (dict)
 			sden: side density [mol/m^2]
 			v0: volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
 			wcat: catalyst weight [kg]
@@ -77,8 +75,10 @@ class Reactions:
 		Returns:
 			None:
 		"""
-		self._alpha = alpha
-		self._beta  = beta
+		if bep_param is None:
+			self._bep_param = {"alpha", 1.0, "beta", 1.0}
+		else:
+			self._bep_param = bep_param
 		self._sden  = sden
 		self._v0    = v0
 		self._wcat  = wcat
@@ -258,7 +258,7 @@ class Reactions:
 		for i, reaction in enumerate(self.reaction_list):
 			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
-			ks[i]  = reaction.get_rate_constant(deltaE, T, alpha=self._alpha, beta=self._beta, sden=self._sden)
+			ks[i]  = reaction.get_rate_constant(deltaE, T, bep_param=self._bep_param, sden=self._sden)
 
 		return ks
 
@@ -526,7 +526,7 @@ class Reactions:
 		print("TdeltaS [kJ/mol]:", TdeltaS)
 		print("deltaG [kJ/mol]:", deltaG)
 		print("ks [-]:", ks)
-		print("res. time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
+		print("residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
 
 		# now solve the ODE
 		t0, tf = 0, tau
