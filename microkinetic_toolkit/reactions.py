@@ -613,9 +613,7 @@ class Reactions:
 
 		reactionfile = argvs.reactionfile
 		coveragefile = "nodes.txt"
-
 		rateconstfile = "rateconst.pickle"
-		variablefile = "variables.pickle"  # sden, area, Vr
 
 		(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 		rxn_num = get_number_of_reaction(reactionfile)
@@ -664,7 +662,7 @@ class Reactions:
 
 			rate = np.zeros((max_time, rxn_num))
 			for istep in range(max_time):
-				for irxn in range(rxn_num):
+				for irxn in range(len(self.reaction_list)):
 
 					conc_all = 1.0
 					for imol, mol in enumerate(mols[irxn]):
@@ -691,7 +689,6 @@ class Reactions:
 					rate[istep][irxn] = k[irxn] * conc_all
 
 				rates[direction] = rate
-		#
 		# now write to file
 
 		# time-dependent case
@@ -708,7 +705,7 @@ class Reactions:
 				sites = p_site.copy()
 
 			for istep in range(max_time):
-				for irxn in range(rxn_num):
+				for irxn in range(len(self.reaction_list)):
 					now = 'R%03d' % irxn  # current reaction
 
 					for imol, mol in enumerate(mols[irxn]):
