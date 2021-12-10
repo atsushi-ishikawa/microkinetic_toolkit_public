@@ -558,44 +558,54 @@ class Reactions:
 		print(soln.nfev, "evaluations requred.")
 
 		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
+		self.save_coverage(soln=soln, species=species)
 		return None
 
-	def save_coverage(self):
-		#
-		# surface coverage: for time-independent, output the coverage at the last time step
-		#
-		tcov = []  # time-dependent coverage: tcov[species][time]
-		for i in range(Ncomp):
-			tcov.append(soln.y[i])
-		tcov = np.array(tcov)
+	def save_coverage(self, soln=None, species=None):
+		"""
+		Save surface coverage: for time-independent, output the coverage at the last time step
+
+		Returns:
+
+		"""
+		import h5py
 
 		# time dependent coverage for graph
-		dT = 10
+		dT = 10  # one record in dT points
 		fac = 1.0e-6
 
-		coveragefile = "nodes.txt"
-		f = open(coveragefile, "wt")
-		f.write("      name      num     conc        time\n")  # header
-		## initial
-		for isp in range(Ngas):
-			f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][0], soln.t[0]))
+		Ngas = 2
+		Ncomp = 5
+		maxtime = len(soln.t)
 
-		for isp in range(Ngas, Ncomp):
-			f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][0] * fac, soln.t[0]))
+		h5file = h5py.File("coverage.h5", "w")
+		h5file.create_dataset("x", (Ncomp, maxtime), dtype="float")
+		h5file.close()
 
-		## afterwards -- take averaged value
-		for it in range(dT, len(soln.y[0]), dT):
-			for isp in range(Ngas):
-				f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it], soln.t[it]))
+		tcov = []  # time-dependent coverage: tcov[species][time]
+		for i in range(Ngas):
+			tcov.append(soln.y[i])
+		for i in range(Ngas, Ncomp):
+			tcov.append(soln.y[i]*fac)  # multiply scaling factor for surface species
+		tcov = np.array(tcov)
 
-			for isp in range(Ngas, Ncomp):
-				f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it] * fac, soln.t[it]))
+		#f = open(coveragefile, "wt")
+		#f.write("      name      num     conc        time\n")  # header
+
+		## take averaged value
+		with h5py.File("coverage.h5", "a") as f:
+			for isp in range(Ncomp):
+				#f["x"][isp][:] = soln.t[it], tcov[isp][it]
+				f["x"][isp][:] = tcov[isp]
+				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it]*fac, soln.t[it]))
+				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it], soln.t[it]))
+
+		quit()
 
 		## add RXN nodes at last
-		for i in range(Nrxn):
-			f.write("R{0:>03d}            {1:03d}{2:12.4e}{3:12.4e}\n".format(i, i, 1.0e-20, 0.0))
-
-		f.close()
+		#for i in range(Nrxn):
+		#	f.write("R{0:>03d}            {1:03d}{2:12.4e}{3:12.4e}\n".format(i, i, 1.0e-20, 0.0))
+		#f.close()
 		return None
 
 	def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="result.png"):
