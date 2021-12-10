@@ -80,6 +80,11 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h1>
 <p>Microkinetic_toolkit is made to perform the microkinetic simulation
 based on the ab initio calculation such as density functional theory (DFT).</p>
+<p>These codes do,
+- evaluation of reaction energy, reaction Gibbs energy etc. from elementary reaction string
+- evaluation of reaction rate constants from above quantities
+- solving the rate equation (microkinetic analysis)
+- visualization of the chemica reaction network</p>
 <section id="input">
 <h2>Input<a class="headerlink" href="#input" title="Permalink to this headline"></a></h2>
 <ul class="simple">
@@ -88,8 +93,8 @@ based on the ab initio calculation such as density functional theory (DFT).</p>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">,</span><span class="n">_reaction_str</span><span class="p">,</span><span class="n">_reaction_id</span>
-<span class="mi">0</span><span class="p">,</span><span class="n">H2</span> <span class="o">-&gt;</span> <span class="mi">2</span><span class="n">H</span><span class="p">,</span><span class="mi">0</span>
-<span class="mi">1</span><span class="p">,</span><span class="n">CO2</span> <span class="o">+</span> <span class="mi">2</span><span class="n">H</span> <span class="o">-&gt;</span> <span class="n">CO</span> <span class="o">+</span> <span class="n">H2O</span><span class="p">,</span><span class="mi">1</span>
+<span class="mi">0</span><span class="p">,</span><span class="n">H2</span> <span class="o">+</span> <span class="mi">2</span><span class="n">surf</span><span class="o">-&gt;</span> <span class="mi">2</span><span class="n">H_atop</span><span class="p">,</span><span class="mi">0</span>
+<span class="mi">1</span><span class="p">,</span><span class="n">CO2</span> <span class="o">+</span> <span class="mi">2</span><span class="n">H_atop</span> <span class="o">-&gt;</span> <span class="n">CO</span> <span class="o">+</span> <span class="n">H2O</span> <span class="o">+</span> <span class="mi">2</span><span class="n">surf</span><span class="p">,</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
@@ -104,35 +109,60 @@ based on the ab initio calculation such as density functional theory (DFT).</p>
 <h2>Example<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">microkinetic_toolkit.reactions</span> <span class="kn">import</span> <span class="n">Reactions</span>
 <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">fcc111</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
 
-<span class="c1"># preparation</span>
-<span class="n">T</span> <span class="o">=</span> <span class="mi">800</span>  <span class="c1"># temperature [K]</span>
+<span class="c1"># parameters</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mi">900</span>  <span class="c1"># temperature [K]</span>
 <span class="n">P</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># total pressure [bar]</span>
 <span class="n">ratio</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span> <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>  <span class="c1"># partial pressure ratio</span>
 
+<span class="c1"># whether save files or not</span>
+<span class="n">deltaEs_pickle</span> <span class="o">=</span> <span class="s2">&quot;deltaEs.pickle&quot;</span>
+<span class="n">ks_pickle</span> <span class="o">=</span> <span class="s2">&quot;ks.pickle&quot;</span>
 
 <span class="c1">## read reactions from file and set Reactions</span>
 <span class="n">reactions</span> <span class="o">=</span> <span class="n">Reactions</span><span class="o">.</span><span class="n">from_csv</span><span class="p">(</span><span class="s2">&quot;test.csv&quot;</span><span class="p">)</span>
 
 <span class="c1">## define surface if you like</span>
-<span class="c1">#surf = fcc111(&quot;Ni&quot;, size=[3, 3, 4], vacuum=10.0)</span>
+<span class="n">reactions</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="n">fcc111</span><span class="p">(</span><span class="s2">&quot;Ni&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1">## if you have pre-calculated ase.db</span>
-<span class="c1">#reactions.ase_db = &quot;ase.db&quot;</span>
+<span class="n">I_have_precalculated_database</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">if</span> <span class="n">I_have_precalculated_database</span><span class="p">:</span>
+	<span class="n">reactions</span><span class="o">.</span><span class="n">ase_db</span> <span class="o">=</span> <span class="s2">&quot;ase.db&quot;</span>
 
 <span class="c1"># reaction energy evaluation</span>
 <span class="n">reactions</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="s2">&quot;emt&quot;</span>
-<span class="n">deltaEs</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_reaction_energies</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">deltaEs_pickle</span><span class="p">):</span>
+	<span class="n">deltaEs</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">deltaEs_pickle</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">deltaEs</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_reaction_energies</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">deltaEs_pickle</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+		<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
 <span class="c1"># microkinetic analysis</span>
 <span class="c1">## set parameters for kinetics</span>
-<span class="n">reactions</span><span class="o">.</span><span class="n">set_kinetic_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">sden</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span> <span class="n">wcat</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span> <span class="n">phi</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">rho_b</span><span class="o">=</span><span class="mf">1.0e3</span><span class="p">)</span>
+<span class="n">bep_param</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>  <span class="c1"># BEP relatinoship (Ea = alpha*deltaE + beta)</span>
+<span class="n">sden</span> <span class="o">=</span> <span class="mf">1.0e-4</span>  <span class="c1"># site density</span>
+<span class="n">v0</span> <span class="o">=</span> <span class="mf">1.0e-3</span>  <span class="c1"># volumetric flowrate [m^3/sec]</span>
+<span class="n">wcat</span> <span class="o">=</span> <span class="mf">100.0e-3</span>  <span class="c1"># catalyst weight [mg]</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># porocity</span>
+<span class="n">rho_b</span> <span class="o">=</span> <span class="mf">1.0e3</span>  <span class="c1"># density</span>
+
+<span class="n">reactions</span><span class="o">.</span><span class="n">set_kinetic_parameters</span><span class="p">(</span><span class="n">bep_param</span><span class="o">=</span><span class="n">bep_param</span><span class="p">,</span> <span class="n">sden</span><span class="o">=</span><span class="n">sden</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="n">v0</span><span class="p">,</span> <span class="n">wcat</span><span class="o">=</span><span class="n">wcat</span><span class="p">,</span> <span class="n">phi</span><span class="o">=</span><span class="n">phi</span><span class="p">,</span> <span class="n">rho_b</span><span class="o">=</span><span class="n">rho_b</span><span class="p">)</span>
 
 <span class="c1">## calculate rate constant from reaction energies</span>
-<span class="n">ks</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_rate_constants</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ks_pickle</span><span class="p">):</span>
+	<span class="n">ks</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">ks_pickle</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">ks</span> <span class="o">=</span> <span class="n">reactions</span><span class="o">.</span><span class="n">get_rate_constants</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ks_pickle</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+		<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
 <span class="c1">## do_microkinetics</span>
 <span class="n">reactions</span><span class="o">.</span><span class="n">do_microkinetics</span><span class="p">(</span><span class="n">deltaEs</span><span class="o">=</span><span class="n">deltaEs</span><span class="p">,</span> <span class="n">ks</span><span class="o">=</span><span class="n">ks</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">)</span>
+
+<span class="n">reactions</span><span class="o">.</span><span class="n">get_rate_for_graph</span><span class="p">()</span>
 
 <span class="c1">## draw graph</span>
 <span class="c1">#reactions.draw_network(rate)</span>

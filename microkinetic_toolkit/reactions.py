@@ -579,7 +579,8 @@ class Reactions:
 		maxtime = len(soln.t)
 
 		h5file = h5py.File("coverage.h5", "w")
-		h5file.create_dataset("x", (Ncomp, maxtime), dtype="float")
+		h5file.create_dataset("time", (1, maxtime), dtype="float")
+		h5file.create_dataset("concentration", (Ncomp, maxtime), dtype="float")
 		h5file.close()
 
 		tcov = []  # time-dependent coverage: tcov[species][time]
@@ -594,9 +595,9 @@ class Reactions:
 
 		## take averaged value
 		with h5py.File("coverage.h5", "a") as f:
+			f["time"][:] = soln.t[:]
 			for isp in range(Ncomp):
-				#f["x"][isp][:] = soln.t[it], tcov[isp][it]
-				f["x"][isp][:] = tcov[isp]
+				f["concentration"][isp][:] = tcov[isp][:]
 				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it]*fac, soln.t[it]))
 				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it], soln.t[it]))
 
