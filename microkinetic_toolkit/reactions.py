@@ -3,6 +3,7 @@ import os
 import copy
 import numpy as np
 import pandas as pd
+import pickle
 
 R = 8.314 * 1.0e-3  # gas constant [kJ/mol/K]
 eVtokJ = 96.487
@@ -222,13 +223,12 @@ class Reactions:
 		Returns:
 			deltaEs: numpy array
 		"""
-		# free first here
+		# freeze surface here
 		surface = self.freeze_surface()
 
 		deltaEs = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
-			deltaEs[i] = reaction.get_reaction_energy(surface=surface,
-													  calculator=self._calculator,
+			deltaEs[i] = reaction.get_reaction_energy(surface=surface, calculator=self._calculator,
 													  ase_db=self._ase_db)
 		return deltaEs
 
@@ -483,7 +483,6 @@ class Reactions:
 		"""
 		import numpy as np
 		from scipy.integrate import solve_ivp
-		import pickle
 		from microkinetic_toolkit.tmpode import func
 
 		if ks is None:
@@ -561,6 +560,44 @@ class Reactions:
 		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
 		return None
 
+	def save_coverage(self):
+		#
+		# surface coverage: for time-independent, output the coverage at the last time step
+		#
+		tcov = []  # time-dependent coverage: tcov[species][time]
+		for i in range(Ncomp):
+			tcov.append(soln.y[i])
+		tcov = np.array(tcov)
+
+		# time dependent coverage for graph
+		dT = 10
+		fac = 1.0e-6
+
+		coveragefile = "nodes.txt"
+		f = open(coveragefile, "wt")
+		f.write("      name      num     conc        time\n")  # header
+		## initial
+		for isp in range(Ngas):
+			f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][0], soln.t[0]))
+
+		for isp in range(Ngas, Ncomp):
+			f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][0] * fac, soln.t[0]))
+
+		## afterwards -- take averaged value
+		for it in range(dT, len(soln.y[0]), dT):
+			for isp in range(Ngas):
+				f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it], soln.t[it]))
+
+			for isp in range(Ngas, Ncomp):
+				f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it] * fac, soln.t[it]))
+
+		## add RXN nodes at last
+		for i in range(Nrxn):
+			f.write("R{0:>03d}            {1:03d}{2:12.4e}{3:12.4e}\n".format(i, i, 1.0e-20, 0.0))
+
+		f.close()
+		return None
+
 	def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="result.png"):
 		"""
 		Draw molar fraction change with time.
@@ -604,19 +641,18 @@ class Reactions:
 
 	def get_rate_for_graph(self):
 		import argparse
-		import pickle
 
 		parser = argparse.ArgumentParser()
 		parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
 		parser.add_argument("--coveragefile", default="nodes.txt", help="time-dependent coverage")
 		argvs = parser.parse_args()
 
-		reactionfile = argvs.reactionfile
-		coveragefile = "nodes.txt"
+		reactionfile  = argvs.reactionfile
+		coveragefile  = "nodes.txt"
 		rateconstfile = "rateconst.pickle"
 
 		(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
-		rxn_num = get_number_of_reaction(reactionfile)
+		rxn_num = len(self.reaction_list)
 		spe_num = len(self.get_unique_species())
 
 		Nrxn = 0
@@ -662,8 +698,7 @@ class Reactions:
 
 			rate = np.zeros((max_time, rxn_num))
 			for istep in range(max_time):
-				for irxn in range(len(self.reaction_list)):
-
+				for irxn in range(rxn_num):
 					conc_all = 1.0
 					for imol, mol in enumerate(mols[irxn]):
 						mol = mol[0]
@@ -712,7 +747,7 @@ class Reactions:
 						mol = remove_side_and_flip(mol[0])
 						site = sites[irxn][imol]
 
-						if 'gas' not in site:
+						if site != "gas":
 							mol = mol + '_surf'
 
 						spe = get_species_num(mol)
