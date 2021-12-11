@@ -140,6 +140,19 @@ class Reactions:
 
 		return list(species_set)
 
+	def get_index_of_species(self, specie):
+		"""
+		Get index of species.
+
+		Args:
+			specie: string
+		Returns:
+			specie_index: int
+		"""
+		species = self.get_unique_species()
+		specie_index = species.index(specie)
+		return specie_index
+
 	def _get_openfoam_reactions_info(self):
 		ini = "reaction\n{\n"
 		yield ini
@@ -252,35 +265,35 @@ class Reactions:
 			deltaEs: reaction energies [eV]
 			T: temperature [K]
 		Returns:
-			ks: rate constants (numpy array)
+			kfor: forward rate constants (numpy array)
 		"""
-		ks = np.zeros(len(self.reaction_list))
+		kfor = np.zeros(len(self.reaction_list))
 		for i, reaction in enumerate(self.reaction_list):
 			index  = reaction._reaction_id
 			deltaE = deltaEs[index]
-			ks[i]  = reaction.get_rate_constant(deltaE, T, bep_param=self._bep_param, sden=self._sden)
+			kfor[i]  = reaction.get_rate_constant(deltaE, T, bep_param=self._bep_param, sden=self._sden)
 
-		return ks
+		return kfor
 
-	def do_microkinetics(self, deltaEs=None, ks=None, T=300.0, P=1.0, ratio=1.0):
+	def do_microkinetics(self, deltaEs=None, kfor=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Do microkinetic analysis.
 
 		Args:
 			deltaEs: reaction energies.
-			ks: rate constants in forward direction.
+			kfor: rate constants in forward direction.
 			T: temperature [K]
 			P: total pressure [bar]
 			ratio: pressure ratio of inlet (dict) [-]
 		Returns:
 			None
 		"""
-		if ks is None:
+		if kfor is None:
 			raise ValueError("rate constant not found")
 
 		odefile = "tmpode.py"
 		self.make_rate_equation(odefile=odefile)
-		self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, ks=ks, T=T, P=P, ratio=ratio)
+		self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
 		return None
 
 	def make_rate_equation(self, odefile=None):
@@ -326,10 +339,8 @@ class Reactions:
 
 		dict1 = {}
 		dict2 = {}
-		for irxn in range(len(self.reaction_list)):
-			rxn_idx  = str(irxn)
-			reaction = self[irxn]
 
+		for irxn, reaction in enumerate(self.reaction_list):
 			# hash-tag based reactant and product species list FOR THIS REACTION
 			list_r = []
 			list_p = []
@@ -347,7 +358,8 @@ class Reactions:
 
 				for term in terms:
 					spe, site = term[1], term[2]
-					spe_num = self.get_unique_species().index(spe)
+					#spe_num = self.get_unique_species().index(spe)
+					spe_num = self.get_index_of_species(spe)
 					list.append(spe_num)
 					dict1[spe_num] = spe
 			# done for dict1
@@ -360,28 +372,28 @@ class Reactions:
 						current_list = list_r
 						mol_list2 = reaction.reactants  # list corresponding to current_list
 						coefs = [i[0] for i in mol_list2]
-						term = "kfor[" + rxn_idx + "]"
+						term = "kfor[" + str(irxn) + "]"
 						sign = " - "
 					elif side == "reactant" and direction == "reverse":
 						mol_list1 = reaction.products
 						current_list = list_r
 						mol_list2 = reaction.reactants
 						coefs = [i[0] for i in mol_list2]
-						term = "krev[" + rxn_idx + "]"
+						term = "krev[" + str(irxn) + "]"
 						sign = " + "
 					elif side == "product" and direction == "forward":
 						mol_list1 = reaction.reactants
 						current_list = list_p
 						mol_list2 = reaction.products
 						coefs = [i[0] for i in mol_list2]
-						term = "kfor[" + rxn_idx + "]"
+						term = "kfor[" + str(irxn) + "]"
 						sign = " + "
 					elif side == "product" and direction == "reverse":
 						mol_list1 = reaction.products
 						current_list = list_p
 						mol_list2 = reaction.products
 						coefs = [i[0] for i in mol_list2]
-						term = "krev[" + rxn_idx + "]"
+						term = "krev[" + str(irxn) + "]"
 						sign = " - "
 
 					# making single term
@@ -467,13 +479,28 @@ class Reactions:
 
 		return None
 
-	def solve_rate_equation(self, deltaEs=None, ks=None, odefile=None, T=300.0, P=1.0, ratio=1.0):
+	def get_equilibrium_constant_from_deltaEs(self, deltaEs=None, T=300.0):
+		# get deltaG
+		deltaEs  = deltaEs.copy()*eVtokJ
+		deltaSs  = self.get_entropy_differences()
+		deltaSs  = deltaSs.copy()*eVtokJ
+		TdeltaSs = T*deltaSs
+		deltaGs = deltaEs - TdeltaSs
+		print("deltaGs", deltaGs)
+
+		# equilibrium constants
+		Kp = np.exp(-deltaGs/R/T)  # in pressure unit
+		#Kc = Kp*(101325/R/T)    # convert to concentration unit (when using atm)
+		Kc = Kp*((R*1.0e3)*T/1)  # convert to concentration unit (note: R is in kJ/mol/K)
+		return Kc
+
+	def solve_rate_equation(self, deltaEs=None, kfor=None, odefile=None, T=300.0, P=1.0, ratio=1.0):
 		"""
 		Solve rate equations.
 
 		Args:
 			deltaEs: reaction energies [eV]
-			ks: rate constant in forward direction
+			kfor: rate constant in forward direction
 			odefile: ODE file
 			T: temperature [K]
 			P: total pressure [bar]
@@ -485,7 +512,7 @@ class Reactions:
 		from scipy.integrate import solve_ivp
 		from microkinetic_toolkit.tmpode import func
 
-		if ks is None:
+		if kfor is None:
 			raise ValueError("rate constants not found")
 		if odefile is None:
 			raise ValueError("ODE file not found")
@@ -500,31 +527,18 @@ class Reactions:
 
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
-		#
-		# thermodynamics
-		#
-		deltaEs *= eVtokJ  # reaction energy
-		deltaS   = self.get_entropy_differences()  # entropy
-		deltaS  *= eVtokJ
-		TdeltaS  = T*deltaS
-		deltaG   = deltaEs - TdeltaS  # Gibbs energy
 
-		# equilibrium constants
-		Kpi = np.exp(-deltaG/R/T)  # in pressure unit
-		#Kci = Kpi*(101325/R/T)    # convert to concentration unit (when using atm)
-		Kci = Kpi*((R*1.0e3)*T/1)  # convert to concentration unit (note: R is in kJ/mol/K)
+		Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs, T=T)
 
 		tau = self._Vr/self._v0  # residence time [sec]
 		# tau = 1.0  # residence time [sec]
 
 		# empirical correction
-		#ks *= 1.0e0
+		#kfor *= 1.0e0
 
 		# output results here
-		print("deltaEs [kJ/mol]:", deltaEs)
-		print("TdeltaS [kJ/mol]:", TdeltaS)
-		print("deltaG [kJ/mol]:", deltaG)
-		print("ks [-]:", ks)
+		print("Kc [-]:", Kc)
+		print("kfor [-]:", kfor)
 		print("residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
 
 		# now solve the ODE
@@ -551,22 +565,22 @@ class Reactions:
 		C0 = Pin/(R*T*1e3)  # density calculated from pressure. Note: R is in kJ/mol/K.
 		C0 *= x0
 
-		soln = solve_ivp(fun=lambda t, C: func(t, C, ks,
-						Kci, T, self._sden, self._area, self._Vr, ngas, ncomp),
-						t_span=t_span, t_eval=t_eval, y0=C0,
-						rtol=1e-5, atol=1e-7, method="LSODA")  # method:BDF, Radau, or LSODA
+		# method:BDF, Radau, or LSODA
+		soln = solve_ivp(fun=lambda t, C: func(t, C, kfor, Kc, T, self._sden, self._area, self._Vr, ngas, ncomp),
+						 t_span=t_span, t_eval=t_eval, y0=C0, rtol=1e-5, atol=1e-7, method="LSODA")
 		print(soln.nfev, "evaluations requred.")
 
 		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
-		self.save_coverage(soln=soln, species=species)
+		self.save_coverage(soln=soln)
 		return None
 
-	def save_coverage(self, soln=None, species=None):
+	def save_coverage(self, soln=None):
 		"""
 		Save surface coverage: for time-independent, output the coverage at the last time step
 
+		Args:
+			soln: solution of ivp solver
 		Returns:
-
 		"""
 		import h5py
 
@@ -574,19 +588,21 @@ class Reactions:
 		dT = 10  # one record in dT points
 		fac = 1.0e-6
 
-		Ngas = 2
-		Ncomp = 5
+		species = self.get_unique_species()
+		ncomp = len(species)
+		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
+
 		maxtime = len(soln.t)
 
 		h5file = h5py.File("coverage.h5", "w")
 		h5file.create_dataset("time", (1, maxtime), dtype="float")
-		h5file.create_dataset("concentration", (Ncomp, maxtime), dtype="float")
+		h5file.create_dataset("concentration", (ncomp, maxtime), dtype="float")
 		h5file.close()
 
 		tcov = []  # time-dependent coverage: tcov[species][time]
-		for i in range(Ngas):
+		for i in range(ngas):
 			tcov.append(soln.y[i])
-		for i in range(Ngas, Ncomp):
+		for i in range(ngas, ncomp):
 			tcov.append(soln.y[i]*fac)  # multiply scaling factor for surface species
 		tcov = np.array(tcov)
 
@@ -594,14 +610,11 @@ class Reactions:
 		#f.write("      name      num     conc        time\n")  # header
 
 		## take averaged value
-		with h5py.File("coverage.h5", "a") as f:
-			f["time"][:] = soln.t[:]
-			for isp in range(Ncomp):
-				f["concentration"][isp][:] = tcov[isp][:]
-				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it]*fac, soln.t[it]))
-				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp], isp, tcov[isp][it], soln.t[it]))
-
-		quit()
+		with h5py.File("coverage.h5", "a") as file:
+			file["time"][:] = soln.t[:]
+			for isp in range(ncomp):
+				file["concentration"][isp][:] = tcov[isp][:]
+				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp],isp,tcov[isp][it],soln.t[it]))
 
 		## add RXN nodes at last
 		#for i in range(Nrxn):
@@ -651,84 +664,78 @@ class Reactions:
 		return None
 
 	def get_rate_for_graph(self):
-		import argparse
+		import h5py
 
-		parser = argparse.ArgumentParser()
-		parser.add_argument("--reactionfile", required=True, help="file with elementary reactions")
-		parser.add_argument("--coveragefile", default="nodes.txt", help="time-dependent coverage")
-		argvs = parser.parse_args()
+		conc_h5  = "coverage.h5"
+		rateconstfile = "kfor.pickle"
 
-		reactionfile  = argvs.reactionfile
-		coveragefile  = "nodes.txt"
-		rateconstfile = "rateconst.pickle"
-
-		(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
+		#(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 		rxn_num = len(self.reaction_list)
 		spe_num = len(self.get_unique_species())
 
 		Nrxn = 0
 
 		# read coverage
-		cov = [[] for i in range(spe_num)]
+		cov = [[] for _ in range(spe_num)]
 
-		with open(coveragefile, 'r') as f:
-			lines = f.readlines()
-			lines = lines[1:]
+		h5file = h5py.File(conc_h5, "r")
+		time = h5file["time"][:]
+		for i in range(spe_num):
+			cov[i] = h5file["concentration"][i][:]
+		h5file.close()
 
-		for iline, line in enumerate(lines):
-			name = str(line.split()[0])
-			if "R" not in name:
-				spe = int(line.split()[1]) - 1  # Matlab --> python
-				conc = float(line.split()[2])
-				time = float(line.split()[3])
+		#for iline, line in enumerate(lines):
+		#	name = str(line.split()[0])
+		#	if "R" not in name:
+		#		spe = int(line.split()[1]) - 1  # Matlab --> python
+		#		conc = float(line.split()[2])
+		#		time = float(line.split()[3])
+		#
+		#		cov[spe].append([name, conc, time])
+ 		#	else:
+ 		#		Nrxn += 1
 
-				cov[spe].append([name, conc, time])
-			else:
-				Nrxn += 1
+		max_time = len(time)
 
-		max_time = (len(lines) - Nrxn) // spe_num
+		# read deltaEs
+		with open(deltaEs_pickle, "r") as file:
+			deltaEs = pickle.load(file)
 
-		# read rate constants
-		kfor, krev = pickle.load(open(rateconstfile, "rb"))
+		kfor = self.get_rate_constants(deltaEs=deltaEs, T=300)
+		Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs=deltaEs)
+		krev = kfor / Kc
 
 		AoverV = self._area / self._Vr
 
 		# output information for graph
 		rates = {"forward": None, "reverse": None}
-		for direction in ["forward", "reverse"]:
-			if direction == "forward":
-				mols = r_ads.copy()
-				sites = r_site.copy()
-				coefs = r_coef.copy()
-				k = kfor.copy()
-			elif direction == "reverse":
-				mols = p_ads.copy()
-				sites = p_site.copy()
-				coefs = p_coef.copy()
-				k = krev.copy()
 
-			rate = np.zeros((max_time, rxn_num))
-			for istep in range(max_time):
-				for irxn in range(rxn_num):
+		rate = np.zeros((max_time, rxn_num))
+		for istep in range(max_time):
+			for irxn, reaction in enumerate(self.reaction_list):
+				for direction in ["forward", "reverse"]:
+					if direction == "forward":
+						sequence = reaction.reactants
+						k = kfor
+					elif direction == "reverse":
+						sequence = reaction.products
+						k = krev
+
 					conc_all = 1.0
-					for imol, mol in enumerate(mols[irxn]):
-						mol = mol[0]
-						mol = remove_side_and_flip(mol)
-						site = sites[irxn][imol]
+					for mol in sequence:
+						coef, spe, site = mol
 
-						if 'gas' not in site:  # surface species
-							mol += '_surf'
-							spe = get_species_num(mol)
-							name, conc, time = cov[spe][istep]
+						if site == "gas":
+							spe_num = self.get_index_of_species(spe)
+							conc = cov[spe_num][istep]
+						else:  # surface species
+							spe_num = self.get_index_of_species(spe)
+							#spe = get_species_num(mol)
+							conc = cov[spe_num][istep]
 							conc *= self._sden * AoverV
-						else:  # gas
-							spe = get_species_num(mol)
-							name, conc, time = cov[spe][istep]
 
-						power = coefs[irxn][imol]
-
-						if power != 1:
-							conc = conc ** power
+						if coef != 1:
+							conc = conc ** coef
 
 						conc_all = conc_all * conc
 
@@ -804,7 +811,7 @@ class Reactions:
 		eps = 1.0e-10
 
 		edge_scale = 0.5
-		rate_thre = -15  # Threshold for reaction rate in log scale. Rxn with smallter than this value is discarded.
+		rate_thre = -15  # Threshold for rxn rate in log scale. Rxn with smallter than this value is discarded.
 
 		os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
 		os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
@@ -815,10 +822,10 @@ class Reactions:
 		lines = f.readlines()
 		# os.system('rm reaction2.txt reaction3.txt')
 
-		reac = [0 for i in range(numlines)]
-		rxn = [0 for i in range(numlines)]
-		prod = [0 for i in range(numlines)]
-		value = [0 for i in range(numlines)]
+		reac = [0 for _ in range(numlines)]
+		rxn = [0 for _ in range(numlines)]
+		prod = [0 for _ in range(numlines)]
+		value = [0 for _ in range(numlines)]
 
 		for i, line in enumerate(lines):
 			# find reaction rate
@@ -1095,8 +1102,8 @@ class ReactionsOld:
 		rxn_num = len(rxn)
 
 		r_ads = list(range(rxn_num))
-		r_site = [[] for i in range(rxn_num)]
-		r_coef = [[] for i in range(rxn_num)]
+		r_site = [[] for _ in range(rxn_num)]
+		r_coef = [[] for _ in range(rxn_num)]
 
 		p_ads = list(range(rxn_num))
 		p_site = list(range(rxn_num))

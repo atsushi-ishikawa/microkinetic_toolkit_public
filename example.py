@@ -10,7 +10,6 @@ ratio = {"H2": 1.1, "CO2": 1.0}  # partial pressure ratio
 
 # whether save files or not
 deltaEs_pickle = "deltaEs.pickle"
-ks_pickle = "ks.pickle"
 
 ## read reactions from file and set Reactions
 reactions = Reactions.from_csv("test.csv")
@@ -43,15 +42,10 @@ rho_b = 1.0e3  # density
 reactions.set_kinetic_parameters(bep_param=bep_param, sden=sden, v0=v0, wcat=wcat, phi=phi, rho_b=rho_b)
 
 ## calculate rate constant from reaction energies
-if os.path.exists(ks_pickle):
-	ks = pickle.load(open(ks_pickle, "rb"))
-else:
-	ks = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
-	with open(ks_pickle, "wb") as f:
-		pickle.dump(ks, f)
+kfor = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 
 ## do_microkinetics
-reactions.do_microkinetics(deltaEs=deltaEs, ks=ks, T=T, P=P, ratio=ratio)
+reactions.do_microkinetics(deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
 
 reactions.get_rate_for_graph()
 
