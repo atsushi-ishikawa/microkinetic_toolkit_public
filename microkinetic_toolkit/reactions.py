@@ -591,13 +591,7 @@ class Reactions:
 		species = self.get_unique_species()
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
-
 		maxtime = len(soln.t)
-
-		h5file = h5py.File("coverage.h5", "w")
-		h5file.create_dataset("time", (1, maxtime), dtype="float")
-		h5file.create_dataset("concentration", (ncomp, maxtime), dtype="float")
-		h5file.close()
 
 		tcov = []  # time-dependent coverage: tcov[species][time]
 		for i in range(ngas):
@@ -606,15 +600,21 @@ class Reactions:
 			tcov.append(soln.y[i]*fac)  # multiply scaling factor for surface species
 		tcov = np.array(tcov)
 
+		h5file = h5py.File("coverage.h5", "w")
+		#h5file.create_dataset("time", shape=(1, maxtime), dtype=np.float, data=soln.t)
+		h5file.create_dataset("time", shape=(maxtime,), dtype=np.float, data=soln.t)
+		h5file.create_dataset("concentration", (ncomp, maxtime), dtype=np.float, data=tcov)
+		h5file.close()
+
 		#f = open(coveragefile, "wt")
 		#f.write("      name      num     conc        time\n")  # header
 
 		## take averaged value
-		with h5py.File("coverage.h5", "a") as file:
-			file["time"][:] = soln.t[:]
-			for isp in range(ncomp):
-				file["concentration"][isp][:] = tcov[isp][:]
-				#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp],isp,tcov[isp][it],soln.t[it]))
+		#with h5py.File("coverage.h5", "a") as file:
+		#	for isp in range(ncomp):
+		#		for itime in range(maxtime):
+		#			file["concentration"][isp,itime] = tcov[isp][itime]
+		#	#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp],isp,tcov[isp][it],soln.t[it]))
 
 		## add RXN nodes at last
 		#for i in range(Nrxn):
@@ -667,22 +667,17 @@ class Reactions:
 		import h5py
 
 		conc_h5  = "coverage.h5"
-		rateconstfile = "kfor.pickle"
+		deltaEs_pickle = "deltaEs.pickle"
 
-		#(r_ads, r_site, r_coef, p_ads, p_site, p_coef) = get_reac_and_prod(reactionfile)
 		rxn_num = len(self.reaction_list)
 		spe_num = len(self.get_unique_species())
 
-		Nrxn = 0
-
 		# read coverage
-		cov = [[] for _ in range(spe_num)]
+		#cov = [[] for _ in range(spe_num)]
 
 		h5file = h5py.File(conc_h5, "r")
 		time = h5file["time"][:]
-		for i in range(spe_num):
-			cov[i] = h5file["concentration"][i][:]
-		h5file.close()
+		cov = h5file["concentration"]
 
 		#for iline, line in enumerate(lines):
 		#	name = str(line.split()[0])
@@ -698,7 +693,7 @@ class Reactions:
 		max_time = len(time)
 
 		# read deltaEs
-		with open(deltaEs_pickle, "r") as file:
+		with open(deltaEs_pickle, "rb") as file:
 			deltaEs = pickle.load(file)
 
 		kfor = self.get_rate_constants(deltaEs=deltaEs, T=300)
@@ -730,7 +725,6 @@ class Reactions:
 							conc = cov[spe_num][istep]
 						else:  # surface species
 							spe_num = self.get_index_of_species(spe)
-							#spe = get_species_num(mol)
 							conc = cov[spe_num][istep]
 							conc *= self._sden * AoverV
 
@@ -740,8 +734,8 @@ class Reactions:
 						conc_all = conc_all * conc
 
 					rate[istep][irxn] = k[irxn] * conc_all
+					rates[direction] = rate
 
-				rates[direction] = rate
 		# now write to file
 
 		# time-dependent case
@@ -749,61 +743,45 @@ class Reactions:
 		f = open(edgefile, "w")
 		f.write("    from       to         rate         time\n")
 
-		for direction in ["forward", "reverse"]:
-			if direction == "forward":
-				mols = r_ads.copy()
-				sites = r_site.copy()
-			elif direction == "reverse":
-				mols = p_ads.copy()
-				sites = p_site.copy()
+		for istep in range(max_time):
+			for irxn, reaction in enumerate(self.reaction_list):
+				for direction in ["forward", "reverse"]:
+					if direction == "forward":
+						sequence = reaction.reactants
+					elif direction == "reverse":
+						sequence = reaction.products
 
-			for istep in range(max_time):
-				for irxn in range(len(self.reaction_list)):
 					now = 'R%03d' % irxn  # current reaction
 
-					for imol, mol in enumerate(mols[irxn]):
-						mol = remove_side_and_flip(mol[0])
-						site = sites[irxn][imol]
-
-						if site != "gas":
-							mol = mol + '_surf'
-
-						spe = get_species_num(mol)
-						name, conc, time = cov[spe][istep]
-
+					for mol in sequence:
+						spe = mol[1]
 						if direction == "forward":
-							f.write("%10s %10s %12.4e %12.4e\n" % (name, now, rates[direction][istep][irxn], time))
+							f.write("%10s%10s%12.4e%12.4e\n" % (spe, now, rates[direction][istep][irxn], time[istep]))
 						elif direction == "product":
-							f.write("%10s %10s %12.4e %12.4e\n" % (now, name, rates[direction][istep][irxn], time))
+							f.write("%10s%10s%12.4e%12.4e\n" % (now, spe, rates[direction][istep][irxn], time[istep]))
 
 		f.close()
 
-		# time-independent case
-		reactionfile_out = reactionfile.split('.')[0] + '_val.txt'
-		f = open(reactionfile_out, 'w')
-		lines = return_lines_of_reactionfile(reactionfile)
-
-		for iline, line in enumerate(lines):
-			text = line.replace('\n', '')
-			total_rate = rates["forward"][-1][iline] - rates["reverse"][-1][iline]
-			f.write('{0:<80s}:{1:12.4e}\n'.format(text, total_rate))
-
-		f.close()
+		# time-independent case - write last rate
+		total_rate = np.zeros(rxn_num)
+		for irxn in range(rxn_num):
+			total_rate[irxn] = rates["forward"][-1][irxn] - rates["reverse"][-1][irxn]
+		with open("rate.pickle", "wb") as file:
+			pickle.dump(total_rate, file)
 
 	def draw_network(self):
 		import matplotlib.pyplot as plt
 		import networkx as nx
 		from math import log10
+		import h5py
 
-		argvs = sys.argv
-
-		if len(argvs) == 3:  # read coverage
-			coverage = True
-			cov_file = argvs[2]
-		else:
-			coverage = False
-
-		inp = argvs[1]  # elementary reactions with reaction rate
+		#if len(argvs) == 3:  # read coverage
+		#	coverage = True
+		#	cov_file = argvs[2]
+		#else:
+		#	coverage = False
+		#
+		#inp = argvs[1]  # elementary reactions with reaction rate
 
 		label_rxn = False
 		directed = False
@@ -813,57 +791,65 @@ class Reactions:
 		edge_scale = 0.5
 		rate_thre = -15  # Threshold for rxn rate in log scale. Rxn with smallter than this value is discarded.
 
-		os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
-		os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
+		#os.system('grep -v "^#" %s > reaction2.txt' % inp)  # remove comment line
+		#os.system('grep -v "^\s*$"   reaction2.txt > reaction3.txt')  # remove blanck line
 
-		numlines = sum(1 for line in open("reaction3.txt"))
+		#numlines = sum(1 for line in open("reaction3.txt"))
 
-		f = open("reaction3.txt", "r")
-		lines = f.readlines()
-		# os.system('rm reaction2.txt reaction3.txt')
+		#f = open("reaction3.txt", "r")
+		#lines = f.readlines()
 
-		reac = [0 for _ in range(numlines)]
-		rxn = [0 for _ in range(numlines)]
-		prod = [0 for _ in range(numlines)]
-		value = [0 for _ in range(numlines)]
+		#reac = [0 for _ in range(numlines)]
+		#rxn = [0 for _ in range(numlines)]
+		#prod = [0 for _ in range(numlines)]
+		#value = [0 for _ in range(numlines)]
 
-		for i, line in enumerate(lines):
+		rxn_num = len(self.reaction_list)
+		value = np.zeros(rxn_num)
+
+		with open("rate.pickle", "rb") as file:
+			rate = pickle.load(file)
+
+		#for i, line in enumerate(lines):
+		for irxn, reaction in enumerate(self.reaction_list):
 			# find reaction rate
-			if ':' in line:
-				comp, rate = line.split(':')
-				rate = rate.replace('\n', '')
-				rate = float(rate)
-				if rate >= 0.0:
-					rate = log10(rate) if rate > eps else 1.0
+			if rate[irxn] >= 0:
+				if rate[irxn] > eps:
+					rate[irxn] = log10(rate[irxn])
 				else:
-					# rate = -1.0*log10(abs(rate))
-					rate = rate_thre
+					rate[irxn] = 1.0
 			else:
-				comp = line
-				rate = 1.0
+				rate[irxn] = rate_thre
 
-			comp = comp.replace('\n', '').replace('>', '').replace(' ', '').split('--')
+			#else:
+			#	rxn = line
+			#	rate = 1.0
 
-			reac_tmp = comp[0]
-			reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
-			reac_tmp = remove_side_and_flip(reac_tmp)
-			reac_tmp = reac_tmp.split(".")[0] if "." in reac_tmp else reac_tmp
+			#rxn = rxn.replace('\n', '').replace('>', '').replace(' ', '').split('--')
 
-			prod_tmp = comp[2]
-			prod_tmp = prod_tmp.split("*")[1] if "*" in prod_tmp else prod_tmp
-			prod_tmp = remove_side_and_flip(prod_tmp)
-			prod_tmp = prod_tmp.split(".")[0] if "." in prod_tmp else prod_tmp
+			#reac_tmp = rxn[0]
+			#reac_tmp = reac_tmp.split("*")[1] if "*" in reac_tmp else reac_tmp
+			#reac_tmp = remove_side_and_flip(reac_tmp)
+			#reac_tmp = reac_tmp.split(".")[0] if "." in reac_tmp else reac_tmp
 
-			if rate >= rate_thre:
-				reac[i] = reac_tmp.split("+")
-				rxn[i] = 'rxn' + str(i + 1)
-				prod[i] = prod_tmp.split("+")
-				value[i] = rate * edge_scale
+			#prod_tmp = rxn[2]
+			#prod_tmp = prod_tmp.split("*")[1] if "*" in prod_tmp else prod_tmp
+			#prod_tmp = remove_side_and_flip(prod_tmp)
+			#prod_tmp = prod_tmp.split(".")[0] if "." in prod_tmp else prod_tmp
+
+			reac = reaction.reactants
+			prod = reaction.products
+
+			if rate[irxn] >= rate_thre:
+				#reac[i] = reac_tmp.split("+")
+				#rxn[i] = 'rxn' + str(i + 1)
+				#prod[i] = prod_tmp.split("+")
+				value[irxn] = rate[irxn] * edge_scale
 
 		# drop 0 from list, as these are smaller than rate_thre
-		reac = list(filter(lambda x: x != 0, reac))
-		rxn = list(filter(lambda x: x != 0, rxn))
-		prod = list(filter(lambda x: x != 0, prod))
+		#reac = list(filter(lambda x: x != 0, reac))
+		#rxn = list(filter(lambda x: x != 0, rxn))
+		#prod = list(filter(lambda x: x != 0, prod))
 		value = list(filter(lambda x: x != 0, value))
 
 		c_siz = 200
@@ -871,14 +857,21 @@ class Reactions:
 		r_siz = 10
 		r_col = "black"
 
+		coverage = True
+		conc_h5 = "coverage.h5"
 		if coverage:
-			cov_dict = {}
-			fcov = open(cov_file, "r")
-			lines = fcov.readlines()
-			for iline, line in enumerate(lines):
-				cov = line.split()[1]
-				cov = cov.replace(' ', '').replace('\n', '')
-				cov_dict[iline] = float(cov)
+			h5file = h5py.File(conc_h5, "r")
+			cov = h5file["concentration"]
+		cov = cov[:, -1]  # last
+
+		#if coverage:
+		#	cov_dict = {}
+		#	fcov = open(cov_file, "r")
+		#	lines = fcov.readlines()
+		#	for iline, line in enumerate(lines):
+		#		cov = line.split()[1]
+		#		cov = cov.replace(' ', '').replace('\n', '')
+		#		cov_dict[iline] = float(cov)
 
 		nodeA = 200.0
 		nodeB = 11.0
@@ -889,58 +882,37 @@ class Reactions:
 		else:
 			G = nx.Graph()
 
-		print("number of reactions:", len(list(rxn)))
+		#for i, j in enumerate(rxn):
+		for irxn, reaction in enumerate(self.reaction_list):
+			rxn = reaction._reaction_str
+			G.add_node(rxn, size=r_siz, color=r_col, typ='rxn')
+			for direction in ["forward", "reverse"]:
+				sequence = reaction.reactants if direction == "forward" else reaction.products
+				for imol, mol in enumerate(sequence):
+					if coverage:
+						# node size
+						spe = mol[1]
+						spe_num = self.get_index_of_species(spe)
+						size = cov[spe_num] if cov[spe_num] > eps else eps
+						size = nodeA * (nodeB + log10(size))
+						if "surf" in spe:
+							size = size * surf_scale
+						size = int(size)
+					else:
+						size = c_siz
 
-		for i, j in enumerate(rxn):
-			G.add_node(rxn[i], size=r_siz, color=r_col, typ='rxn')
-			for ireac, j1 in enumerate(reac[i]):
-				if coverage:
-					# node size
-					mol = reac[i][ireac]
-					mol = remove_side_and_flip(mol)
-					if '_' in mol:
-						mol = mol.split('_')[0] + '_surf'
-					spe = get_species_num(mol)
-					size = cov_dict[spe] if cov_dict[spe] > eps else eps
-					size = nodeA * (nodeB + log10(size))
-					if '_' in mol:
-						size = size * surf_scale
-					size = int(size)
-				else:
-					size = c_siz
+					#G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
+					G.add_node(spe, size=size, color=c_col, typ='comp')
 
-				G.add_node(reac[i][ireac], size=size, color=c_col, typ='comp')
+					if directed and value[i] < 0:
+						#G.add_edge(rxn, reac[i][ireac], weight=abs(value[i]))
+						G.add_edge(rxn, spe, weight=abs(value[irxn]))
+					else:
+						#G.add_edge(reac[i][ireac], rxn, weight=abs(value[i]))
+						G.add_edge(spe, rxn, weight=abs(value[irxn]))
 
-				if directed and value[i] < 0:
-					G.add_edge(rxn[i], reac[i][ireac], weight=abs(value[i]))
-				else:
-					G.add_edge(reac[i][ireac], rxn[i], weight=abs(value[i]))
-
-			for iprod, j2 in enumerate(prod[i]):
-				if coverage:
-					# node size
-					mol = prod[i][iprod]
-					mol = remove_side_and_flip(mol)
-					if '_' in mol:
-						mol = mol.split('_')[0] + '_surf'
-					spe = get_species_num(mol)
-					size = cov_dict[spe] if cov_dict[spe] > eps else eps
-					size = nodeA * (nodeB + log10(size))
-					if '_' in mol:
-						size = size * surf_scale
-					size = int(size)
-				else:
-					size = c_siz
-
-				G.add_node(prod[i][iprod], size=size, color=c_col, typ='comp')
-
-				if directed and value[i] < 0:
-					G.add_edge(prod[i][iprod], rxn[i], weight=abs(value[i]))
-				else:
-					G.add_edge(rxn[i], prod[i][iprod], weight=abs(value[i]))
-		#
 		# drawing
-		#
+		quit()
 		siz = nx.get_node_attributes(G, 'size')
 		col = nx.get_node_attributes(G, 'color')
 

@@ -50,4 +50,4 @@ reactions.do_microkinetics(deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
 reactions.get_rate_for_graph()
 
 ## draw graph
-#reactions.draw_network(rate)
+reactions.draw_network()
