@@ -4,7 +4,7 @@ import os
 import pickle
 
 # parameters
-T = 900  # temperature [K]
+T = 800  # temperature [K]
 P = 100  # total pressure [bar]
 ratio = {"H2": 1.1, "CO2": 1.0}  # partial pressure ratio
 
@@ -47,7 +47,7 @@ kfor = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 ## do_microkinetics
 reactions.do_microkinetics(deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
 
-reactions.get_rate_for_graph()
+reactions.get_rate_for_graph(T=T)
 
 ## draw graph
 reactions.draw_network()
