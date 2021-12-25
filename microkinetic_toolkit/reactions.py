@@ -12,6 +12,7 @@ eVtokJ = 96.487
 class Reactions(ReactionsBase):
 	"""
 	Set of elementary reactions.
+	Overrides the method in ReactionsBase, which is empty.
 	"""
 	def get_reaction_energies(self):
 		"""
