@@ -1,4 +1,5 @@
 from microkinetic_toolkit.reactions import Reactions
+from microkinetic_toolkit.visualization.graph import ReactionsVisualizer
 from ase.build import fcc111
 import os
 import pickle
@@ -50,4 +51,5 @@ reactions.do_microkinetics(deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
 reactions.get_rate_for_graph(T=T)
 
 ## draw graph
-reactions.draw_network()
+visualizer = ReactionsVisualizer(reactions)
+visualizer.draw_network()
