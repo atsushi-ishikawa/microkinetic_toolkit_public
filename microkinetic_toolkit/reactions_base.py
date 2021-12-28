@@ -127,18 +127,23 @@ class ReactionsBase:
 		Returns:
 			list of string
 		"""
-		species_set = set([])
+		species = set([])
 		for reaction in self.reaction_list:
-			species_set.update(reaction.unique_species)
-		species_set = list(species_set)
-		species_set = sorted(species_set)
+			species.update(reaction.unique_species)
+		species = list(species)
+		species = sorted(species)
+
+		# gas species list then surface species list
+		gas  = list(filter(lambda x: "surf" not in x, species))
+		surf = list(filter(lambda x: "surf" in x, species))
+		species = sum([gas, surf], [])  # flatten
 
 		# move "surf" to last
-		if "surf" in species_set:
-			species_set.remove("surf")
-			species_set.append("surf")
+		if "surf" in species:
+			species.remove("surf")
+			species.append("surf")
 
-		return list(species_set)
+		return species
 
 	def get_index_of_species(self, specie):
 		"""
@@ -471,9 +476,6 @@ class ReactionsBase:
 		TdeltaSs = T*deltaSs
 		deltaGs = deltaEs - TdeltaSs
 
-		print("deltaGs")
-		self.print_for_all_the_reactions(deltaGs)
-
 		# equilibrium constants
 		Kp = np.exp(-deltaGs/R/T)  # in pressure unit
 		#Kc = Kp*(101325/R/T)    # convert to concentration unit (when using atm)
@@ -514,6 +516,9 @@ class ReactionsBase:
 		ncomp = len(species)
 		ngas  = len(list(filter(lambda x: "surf" not in x, species)))
 
+		print("deltaEs [in eV]")
+		self.print_for_all_the_reactions(deltaEs)
+
 		Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs, T=T)
 
 		tau = self._Vr/self._v0  # residence time [sec]
@@ -535,9 +540,9 @@ class ReactionsBase:
 
 		# C0 = PinPa / R*T
 		x0 = np.zeros(ncomp)
-		for i, j in enumerate(species):
-			val = ratio.get(j)
-			x0[i] = val if val is not None else 0.0
+		for ispe, spe in enumerate(species):
+			val = ratio.get(spe)
+			x0[ispe] = val if val is not None else 0.0
 
 		if ncomp > ngas:
 			x0[-1] = 1.0  # surface exists ... put vacancy at last
@@ -553,7 +558,7 @@ class ReactionsBase:
 
 		# method:BDF, Radau, or LSODA
 		soln = solve_ivp(fun=lambda t, C: func(t, C, kfor, Kc, T, self._sden, self._area, self._Vr, ngas, ncomp),
-						 t_span=t_span, t_eval=t_eval, y0=C0, rtol=1e-5, atol=1e-7, method="LSODA")
+						 t_span=t_span, t_eval=t_eval, y0=C0, rtol=1e-5, atol=1e-7, method="Radau")
 		print(soln.nfev, "evaluations requred.")
 
 		self.draw_molar_fraction_change(soln=soln, showfigure=True, savefigure=False)
@@ -749,9 +754,9 @@ class ReactionsBase:
 			pickle.dump(total_rate, file)
 
 	def print_for_all_the_reactions(self, property=None):
-		print("{0:^40.35s}{1:^12s}".format("reaction", "value"))
+		print("{0:^40.38s}{1:^12s}".format("reaction", "value"))
 		for irxn, reaction in enumerate(self.reaction_list):
-			print("{0:<40.35s}{1:>10.2e}".format(reaction._reaction_str, property[irxn]))
+			print("{0:<40.38s}{1:>10.2e}".format(reaction._reaction_str, property[irxn]))
 
 	def do_preparation(self):
 		from .preparation import preparation

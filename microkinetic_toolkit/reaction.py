@@ -277,7 +277,7 @@ class Reaction:
 
 			atoms_copy = copy.deepcopy(atoms)
 			opt = ase.optimize.bfgs.BFGS(atoms_copy, maxstep=0.1)
-			opt.run(steps=10)
+			opt.run(steps=30)
 
 			return atoms_copy
 
