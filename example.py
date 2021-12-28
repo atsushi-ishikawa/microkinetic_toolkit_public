@@ -47,9 +47,8 @@ kfor = reactions.get_rate_constants(deltaEs=deltaEs, T=T)
 
 ## do_microkinetics
 reactions.do_microkinetics(deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
-
 reactions.get_rate_for_graph(T=T)
 
 ## draw graph
-visualizer = ReactionsVisualizer(reactions)
-visualizer.draw_network()
+graph = ReactionsVisualizer(reactions)
+graph.draw_network()

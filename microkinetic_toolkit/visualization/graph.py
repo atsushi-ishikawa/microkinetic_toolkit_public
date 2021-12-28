@@ -120,7 +120,7 @@ class ReactionsVisualizer(Reactions):
 			Grxn = nx.Graph()
 		#
 		for n, typ in G.nodes.data('typ'):
-			if typ=='rxn':
+			if typ == 'rxn':
 				Grxn.add_node(n)
 
 		nx.draw_networkx_labels(Grxn, pos, font_size=rxn_label_size, font_family='Gill Sans MT')
