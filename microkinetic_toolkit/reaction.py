@@ -399,6 +399,7 @@ class Reaction:
         for mol in self.reactants:
             coef, spe, site = mol
             nmol = len(self.reactants)
+            # need modification for asedb(reported by oda)
             spe_atom = self.get_atoms_from_adsorbate(spe, site)
 
             if site == "surf":

@@ -82,3 +82,9 @@ class ReactionForDB(Reaction):
             term = num * spiecie
             hside_expr = hside_expr + term
         return hside_expr
+
+    def get_preexponential(self, T=300.0, sden=1.0e-5):
+        """
+        test functions
+        """
+        return 1.0
