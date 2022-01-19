@@ -227,7 +227,6 @@ class Reaction:
         Returns:
             deltaE (float)
         """
-        import ase.build
         from ase.calculators.emt import EMT
 
         def search_energy_from_ase_db(atom, ase_db):
@@ -254,7 +253,7 @@ class Reaction:
             Returns:
                 atoms
             """
-            import ase.build
+            from ase.build import add_adsorbate
             from ase.visualize.plot import plot_atoms
             from .preparation.rot_control import make_atoms_with_standard_alignment
             import matplotlib.pyplot as plt
@@ -268,7 +267,7 @@ class Reaction:
             # rotate atom
             ads = make_atoms_with_standard_alignment(ads)
 
-            ase.build.add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
+            add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
             surf_copy.pbc = True
 
             fig, ax = plt.subplots()
@@ -388,8 +387,6 @@ class Reaction:
         Returns:
             A: pre-exponential factor (float)
         """
-        import ase.build
-
         mass_sum = 0
         mass_prod = 1
         rad_all = 0
