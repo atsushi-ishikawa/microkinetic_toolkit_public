@@ -69,14 +69,14 @@ class ReactionsBase:
         Set various parameters.
 
         Args:
-                bep_param: BEP alpha and beta (dict)
-                sden: side density [mol/m^2]
-                v0: volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
-                wcat: catalyst weight [kg]
-                phi: porosity
-                rho_b: density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
+            bep_param: BEP alpha and beta (dict)
+            sden: side density [mol/m^2]
+            v0: volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
+            wcat: catalyst weight [kg]
+            phi: porosity
+            rho_b: density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
         Returns:
-                None:
+            None:
         """
         if bep_param is None:
             self._bep_param = {"alpha", 1.0, "beta", 1.0}
@@ -108,7 +108,7 @@ class ReactionsBase:
         Generate openFOAM input file.
 
         Args:
-                file: name of the generated openFOAM input file
+            file: name of the generated openFOAM input file
         """
         with open(file, "w") as write:
             species_info = self._get_openfoam_species_info()
@@ -129,7 +129,7 @@ class ReactionsBase:
         Get unique chemical species.
 
         Returns:
-                list of string
+            list of string
         """
         species = set([])
         for reaction in self.reaction_list:
@@ -154,9 +154,9 @@ class ReactionsBase:
         Get index of species.
 
         Args:
-                specie: string
+            specie: string
         Returns:
-                specie_index: int
+            specie_index: int
         """
         species = self.get_unique_species()
         specie_index = species.index(specie)
@@ -198,7 +198,7 @@ class ReactionsBase:
         Generate csv file containing elemtary reactions.
 
         Args:
-                file: csv file name
+            file: csv file name
         """
         df = DataFrame(self._generate_reactions_dict())
         df.to_csv(file)
@@ -209,9 +209,9 @@ class ReactionsBase:
         Read elementary reactions from CSV.
 
         Args:
-                csv_file: CSV file with elementary reactions
+            csv_file: CSV file with elementary reactions
         Returns:
-                Reactions
+            Reactions
         """
         df = pd.read_csv(csv_file, index_col=0)
         reaction_list = []
@@ -244,7 +244,7 @@ class ReactionsBase:
         Calculate the entropy difference (deltaS, in eV/K) for all the elementary reactions.
 
         Returns:
-                deltaSs: numpy array
+            deltaSs: numpy array
         """
         deltaSs = np.zeros(len(self.reaction_list))
         for i, reaction in enumerate(self.reaction_list):
@@ -256,10 +256,10 @@ class ReactionsBase:
         Calculate rate constants for all the elementary reactions.
 
         Args:
-                deltaEs: reaction energies [eV]
-                T: temperature [K]
+            deltaEs: reaction energies [eV]
+            T: temperature [K]
         Returns:
-                kfor: forward rate constants (numpy array)
+            kfor: forward rate constants (numpy array)
         """
         kfor = np.zeros(len(self.reaction_list))
         for i, reaction in enumerate(self.reaction_list):
@@ -275,13 +275,13 @@ class ReactionsBase:
         Do microkinetic analysis.
 
         Args:
-                deltaEs: reaction energies.
-                kfor: rate constants in forward direction.
-                T: temperature [K]
-                P: total pressure [bar]
-                ratio: pressure ratio of inlet (dict) [-]
+            deltaEs: reaction energies.
+            kfor: rate constants in forward direction.
+            T: temperature [K]
+            P: total pressure [bar]
+            ratio: pressure ratio of inlet (dict) [-]
         Returns:
-                None
+            None
         """
         if kfor is None:
             raise ValueError("rate constant not found")
@@ -297,9 +297,7 @@ class ReactionsBase:
         Make rate equation file
 
         Args:
-                odefile: filename to write ODE equations.
-        Returns:
-                None
+            odefile: filename to write ODE equations.
         """
         import microkinetic_toolkit.reaction
         if odefile is None:
@@ -500,14 +498,11 @@ class ReactionsBase:
         Solve rate equations.
 
         Args:
-                deltaEs: reaction energies [eV]
-                kfor: rate constant in forward direction
-                odefile: ODE file
-                T: temperature [K]
-                P: total pressure [bar]
-                ratio: pressure ratio of inlet (dict) [-]
-        Returns:
-                None
+            kfor: rate constant in forward direction
+            odefile: ODE file
+            T: temperature [K]
+            P: total pressure [bar]
+            ratio: pressure ratio of inlet (dict) [-]
         """
         import numpy as np
         from scipy.integrate import solve_ivp
@@ -586,8 +581,7 @@ class ReactionsBase:
         Save surface coverage: for time-independent, output the coverage at the last time step
 
         Args:
-                soln: solution of ivp solver
-        Returns:
+            soln: solution of ivp solver
         """
         import h5py
 
@@ -636,10 +630,10 @@ class ReactionsBase:
         Draw molar fraction change with time.
 
         Args:
-                soln: solution from solve_ivp
-                showfigure: whether to show figure
-                savefigure: whether to save figure
-                filename: file name when saving figure
+            soln: solution from solve_ivp
+            showfigure: whether to show figure
+            savefigure: whether to save figure
+            filename: file name when saving figure
         """
         import matplotlib.pyplot as plt
 

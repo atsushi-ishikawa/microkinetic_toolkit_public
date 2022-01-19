@@ -18,12 +18,6 @@ from ase.io import read, write
 from ase.build import add_adsorbate, sort
 from ase.visualize import view
 from ase.neb import NEB, NEBTools
-# -------------------------------------------------
-# calculate reaction energy.
-# molecule's data should be stored in "methane.json"
-# -------------------------------------------------
-# settings
-#
 argvs = sys.argv
 
 calculator = "vasp"
@@ -84,7 +78,7 @@ label = surf.get_chemical_formula()
 magmom = surf.get_initial_magnetic_moments()
 # spin switch
 if int(math.ceil(sum(magmom))) != 0:
-    print "has unpaired electron"
+    print("has unpaired electron")
     ispin = 2
 else:
     ispin = 1
