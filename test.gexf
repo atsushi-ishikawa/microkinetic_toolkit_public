@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2022-01-19">
+    <creator>NetworkX 2.6.3</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="node">
+      <attribute id="0" title="size" type="long" />
+      <attribute id="1" title="color" type="string" />
+      <attribute id="2" title="typ" type="string" />
+    </attributes>
+    <nodes>
+      <node id="H2 + 2surf -&gt; 2H_atop" label="H2 + 2surf -&gt; 2H_atop">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2" label="H2">
+        <attvalues>
+          <attvalue for="0" value="1289" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="surf" label="surf">
+        <attvalues>
+          <attvalue for="0" value="401" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="H_surf" label="H_surf">
+        <attvalues>
+          <attvalue for="0" value="717" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO2 + surf -&gt; CO2_atop" label="CO2 + surf -&gt; CO2_atop">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO2" label="CO2">
+        <attvalues>
+          <attvalue for="0" value="1285" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO2_surf" label="CO2_surf">
+        <attvalues>
+          <attvalue for="0" value="97" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO2_atop + surf -&gt; CO_atop + O_atop" label="CO2_atop + surf -&gt; CO_atop + O_atop">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO_surf" label="CO_surf">
+        <attvalues>
+          <attvalue for="0" value="113" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="O_surf" label="O_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO_atop + surf -&gt; C_atop + O_atop" label="CO_atop + surf -&gt; C_atop + O_atop">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="C_surf" label="C_surf">
+        <attvalues>
+          <attvalue for="0" value="248" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH3_atop + H_atop -&gt; CH4_atop + surf" label="CH3_atop + H_atop -&gt; CH4_atop + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH3_surf" label="CH3_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH4_surf" label="CH4_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH4_atop -&gt; CH4 + surf" label="CH4_atop -&gt; CH4 + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH4" label="CH4">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="O_atop + H_atop -&gt; OH_atop + surf" label="O_atop + H_atop -&gt; OH_atop + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="OH_surf" label="OH_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="OH_atop + H_atop -&gt; H2O_atop + surf" label="OH_atop + H_atop -&gt; H2O_atop + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2O_surf" label="H2O_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="H2O_atop -&gt; H2O + surf" label="H2O_atop -&gt; H2O + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2O" label="H2O">
+        <attvalues>
+          <attvalue for="0" value="479" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="H2 + 2surf -&gt; 2H_atop" target="H_surf" id="0" weight="0.8111751667192197" />
+      <edge source="H2" target="H2 + 2surf -&gt; 2H_atop" id="1" weight="0.8111751667192197" />
+      <edge source="surf" target="H2 + 2surf -&gt; 2H_atop" id="2" weight="0.8111751667192197" />
+      <edge source="surf" target="CO2 + surf -&gt; CO2_atop" id="3" weight="1.2258127875318345" />
+      <edge source="surf" target="CH3_atop + H_atop -&gt; CH4_atop + surf" id="4" weight="4.219667630318568" />
+      <edge source="surf" target="CH4_atop -&gt; CH4 + surf" id="5" weight="0.8820845799747639" />
+      <edge source="surf" target="OH_atop + H_atop -&gt; H2O_atop + surf" id="6" weight="0.9184595754723934" />
+      <edge source="H_surf" target="O_atop + H_atop -&gt; OH_atop + surf" id="7" weight="0.9598799227230986" />
+      <edge source="CO2 + surf -&gt; CO2_atop" target="CO2_surf" id="8" weight="1.2258127875318345" />
+      <edge source="CO2" target="CO2 + surf -&gt; CO2_atop" id="9" weight="1.2258127875318345" />
+      <edge source="CO2_atop + surf -&gt; CO_atop + O_atop" target="CO2_surf" id="10" weight="1.4389021009501208" />
+      <edge source="CO2_atop + surf -&gt; CO_atop + O_atop" target="surf" id="11" weight="1.4389021009501208" />
+      <edge source="CO_surf" target="CO2_atop + surf -&gt; CO_atop + O_atop" id="12" weight="1.4389021009501208" />
+      <edge source="O_surf" target="CO2_atop + surf -&gt; CO_atop + O_atop" id="13" weight="1.4389021009501208" />
+      <edge source="O_surf" target="CO_atop + surf -&gt; C_atop + O_atop" id="14" weight="1.4389019926196962" />
+      <edge source="O_surf" target="O_atop + H_atop -&gt; OH_atop + surf" id="15" weight="0.9598799227230986" />
+      <edge source="CO_atop + surf -&gt; C_atop + O_atop" target="CO_surf" id="16" weight="1.4389019926196962" />
+      <edge source="CO_atop + surf -&gt; C_atop + O_atop" target="surf" id="17" weight="1.4389019926196962" />
+      <edge source="C_surf" target="CO_atop + surf -&gt; C_atop + O_atop" id="18" weight="1.4389019926196962" />
+      <edge source="CH3_atop + H_atop -&gt; CH4_atop + surf" target="CH3_surf" id="19" weight="4.219667630318568" />
+      <edge source="CH3_atop + H_atop -&gt; CH4_atop + surf" target="H_surf" id="20" weight="4.219667630318568" />
+      <edge source="CH4_surf" target="CH3_atop + H_atop -&gt; CH4_atop + surf" id="21" weight="4.219667630318568" />
+      <edge source="CH4_atop -&gt; CH4 + surf" target="CH4_surf" id="22" weight="0.8820845799747639" />
+      <edge source="CH4" target="CH4_atop -&gt; CH4 + surf" id="23" weight="0.8820845799747639" />
+      <edge source="O_atop + H_atop -&gt; OH_atop + surf" target="OH_surf" id="24" weight="0.9598799227230986" />
+      <edge source="O_atop + H_atop -&gt; OH_atop + surf" target="surf" id="25" weight="0.9598799227230986" />
+      <edge source="OH_atop + H_atop -&gt; H2O_atop + surf" target="OH_surf" id="26" weight="0.9184595754723934" />
+      <edge source="OH_atop + H_atop -&gt; H2O_atop + surf" target="H_surf" id="27" weight="0.9184595754723934" />
+      <edge source="H2O_surf" target="OH_atop + H_atop -&gt; H2O_atop + surf" id="28" weight="0.9184595754723934" />
+      <edge source="H2O_surf" target="H2O_atop -&gt; H2O + surf" id="29" weight="3.116384686527842" />
+      <edge source="H2O_atop -&gt; H2O + surf" target="H2O" id="30" weight="3.116384686527842" />
+      <edge source="H2O_atop -&gt; H2O + surf" target="surf" id="31" weight="3.116384686527842" />
+    </edges>
+  </graph>
+</gexf>
