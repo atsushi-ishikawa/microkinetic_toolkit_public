@@ -43,7 +43,7 @@ class ReactionsForDB(ReactionsBase):
     def _set_react_e_dict_from_asedb_v2(self,
                                         state_key="chem_react_symbol",
                                         select_key="min_e_data"):
-        assert hasattr(self, "_asedb")
+        assert hasattr(self, "_ase_db")
         e_dict = {}
         uniq_species = self.get_unique_species()
         for uniq_sym in uniq_species:
@@ -55,6 +55,8 @@ class ReactionsForDB(ReactionsBase):
                 row = rows_list[0]
                 E = row.energy
                 # zero_vE = self._get_zero_vib_e_from_row(row)
+            elif len(rows_list) == 0:
+                raise NotImplementedError("")
             else:
                 import ipdb
                 ipdb.set_trace()

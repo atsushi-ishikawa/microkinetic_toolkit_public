@@ -6,7 +6,6 @@ import re
 #
 from sympy import Symbol
 from sympy import Expr
-from sympy.core.numbers import Float as SYMPY_FLOAT
 from .reaction import Reaction
 
 INT_NONE_TYPE = Union[int, None]
