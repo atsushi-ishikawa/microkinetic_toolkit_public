@@ -18,12 +18,7 @@ from ase.io import read, write
 from ase.build import add_adsorbate, sort
 from ase.visualize import view
 from ase.neb import NEB, NEBTools
-# -------------------------------------------------
-# calculate reaction energy.
-# molecule's data should be stored in "methane.json"
-# -------------------------------------------------
-# settings
-#
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--reactionfile", required=True,
                     help="file with elementary reactions")

@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from tinydb import TinyDB, Query
-
 from ase.units import create_units
+
 # physical constants
 units = create_units('2014')
 kB = units['_k']        # Boltzman's constant [J/K]
@@ -20,6 +20,8 @@ R = kB*Nav             # R (gas constant) [J/mol/K]
 eVtoJ = 96.487*1.0e3
 eVtokJ = 96.487
 
+# database containing informations for adsorbates
+molecule_db = "molecules.json"
 
 class Reaction:
     """
@@ -90,7 +92,8 @@ class Reaction:
         """
         convert to dict.
 
-        Returns: base_key (dict)
+        Returns:
+            base_key (dict)
         """
         def extract_attribute_dict(instance, keys, default=None):
             ddict = {}
@@ -127,7 +130,7 @@ class Reaction:
         Get reactant chemical species.
 
         Returns:
-                reactant species in the list of strings
+            reactant species in the list of strings
         """
         lst = []
         for i in self.reactants:
@@ -140,7 +143,7 @@ class Reaction:
         Get product chemical species.
 
         Returns:
-                product species in the list of strings
+            product species in the list of strings
         """
         lst = []
         for i in self.products:
@@ -153,7 +156,7 @@ class Reaction:
         Get unique species in an elementary reaction.
 
         Returns:
-                Unique chemical species -- list of strings.
+            Unique chemical species -- list of strings.
         """
         reac = self.reactants_species
         prod = self.products_species
@@ -177,7 +180,7 @@ class Reaction:
         Get openfoam paramter as dict.
 
         Returns:
-                dict
+            dict
         """
         param_dict = {}
         param_dict["type"] = "TestReactionType"
@@ -192,37 +195,38 @@ class Reaction:
         Returns Atoms(H) from H_surf.
 
         Args:
-                specie:
-                site:
-                surface:
+            specie:
+            site:
+            surface:
         Returns:
-
+            Atoms
         """
-        import ase.build
+        from ase.db import connect
+
+        db = connect(molecule_db)
 
         if site == "gas":
             if specie == "surf":
                 return surface  # already atoms
             else:
-                return ase.build.molecule(specie)
+                return db.get_atoms(name=specie)
         else:
             spe = specie.split("_")[0]
-            return ase.build.molecule(spe)
+            return db.get_atoms(name=spe)
 
     def get_reaction_energy(self, surface=None, calculator=None, ase_db=None):
         """
         Calculate reaction energy for an elementary reaction.
 
         Args:
-                surface: Atoms
-                calculator: currently Vasp or EMT
-                ase_db: ASE database file for existing calculation
-                        Expects energy is stored by
-                        db.write(atoms, data={"energy": -123.4, ...})
+            surface: Atoms
+            calculator: currently Vasp or EMT
+            ase_db: ASE database file for existing calculation
+                    Expects energy is stored by
+                    db.write(atoms, data={"energy": -123.4, ...})
         Returns:
-                deltaE (float)
+            deltaE (float)
         """
-        import ase.build
         from ase.calculators.emt import EMT
 
         def search_energy_from_ase_db(atom, ase_db):
@@ -243,13 +247,13 @@ class Reaction:
             Adsorb molecule on surface.
 
             Args:
-                    ads:
-                    surface:
-                    height:
+                ads:
+                surface:
+                height:
             Returns:
-                    atoms
+                atoms
             """
-            import ase.build
+            from ase.build import add_adsorbate
             from ase.visualize.plot import plot_atoms
             from .preparation.rot_control import make_atoms_with_standard_alignment
             import matplotlib.pyplot as plt
@@ -263,8 +267,7 @@ class Reaction:
             # rotate atom
             ads = make_atoms_with_standard_alignment(ads)
 
-            ase.build.add_adsorbate(surf_copy, ads, offset=(
-                0, 0), position=(0, 0), height=height)
+            add_adsorbate(surf_copy, ads, offset=(0, 0), position=(0, 0), height=height)
             surf_copy.pbc = True
 
             fig, ax = plt.subplots()
@@ -299,12 +302,10 @@ class Reaction:
             sequence = self.reactants if side == "reactants" else self.products
             for i in sequence:
                 _, mol, site = i
-                atoms = self.get_atoms_from_adsorbate(
-                    mol, site, surface=surface)
+                atoms = self.get_atoms_from_adsorbate(mol, site, surface=surface)
 
                 if site != "gas":
-                    atoms = adsorb_on_surface(
-                        ads=atoms, surface=surface, height=1.5)
+                    atoms = adsorb_on_surface(ads=atoms, surface=surface, height=1.5)
 
                 # look up ase database
                 if ase_db is not None:
@@ -326,7 +327,7 @@ class Reaction:
         Moleclar entropy should be prepared beforehand.
 
         Returns:
-                deltaS (float)
+            deltaS (float)
         """
         from ase.collections import methane
 
@@ -355,12 +356,12 @@ class Reaction:
         Calculate rate constant from reaction energy (deltaE).
 
         Args:
-                deltaE: reaction energy [eV]
-                T: temperature [K]
-                bep_param: BEP alpha and beta (for eV unit)
-                sden: site density [mol/m^2]
+            deltaE: reaction energy [eV]
+            T: temperature [K]
+            bep_param: BEP alpha and beta (for eV unit)
+            sden: site density [mol/m^2]
         Returns:
-                rate constant
+            rate constant
         """
         # calculate Ea from deltaE
         Ea = bep_param["alpha"]*deltaE + bep_param["beta"]
@@ -381,14 +382,11 @@ class Reaction:
         since reverse pre-exponential is calculated from forward one and equilibrium constant.
 
         Args:
-                T: temperature [K]
-                sden: site density [mol/m^2]
+            T: temperature [K]
+            sden: site density [mol/m^2]
         Returns:
-                A: pre-exponential factor (float)
-
+            A: pre-exponential factor (float)
         """
-        import ase.build
-
         mass_sum = 0
         mass_prod = 1
         rad_all = 0

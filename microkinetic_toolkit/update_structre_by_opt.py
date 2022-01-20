@@ -11,10 +11,7 @@ from ase.calculators.emt import EMT
 from ase.visualize import view
 from ase.optimize import BFGS
 from ase.db import connect
-#
-# calculate reaction energy
-# molecule's data should be stored in "methane.json"
-#
+
 mol = sys.argv[1]
 calculator = "gau"
 calculator = calculator.lower()
