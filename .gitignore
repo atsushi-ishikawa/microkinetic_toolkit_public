@@ -1,7 +1,5 @@
 # test
-test/
-test_wout_db/
-test_db1/
+test_cases/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,16 +1,4 @@
 ,_reaction_str,_reaction_id
-<<<<<<< HEAD
-0,H2 + 2surf -> 2H_atop,0
-1,CO2 + surf -> CO2_atop,1
-2,CO2_atop + surf -> CO_atop + O_atop,2
-3,CO2_atop + H_atop -> HCOO_atop + surf,3
-4,HCOO_atop + surf -> CHO_atop + O_atop,4
-5,CHO_atop + surf -> CO_atop + H_atop,5
-6,CO_atop + surf -> C_atop + O_atop,6
-7,CO_atop + H_atop -> CHO_atop + surf,7
-8,CHO_atop + surf -> C_atop + OH_atop,8
-9,C_atop + H_atop -> CH_atop + surf,9
-=======
  0,H2 + 2surf -> 2H_atop,0
  1,CO2 + surf -> CO2_atop,1
  2,CO2_atop + surf -> CO_atop + O_atop,2
@@ -21,7 +9,6 @@
  7,CO_atop + H_atop -> CHO_atop + surf,7
  8,CHO_atop + surf -> C_atop + OH_atop,8
  9,C_atop + H_atop -> CH_atop + surf,9
->>>>>>> 9e82a1f4723c8828bf9b75049492c57db08bdf3e
 10,CH_atop + H_atop -> CH2_atop + surf,10
 11,CH2_atop + H_atop -> CH3_atop + surf,11
 12,CH3_atop + H_atop -> CH4_atop + surf,12

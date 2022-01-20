@@ -21,7 +21,7 @@ eVtoJ = 96.487*1.0e3
 eVtokJ = 96.487
 
 # database containing informations for adsorbates
-molecule_db = "molecules.json"
+MOLECULE_DB = "molecules.json"
 
 class Reaction:
     """
@@ -202,8 +202,8 @@ class Reaction:
             Atoms
         """
         from ase.db import connect
-
-        db = connect(molecule_db)
+        # MOLECULE_DB is global variables.
+        db = connect(MOLECULE_DB)
 
         if site == "gas":
             if specie == "surf":
@@ -399,7 +399,7 @@ class Reaction:
             nmol = len(self.reactants)
             # need modification for asedb(reported by oda)
             spe_atom = self.get_atoms_from_adsorbate(spe, site)
-
+            import ipdb; ipdb.set_trace()
             if site == "surf":
                 # bare surface
                 rxntype.append("surf")
