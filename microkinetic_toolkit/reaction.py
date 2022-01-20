@@ -399,7 +399,6 @@ class Reaction:
             nmol = len(self.reactants)
             # need modification for asedb(reported by oda)
             spe_atom = self.get_atoms_from_adsorbate(spe, site)
-            import ipdb; ipdb.set_trace()
             if site == "surf":
                 # bare surface
                 rxntype.append("surf")

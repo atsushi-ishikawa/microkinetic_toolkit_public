@@ -106,7 +106,8 @@ class ReactionsVisualizer(Reactions):
 			if typ=='comp':
 				Gcomp.add_node(n)
 
-		nx.draw_networkx_labels(Gcomp, pos, font_size=12, font_family='Gill Sans MT')
+		nx.draw_networkx_labels(Gcomp, pos, font_size=12)
+                # font_family='Gill Sans MT')
 
 		# reaction labels
 		if label_rxn:
@@ -123,7 +124,8 @@ class ReactionsVisualizer(Reactions):
 			if typ == 'rxn':
 				Grxn.add_node(n)
 
-		nx.draw_networkx_labels(Grxn, pos, font_size=rxn_label_size, font_family='Gill Sans MT')
+		nx.draw_networkx_labels(Grxn, pos, font_size=rxn_label_size)
+                                        # font_family='Gill Sans MT')
 
 		plt.xticks([])
 		plt.yticks([])
