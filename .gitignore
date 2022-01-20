@@ -1,6 +1,7 @@
 # test
 test/
-test_db/
+test_wout_db/
+test_db1/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
