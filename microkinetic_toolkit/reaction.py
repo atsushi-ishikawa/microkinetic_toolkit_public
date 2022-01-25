@@ -474,3 +474,105 @@ class Reaction:
             A = (stick/sden)*A
 
         return A
+
+    def get_preexponential(self, T=300.0, sden=1.0e-5):
+        """
+        Calculate pre-exponential factor.
+        Note on revserse reaction:
+        Pre-exponential factor for reverse reaction is generally not needed
+        since reverse pre-exponential is calculated from forward
+        one and equilibrium constant.
+
+        Args:
+            T: temperature [K]
+            sden: site density [mol/m^2]
+        Returns:
+            A: pre-exponential factor (float)
+        """
+        mass_sum = 0
+        mass_prod = 1
+        rad_all = 0
+        d_ave = 0
+        rxntype = []
+
+        # calculate mean diameter
+        for mol in self.reactants:
+            coef, spe, site = mol
+            nmol = len(self.reactants)
+            # need modification for asedb(reported by oda)
+            spe_atom = self.get_atoms_from_moleculedb(spe, site)
+            if site == "surf":
+                # bare surface
+                rxntype.append("surf")
+            else:
+                #vol = methane.data[mol]['molecular_volume']
+                vol = 100.0  # TODO: molecule volume in Angstrom**3
+                # molecular radius (in Angstrom) calculated from volume
+                rad = 3.0/(4.0*np.pi)*np.cbrt(vol)
+                rad *= 10e-10  # Angstrom --> m
+                # rad *= 0.182  # do empirical correction based on He, to match the vdW radius
+
+                if nmol == 1 and coef == 2:  # reacion among same species
+                    rad_all = 2*rad
+                else:
+                    rad_all += rad
+
+                # sigma = np.pi*rad_all ** 2  # sigma = pi*(rA + rB)^2
+                # rad *= 0.182   # do empirical correction based on He, to match the vdW radius
+
+                d_ave += 2*rad/nmol  # mean diameter
+
+                if spe_atom is None:
+                    pass  # bare surface
+                else:
+                    mass = sum(spe_atom.get_masses())
+
+                mass_sum += mass
+                mass_prod *= mass
+
+                if site == "gas":
+                    rxntype.append(site)
+                else:
+                    rxntype.append("surf")
+
+        # end loop over molecule
+
+        if all(rxn == "gas" for rxn in rxntype):
+            #
+            # gas reaction --- collision theory expression
+            #
+            red_mass = mass_prod / mass_sum
+            red_mass *= amu
+            # fac_for  = sigma * np.sqrt(8.0*np.pi*kbolt*T / red_mass) * Nav
+            # Eq.3.21 in CHEMKIN Theory manual
+            A = Nav*d_ave**2*np.sqrt(8.0*np.pi*kB*T/red_mass)
+            # A = 0.5*A  # structural factor
+            # A = A*1.0e6  # [m^3] --> [cm^3]
+            #
+            # sqrt(kbolt*T/mass) [kg*m^2*s^-2*K^-1 * K * kg^-1]^1/2 = [m*s^-1]
+            # A = [m^2] * [m*s^-1] * Nav = [m^3*s^-1]*[mol^-1] = [mol^-1*m^3*s^-1]
+            # finally A in [mol^-1*cm^3*s^-1]
+            #
+        elif all(rxn == "surf" for rxn in rxntype):
+            #
+            # Langmuir-Hinshelwood reaction or desorption --- apply Eyring's transition state theory
+            #
+            A = kB*T/hplanck/sden  # [s^-1]
+            # A = kbolt*T/hplanck # [s^-1]
+        else:
+            #
+            # adsorption --- Hertz-Knudsen or Chemkin
+            #
+            stick = 0.5
+            red_mass = mass_prod/mass_sum
+            red_mass *= amu  # [kg]
+            #
+            # --- Hertz-Knudsen (in concentration form) acturally same with chemkin
+            #
+            # when having site density information
+            # [J*K/kg]^1/2 = [kg*m^2*s^-2/kg]^1/2 = [m*s^-1]
+            A = np.sqrt(kB*T/(2.0*np.pi*red_mass))
+            # multiplying sticking probability and site density: [m*s^-1] --> [m^3/mol/s]
+            A = (stick/sden)*A
+
+        return A

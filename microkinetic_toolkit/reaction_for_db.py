@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 
-from typing import List, Union, Tuple
 import re
-#
+from typing import List, Union, Tuple
 from sympy import Symbol
 from sympy import Expr
 from .reaction import Reaction
@@ -83,7 +82,20 @@ class ReactionForDB(Reaction):
         return hside_expr
 
     def get_preexponential(self, T=300.0, sden=1.0e-5):
+        raise NotImplemented("")
         """
         test functions
         """
         return 1.0
+
+    def get_atoms_from_moldb(self, spe: str, site: str):
+        assert hasattr(self, "_moldb")
+        with connect('mols.db') as db:
+            query_dict = {}
+            raise NotImplementedError("")
+            for row in db.connect(**query_dict):
+                atoms = row.toatoms()
+
+
+    def set_moldb(self, moldb: str):
+        self._moldb = moldb
