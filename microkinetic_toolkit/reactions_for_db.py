@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import tempfile
 import warnings
-import cv2
 import os
 from typing import List, Iterator, Tuple
 from ase import Atoms

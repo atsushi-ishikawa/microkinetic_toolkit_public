@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
-  <meta lastmodifieddate="2022-01-20">
+  <meta lastmodifieddate="2022-01-25">
     <creator>NetworkX 2.6.3</creator>
   </meta>
   <graph defaultedgetype="directed" mode="static" name="">
@@ -10,21 +10,14 @@
       <attribute id="2" title="typ" type="string" />
     </attributes>
     <nodes>
-      <node id="H2 + 2surf -&gt; 2H_surf" label="H2 + 2surf -&gt; 2H_surf">
+      <node id="CH3_stable + H_stable -&gt; CH4_stable + surf" label="CH3_stable + H_stable -&gt; CH4_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="H2" label="H2">
-        <attvalues>
-          <attvalue for="0" value="1289" />
-          <attvalue for="1" value="blue" />
-          <attvalue for="2" value="comp" />
-        </attvalues>
-      </node>
-      <node id="surf" label="surf">
+      <node id="CH3_surf" label="CH3_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
@@ -33,37 +26,79 @@
       </node>
       <node id="H_surf" label="H_surf">
         <attvalues>
-          <attvalue for="0" value="0" />
-          <attvalue for="1" value="blue" />
-          <attvalue for="2" value="comp" />
-        </attvalues>
-      </node>
-      <node id="CO2 + surf -&gt; CO2_surf" label="CO2 + surf -&gt; CO2_surf">
-        <attvalues>
-          <attvalue for="0" value="10" />
-          <attvalue for="1" value="black" />
-          <attvalue for="2" value="rxn" />
-        </attvalues>
-      </node>
-      <node id="CO2" label="CO2">
-        <attvalues>
-          <attvalue for="0" value="1285" />
-          <attvalue for="1" value="blue" />
-          <attvalue for="2" value="comp" />
-        </attvalues>
-      </node>
-      <node id="CO2_surf" label="CO2_surf">
-        <attvalues>
           <attvalue for="0" value="717" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CO2_surf + surf -&gt; CO_surf + O_surf" label="CO2_surf + surf -&gt; CO_surf + O_surf">
+      <node id="CH4_surf" label="CH4_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="surf" label="surf">
+        <attvalues>
+          <attvalue for="0" value="417" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH2_stable + H_stable -&gt; CH3_stable + surf" label="CH2_stable + H_stable -&gt; CH3_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH2_surf" label="CH2_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH_stable + H_stable -&gt; CH2_stable + surf" label="CH_stable + H_stable -&gt; CH2_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH_surf" label="CH_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="C_stable + H_stable -&gt; CH_stable + surf" label="C_stable + H_stable -&gt; CH_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="C_surf" label="C_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO2_stable + surf -&gt; CO_stable + O_stable" label="CO2_stable + surf -&gt; CO_stable + O_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO2_surf" label="CO2_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
         </attvalues>
       </node>
       <node id="CO_surf" label="CO_surf">
@@ -80,7 +115,7 @@
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CO2_surf + H_surf -&gt; HCOO_surf + surf" label="CO2_surf + H_surf -&gt; HCOO_surf + surf">
+      <node id="CO2_stable + H_stable -&gt; HCOO_stable + surf" label="CO2_stable + H_stable -&gt; HCOO_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
@@ -94,49 +129,63 @@
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="HCOO_surf + surf -&gt; CHO_surf + O_surf" label="HCOO_surf + surf -&gt; CHO_surf + O_surf">
+      <node id="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf" label="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CHO_surf" label="CHO_surf">
+      <node id="CH2OH_surf" label="CH2OH_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CHO_surf + surf -&gt; CO_surf + H_surf" label="CHO_surf + surf -&gt; CO_surf + H_surf">
-        <attvalues>
-          <attvalue for="0" value="10" />
-          <attvalue for="1" value="black" />
-          <attvalue for="2" value="rxn" />
-        </attvalues>
-      </node>
-      <node id="CO_surf + surf -&gt; C_surf + O_surf" label="CO_surf + surf -&gt; C_surf + O_surf">
-        <attvalues>
-          <attvalue for="0" value="10" />
-          <attvalue for="1" value="black" />
-          <attvalue for="2" value="rxn" />
-        </attvalues>
-      </node>
-      <node id="C_surf" label="C_surf">
+      <node id="CH3OH_surf" label="CH3OH_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CO_surf + H_surf -&gt; CHO_surf + surf" label="CO_surf + H_surf -&gt; CHO_surf + surf">
+      <node id="CHOH_stable + H_stable -&gt; CH2OH_stable + surf" label="CHOH_stable + H_stable -&gt; CH2OH_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CHO_surf + surf -&gt; C_surf + OH_surf" label="CHO_surf + surf -&gt; C_surf + OH_surf">
+      <node id="CHOH_surf" label="CHOH_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="COH_stable + H_stable -&gt; CHOH_stable + surf" label="COH_stable + H_stable -&gt; CHOH_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="COH_surf" label="COH_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO_stable + H_stable -&gt; COH_stable + surf" label="CO_stable + H_stable -&gt; COH_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH3OH_stable + surf -&gt; CH3_stable + OH_stable" label="CH3OH_stable + surf -&gt; CH3_stable + OH_stable">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
@@ -150,84 +199,112 @@
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="C_surf + H_surf -&gt; CH_surf + surf" label="C_surf + H_surf -&gt; CH_surf + surf">
+      <node id="CH2OH_stable + surf -&gt; CH2_stable + OH_stable" label="CH2OH_stable + surf -&gt; CH2_stable + OH_stable">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CH_surf" label="CH_surf">
+      <node id="CHOH_stable + surf -&gt; CH_stable + OH_stable" label="CHOH_stable + surf -&gt; CH_stable + OH_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="COH_stable + surf -&gt; C_stable + OH_stable" label="COH_stable + surf -&gt; C_stable + OH_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH2O_stable + H_stable -&gt; CH3O_stable + surf" label="CH2O_stable + H_stable -&gt; CH3O_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH2O_surf" label="CH2O_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CH_surf + H_surf -&gt; CH2_surf + surf" label="CH_surf + H_surf -&gt; CH2_surf + surf">
-        <attvalues>
-          <attvalue for="0" value="10" />
-          <attvalue for="1" value="black" />
-          <attvalue for="2" value="rxn" />
-        </attvalues>
-      </node>
-      <node id="CH2_surf" label="CH2_surf">
+      <node id="CH3O_surf" label="CH3O_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CH2_surf + H_surf -&gt; CH3_surf + surf" label="CH2_surf + H_surf -&gt; CH3_surf + surf">
+      <node id="CHO_stable + H_stable -&gt; CH2O_stable + surf" label="CHO_stable + H_stable -&gt; CH2O_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CH3_surf" label="CH3_surf">
+      <node id="CHO_surf" label="CHO_surf">
         <attvalues>
           <attvalue for="0" value="0" />
           <attvalue for="1" value="blue" />
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="CH3_surf + H_surf -&gt; CH4_surf + surf" label="CH3_surf + H_surf -&gt; CH4_surf + surf">
+      <node id="CH3O_stable + surf -&gt; CH3_stable + O_stable" label="CH3O_stable + surf -&gt; CH3_stable + O_stable">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CH4_surf" label="CH4_surf">
-        <attvalues>
-          <attvalue for="0" value="0" />
-          <attvalue for="1" value="blue" />
-          <attvalue for="2" value="comp" />
-        </attvalues>
-      </node>
-      <node id="CH4_surf -&gt; CH4 + surf" label="CH4_surf -&gt; CH4 + surf">
+      <node id="CH2_stable + O_stable -&gt; CH2O_stable + surf" label="CH2_stable + O_stable -&gt; CH2O_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="CH4" label="CH4">
-        <attvalues>
-          <attvalue for="0" value="0" />
-          <attvalue for="1" value="blue" />
-          <attvalue for="2" value="comp" />
-        </attvalues>
-      </node>
-      <node id="O_surf + H_surf -&gt; OH_surf + surf" label="O_surf + H_surf -&gt; OH_surf + surf">
+      <node id="CHO_stable + surf -&gt; CH_stable + O_stable" label="CHO_stable + surf -&gt; CH_stable + O_stable">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
           <attvalue for="2" value="rxn" />
         </attvalues>
       </node>
-      <node id="OH_surf + H_surf -&gt; H2O_surf + surf" label="OH_surf + H_surf -&gt; H2O_surf + surf">
+      <node id="CO_stable + surf -&gt; C_stable + O_stable" label="CO_stable + surf -&gt; C_stable + O_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH3OH_stable + surf -&gt; CH3O_stable + H_stable" label="CH3OH_stable + surf -&gt; CH3O_stable + H_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH2OH_stable + surf -&gt; CH2O_stable + H_stable" label="CH2OH_stable + surf -&gt; CH2O_stable + H_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="O_stable + H_stable -&gt; OH_stable + surf" label="O_stable + H_stable -&gt; OH_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="OH_stable + H_stable -&gt; H2O_stable + surf" label="OH_stable + H_stable -&gt; H2O_stable + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
@@ -241,7 +318,91 @@
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
-      <node id="H2O_surf -&gt; H2O + surf" label="H2O_surf -&gt; H2O + surf">
+      <node id="H2 + 2surf -&gt; 2H_stable" label="H2 + 2surf -&gt; 2H_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2" label="H2">
+        <attvalues>
+          <attvalue for="0" value="1289" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="OH_stable + OH_stable -&gt; H2O_stable + O_stable" label="OH_stable + OH_stable -&gt; H2O_stable + O_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO2_stable + C_stable -&gt; 2CO_stable" label="CO2_stable + C_stable -&gt; 2CO_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="HCOO_stable + H_stable -&gt; H2COO_stable + surf" label="HCOO_stable + H_stable -&gt; H2COO_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2COO_surf" label="H2COO_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="H2COO_stable + H_stable -&gt; H2COOH_stable + surf" label="H2COO_stable + H_stable -&gt; H2COOH_stable + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="H2COOH_surf" label="H2COOH_surf">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO2 + surf -&gt; CO2_stable" label="CO2 + surf -&gt; CO2_stable">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO2" label="CO2">
+        <attvalues>
+          <attvalue for="0" value="1285" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CO_stable -&gt; CO + surf" label="CO_stable -&gt; CO + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CO" label="CO">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="H2O_stable -&gt; H2O + surf" label="H2O_stable -&gt; H2O + surf">
         <attvalues>
           <attvalue for="0" value="10" />
           <attvalue for="1" value="black" />
@@ -255,72 +416,164 @@
           <attvalue for="2" value="comp" />
         </attvalues>
       </node>
+      <node id="CH4_stable -&gt; CH4 + surf" label="CH4_stable -&gt; CH4 + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH4" label="CH4">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
+      <node id="CH3OH_stable -&gt; CH3OH + surf" label="CH3OH_stable -&gt; CH3OH + surf">
+        <attvalues>
+          <attvalue for="0" value="10" />
+          <attvalue for="1" value="black" />
+          <attvalue for="2" value="rxn" />
+        </attvalues>
+      </node>
+      <node id="CH3OH" label="CH3OH">
+        <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="blue" />
+          <attvalue for="2" value="comp" />
+        </attvalues>
+      </node>
     </nodes>
     <edges>
-      <edge source="H2 + 2surf -&gt; 2H_surf" target="H2" id="0" weight="13.214812840707971" />
-      <edge source="H2 + 2surf -&gt; 2H_surf" target="surf" id="1" weight="13.214812840707971" />
-      <edge source="surf" target="CO2_surf + H_surf -&gt; HCOO_surf + surf" id="2" weight="4.014004369100453" />
-      <edge source="surf" target="CO_surf + H_surf -&gt; CHO_surf + surf" id="3" weight="10.928619509404896" />
-      <edge source="surf" target="C_surf + H_surf -&gt; CH_surf + surf" id="4" weight="18.40332012521456" />
-      <edge source="surf" target="CH_surf + H_surf -&gt; CH2_surf + surf" id="5" weight="19.585130869810857" />
-      <edge source="surf" target="CH2_surf + H_surf -&gt; CH3_surf + surf" id="6" weight="20.810713889491723" />
-      <edge source="surf" target="CH3_surf + H_surf -&gt; CH4_surf + surf" id="7" weight="22.075883409530185" />
-      <edge source="surf" target="CH4_surf -&gt; CH4 + surf" id="8" weight="14.356429965290173" />
-      <edge source="surf" target="O_surf + H_surf -&gt; OH_surf + surf" id="9" weight="10.928619460839522" />
-      <edge source="surf" target="OH_surf + H_surf -&gt; H2O_surf + surf" id="10" weight="10.861326424124856" />
-      <edge source="surf" target="H2O_surf -&gt; H2O + surf" id="11" weight="3.1362555310235427" />
-      <edge source="H_surf" target="H2 + 2surf -&gt; 2H_surf" id="12" weight="13.214812840707971" />
-      <edge source="H_surf" target="CHO_surf + surf -&gt; CO_surf + H_surf" id="13" weight="12.616034912215415" />
-      <edge source="CO2 + surf -&gt; CO2_surf" target="CO2" id="14" weight="2.676160920312129" />
-      <edge source="CO2 + surf -&gt; CO2_surf" target="surf" id="15" weight="2.676160920312129" />
-      <edge source="CO2_surf" target="CO2 + surf -&gt; CO2_surf" id="16" weight="2.676160920312129" />
-      <edge source="CO2_surf + surf -&gt; CO_surf + O_surf" target="CO2_surf" id="17" weight="11.371496805478714" />
-      <edge source="CO2_surf + surf -&gt; CO_surf + O_surf" target="surf" id="18" weight="11.371496805478714" />
-      <edge source="CO_surf" target="CO2_surf + surf -&gt; CO_surf + O_surf" id="19" weight="11.371496805478714" />
-      <edge source="CO_surf" target="CHO_surf + surf -&gt; CO_surf + H_surf" id="20" weight="12.616034912215415" />
-      <edge source="O_surf" target="CO2_surf + surf -&gt; CO_surf + O_surf" id="21" weight="11.371496805478714" />
-      <edge source="O_surf" target="HCOO_surf + surf -&gt; CHO_surf + O_surf" id="22" weight="12.8049383946108" />
-      <edge source="O_surf" target="CO_surf + surf -&gt; C_surf + O_surf" id="23" weight="18.28611194578316" />
-      <edge source="CO2_surf + H_surf -&gt; HCOO_surf + surf" target="CO2_surf" id="24" weight="4.014004369100453" />
-      <edge source="CO2_surf + H_surf -&gt; HCOO_surf + surf" target="H_surf" id="25" weight="4.014004369100453" />
-      <edge source="HCOO_surf" target="CO2_surf + H_surf -&gt; HCOO_surf + surf" id="26" weight="4.014004369100453" />
-      <edge source="HCOO_surf + surf -&gt; CHO_surf + O_surf" target="HCOO_surf" id="27" weight="12.8049383946108" />
-      <edge source="HCOO_surf + surf -&gt; CHO_surf + O_surf" target="surf" id="28" weight="12.8049383946108" />
-      <edge source="CHO_surf" target="HCOO_surf + surf -&gt; CHO_surf + O_surf" id="29" weight="12.8049383946108" />
-      <edge source="CHO_surf" target="CO_surf + H_surf -&gt; CHO_surf + surf" id="30" weight="10.928619509404896" />
-      <edge source="CHO_surf + surf -&gt; CO_surf + H_surf" target="CHO_surf" id="31" weight="12.616034912215415" />
-      <edge source="CHO_surf + surf -&gt; CO_surf + H_surf" target="surf" id="32" weight="12.616034912215415" />
-      <edge source="CO_surf + surf -&gt; C_surf + O_surf" target="CO_surf" id="33" weight="18.28611194578316" />
-      <edge source="CO_surf + surf -&gt; C_surf + O_surf" target="surf" id="34" weight="18.28611194578316" />
-      <edge source="C_surf" target="CO_surf + surf -&gt; C_surf + O_surf" id="35" weight="18.28611194578316" />
-      <edge source="C_surf" target="CHO_surf + surf -&gt; C_surf + OH_surf" id="36" weight="18.286043993301874" />
-      <edge source="CO_surf + H_surf -&gt; CHO_surf + surf" target="CO_surf" id="37" weight="10.928619509404896" />
-      <edge source="CO_surf + H_surf -&gt; CHO_surf + surf" target="H_surf" id="38" weight="10.928619509404896" />
-      <edge source="CHO_surf + surf -&gt; C_surf + OH_surf" target="CHO_surf" id="39" weight="18.286043993301874" />
-      <edge source="CHO_surf + surf -&gt; C_surf + OH_surf" target="surf" id="40" weight="18.286043993301874" />
-      <edge source="OH_surf" target="CHO_surf + surf -&gt; C_surf + OH_surf" id="41" weight="18.286043993301874" />
-      <edge source="OH_surf" target="O_surf + H_surf -&gt; OH_surf + surf" id="42" weight="10.928619460839522" />
-      <edge source="C_surf + H_surf -&gt; CH_surf + surf" target="C_surf" id="43" weight="18.40332012521456" />
-      <edge source="C_surf + H_surf -&gt; CH_surf + surf" target="H_surf" id="44" weight="18.40332012521456" />
-      <edge source="CH_surf" target="C_surf + H_surf -&gt; CH_surf + surf" id="45" weight="18.40332012521456" />
-      <edge source="CH_surf + H_surf -&gt; CH2_surf + surf" target="CH_surf" id="46" weight="19.585130869810857" />
-      <edge source="CH_surf + H_surf -&gt; CH2_surf + surf" target="H_surf" id="47" weight="19.585130869810857" />
-      <edge source="CH2_surf" target="CH_surf + H_surf -&gt; CH2_surf + surf" id="48" weight="19.585130869810857" />
-      <edge source="CH2_surf + H_surf -&gt; CH3_surf + surf" target="CH2_surf" id="49" weight="20.810713889491723" />
-      <edge source="CH2_surf + H_surf -&gt; CH3_surf + surf" target="H_surf" id="50" weight="20.810713889491723" />
-      <edge source="CH3_surf" target="CH2_surf + H_surf -&gt; CH3_surf + surf" id="51" weight="20.810713889491723" />
-      <edge source="CH3_surf + H_surf -&gt; CH4_surf + surf" target="CH3_surf" id="52" weight="22.075883409530185" />
-      <edge source="CH3_surf + H_surf -&gt; CH4_surf + surf" target="H_surf" id="53" weight="22.075883409530185" />
-      <edge source="CH4_surf" target="CH3_surf + H_surf -&gt; CH4_surf + surf" id="54" weight="22.075883409530185" />
-      <edge source="CH4_surf -&gt; CH4 + surf" target="CH4_surf" id="55" weight="14.356429965290173" />
-      <edge source="CH4" target="CH4_surf -&gt; CH4 + surf" id="56" weight="14.356429965290173" />
-      <edge source="O_surf + H_surf -&gt; OH_surf + surf" target="O_surf" id="57" weight="10.928619460839522" />
-      <edge source="O_surf + H_surf -&gt; OH_surf + surf" target="H_surf" id="58" weight="10.928619460839522" />
-      <edge source="OH_surf + H_surf -&gt; H2O_surf + surf" target="OH_surf" id="59" weight="10.861326424124856" />
-      <edge source="OH_surf + H_surf -&gt; H2O_surf + surf" target="H_surf" id="60" weight="10.861326424124856" />
-      <edge source="H2O_surf" target="OH_surf + H_surf -&gt; H2O_surf + surf" id="61" weight="10.861326424124856" />
-      <edge source="H2O_surf -&gt; H2O + surf" target="H2O_surf" id="62" weight="3.1362555310235427" />
-      <edge source="H2O" target="H2O_surf -&gt; H2O + surf" id="63" weight="3.1362555310235427" />
+      <edge source="CH3_stable + H_stable -&gt; CH4_stable + surf" target="CH3_surf" id="0" weight="5.500832045540695" />
+      <edge source="CH3_stable + H_stable -&gt; CH4_stable + surf" target="H_surf" id="1" weight="5.500832045540695" />
+      <edge source="CH3_surf" target="CH2_stable + H_stable -&gt; CH3_stable + surf" id="2" weight="5.113492257730066" />
+      <edge source="CH3_surf" target="CH3OH_stable + surf -&gt; CH3_stable + OH_stable" id="3" weight="6.23311271385809" />
+      <edge source="CH3_surf" target="CH3O_stable + surf -&gt; CH3_stable + O_stable" id="4" weight="7.228276185239032" />
+      <edge source="H_surf" target="CH3OH_stable + surf -&gt; CH3O_stable + H_stable" id="5" weight="6.239072558505986" />
+      <edge source="H_surf" target="CH2OH_stable + surf -&gt; CH2O_stable + H_stable" id="6" weight="6.240085950566064" />
+      <edge source="H_surf" target="H2 + 2surf -&gt; 2H_stable" id="7" weight="1.2798704225955841" />
+      <edge source="CH4_surf" target="CH3_stable + H_stable -&gt; CH4_stable + surf" id="8" weight="5.500832045540695" />
+      <edge source="surf" target="CH3_stable + H_stable -&gt; CH4_stable + surf" id="9" weight="5.500832045540695" />
+      <edge source="surf" target="CH2_stable + H_stable -&gt; CH3_stable + surf" id="10" weight="5.113492257730066" />
+      <edge source="surf" target="CH_stable + H_stable -&gt; CH2_stable + surf" id="11" weight="4.729195442789392" />
+      <edge source="surf" target="C_stable + H_stable -&gt; CH_stable + surf" id="12" weight="3.9820830862055807" />
+      <edge source="surf" target="CO2_stable + H_stable -&gt; HCOO_stable + surf" id="13" weight="1.9713262083419618" />
+      <edge source="surf" target="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf" id="14" weight="4.904725897414318" />
+      <edge source="surf" target="CHOH_stable + H_stable -&gt; CH2OH_stable + surf" id="15" weight="4.524139899057147" />
+      <edge source="surf" target="COH_stable + H_stable -&gt; CHOH_stable + surf" id="16" weight="3.835399141224886" />
+      <edge source="surf" target="CO_stable + H_stable -&gt; COH_stable + surf" id="17" weight="2.6600380136999817" />
+      <edge source="surf" target="CH2O_stable + H_stable -&gt; CH3O_stable + surf" id="18" weight="5.833278464802705" />
+      <edge source="surf" target="CHO_stable + H_stable -&gt; CH2O_stable + surf" id="19" weight="5.924362408531003" />
+      <edge source="surf" target="CH2_stable + O_stable -&gt; CH2O_stable + surf" id="20" weight="6.182756625524506" />
+      <edge source="surf" target="O_stable + H_stable -&gt; OH_stable + surf" id="21" weight="2.317512658846457" />
+      <edge source="surf" target="OH_stable + H_stable -&gt; H2O_stable + surf" id="22" weight="2.8948610575907594" />
+      <edge source="surf" target="HCOO_stable + H_stable -&gt; H2COO_stable + surf" id="23" weight="2.809448466224619" />
+      <edge source="surf" target="H2COO_stable + H_stable -&gt; H2COOH_stable + surf" id="24" weight="3.5948170893142404" />
+      <edge source="surf" target="CO_stable -&gt; CO + surf" id="25" weight="2.849210413620653" />
+      <edge source="surf" target="H2O_stable -&gt; H2O + surf" id="26" weight="3.460729829459991" />
+      <edge source="surf" target="CH4_stable -&gt; CH4 + surf" id="27" weight="5.96259545189832" />
+      <edge source="surf" target="CH3OH_stable -&gt; CH3OH + surf" id="28" weight="5.504183818932979" />
+      <edge source="CH2_stable + H_stable -&gt; CH3_stable + surf" target="CH2_surf" id="29" weight="5.113492257730066" />
+      <edge source="CH2_stable + H_stable -&gt; CH3_stable + surf" target="H_surf" id="30" weight="5.113492257730066" />
+      <edge source="CH2_surf" target="CH_stable + H_stable -&gt; CH2_stable + surf" id="31" weight="4.729195442789392" />
+      <edge source="CH2_surf" target="CH2OH_stable + surf -&gt; CH2_stable + OH_stable" id="32" weight="5.806282529844494" />
+      <edge source="CH_stable + H_stable -&gt; CH2_stable + surf" target="CH_surf" id="33" weight="4.729195442789392" />
+      <edge source="CH_stable + H_stable -&gt; CH2_stable + surf" target="H_surf" id="34" weight="4.729195442789392" />
+      <edge source="CH_surf" target="C_stable + H_stable -&gt; CH_stable + surf" id="35" weight="3.9820830862055807" />
+      <edge source="CH_surf" target="CHOH_stable + surf -&gt; CH_stable + OH_stable" id="36" weight="4.992417399736339" />
+      <edge source="CH_surf" target="CHO_stable + surf -&gt; CH_stable + O_stable" id="37" weight="7.58457012205583" />
+      <edge source="C_stable + H_stable -&gt; CH_stable + surf" target="C_surf" id="38" weight="3.9820830862055807" />
+      <edge source="C_stable + H_stable -&gt; CH_stable + surf" target="H_surf" id="39" weight="3.9820830862055807" />
+      <edge source="C_surf" target="COH_stable + surf -&gt; C_stable + OH_stable" id="40" weight="4.982388657513362" />
+      <edge source="C_surf" target="CO_stable + surf -&gt; C_stable + O_stable" id="41" weight="2.8038217992988685" />
+      <edge source="CO2_stable + surf -&gt; CO_stable + O_stable" target="CO2_surf" id="42" weight="2.48208246356623" />
+      <edge source="CO2_stable + surf -&gt; CO_stable + O_stable" target="surf" id="43" weight="2.48208246356623" />
+      <edge source="CO2_surf" target="CO2 + surf -&gt; CO2_stable" id="44" weight="0.3283462734838323" />
+      <edge source="CO_surf" target="CO2_stable + surf -&gt; CO_stable + O_stable" id="45" weight="2.48208246356623" />
+      <edge source="CO_surf" target="CO2_stable + C_stable -&gt; 2CO_stable" id="46" weight="4.2329552571421925" />
+      <edge source="O_surf" target="CO2_stable + surf -&gt; CO_stable + O_stable" id="47" weight="2.48208246356623" />
+      <edge source="O_surf" target="CH3O_stable + surf -&gt; CH3_stable + O_stable" id="48" weight="7.228276185239032" />
+      <edge source="O_surf" target="CHO_stable + surf -&gt; CH_stable + O_stable" id="49" weight="7.58457012205583" />
+      <edge source="O_surf" target="CO_stable + surf -&gt; C_stable + O_stable" id="50" weight="2.8038217992988685" />
+      <edge source="O_surf" target="OH_stable + OH_stable -&gt; H2O_stable + O_stable" id="51" weight="5.04116756360596" />
+      <edge source="CO2_stable + H_stable -&gt; HCOO_stable + surf" target="CO2_surf" id="52" weight="1.9713262083419618" />
+      <edge source="CO2_stable + H_stable -&gt; HCOO_stable + surf" target="H_surf" id="53" weight="1.9713262083419618" />
+      <edge source="HCOO_surf" target="CO2_stable + H_stable -&gt; HCOO_stable + surf" id="54" weight="1.9713262083419618" />
+      <edge source="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf" target="CH2OH_surf" id="55" weight="4.904725897414318" />
+      <edge source="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf" target="H_surf" id="56" weight="4.904725897414318" />
+      <edge source="CH2OH_surf" target="CHOH_stable + H_stable -&gt; CH2OH_stable + surf" id="57" weight="4.524139899057147" />
+      <edge source="CH3OH_surf" target="CH2OH_stable + H_stable -&gt; CH3OH_stable + surf" id="58" weight="4.904725897414318" />
+      <edge source="CHOH_stable + H_stable -&gt; CH2OH_stable + surf" target="CHOH_surf" id="59" weight="4.524139899057147" />
+      <edge source="CHOH_stable + H_stable -&gt; CH2OH_stable + surf" target="H_surf" id="60" weight="4.524139899057147" />
+      <edge source="CHOH_surf" target="COH_stable + H_stable -&gt; CHOH_stable + surf" id="61" weight="3.835399141224886" />
+      <edge source="COH_stable + H_stable -&gt; CHOH_stable + surf" target="COH_surf" id="62" weight="3.835399141224886" />
+      <edge source="COH_stable + H_stable -&gt; CHOH_stable + surf" target="H_surf" id="63" weight="3.835399141224886" />
+      <edge source="COH_surf" target="CO_stable + H_stable -&gt; COH_stable + surf" id="64" weight="2.6600380136999817" />
+      <edge source="CO_stable + H_stable -&gt; COH_stable + surf" target="CO_surf" id="65" weight="2.6600380136999817" />
+      <edge source="CO_stable + H_stable -&gt; COH_stable + surf" target="H_surf" id="66" weight="2.6600380136999817" />
+      <edge source="CH3OH_stable + surf -&gt; CH3_stable + OH_stable" target="CH3OH_surf" id="67" weight="6.23311271385809" />
+      <edge source="CH3OH_stable + surf -&gt; CH3_stable + OH_stable" target="surf" id="68" weight="6.23311271385809" />
+      <edge source="OH_surf" target="CH3OH_stable + surf -&gt; CH3_stable + OH_stable" id="69" weight="6.23311271385809" />
+      <edge source="OH_surf" target="CH2OH_stable + surf -&gt; CH2_stable + OH_stable" id="70" weight="5.806282529844494" />
+      <edge source="OH_surf" target="CHOH_stable + surf -&gt; CH_stable + OH_stable" id="71" weight="4.992417399736339" />
+      <edge source="OH_surf" target="COH_stable + surf -&gt; C_stable + OH_stable" id="72" weight="4.982388657513362" />
+      <edge source="OH_surf" target="O_stable + H_stable -&gt; OH_stable + surf" id="73" weight="2.317512658846457" />
+      <edge source="CH2OH_stable + surf -&gt; CH2_stable + OH_stable" target="CH2OH_surf" id="74" weight="5.806282529844494" />
+      <edge source="CH2OH_stable + surf -&gt; CH2_stable + OH_stable" target="surf" id="75" weight="5.806282529844494" />
+      <edge source="CHOH_stable + surf -&gt; CH_stable + OH_stable" target="CHOH_surf" id="76" weight="4.992417399736339" />
+      <edge source="CHOH_stable + surf -&gt; CH_stable + OH_stable" target="surf" id="77" weight="4.992417399736339" />
+      <edge source="COH_stable + surf -&gt; C_stable + OH_stable" target="COH_surf" id="78" weight="4.982388657513362" />
+      <edge source="COH_stable + surf -&gt; C_stable + OH_stable" target="surf" id="79" weight="4.982388657513362" />
+      <edge source="CH2O_stable + H_stable -&gt; CH3O_stable + surf" target="CH2O_surf" id="80" weight="5.833278464802705" />
+      <edge source="CH2O_stable + H_stable -&gt; CH3O_stable + surf" target="H_surf" id="81" weight="5.833278464802705" />
+      <edge source="CH2O_surf" target="CHO_stable + H_stable -&gt; CH2O_stable + surf" id="82" weight="5.924362408531003" />
+      <edge source="CH2O_surf" target="CH2_stable + O_stable -&gt; CH2O_stable + surf" id="83" weight="6.182756625524506" />
+      <edge source="CH2O_surf" target="CH2OH_stable + surf -&gt; CH2O_stable + H_stable" id="84" weight="6.240085950566064" />
+      <edge source="CH3O_surf" target="CH2O_stable + H_stable -&gt; CH3O_stable + surf" id="85" weight="5.833278464802705" />
+      <edge source="CH3O_surf" target="CH3OH_stable + surf -&gt; CH3O_stable + H_stable" id="86" weight="6.239072558505986" />
+      <edge source="CHO_stable + H_stable -&gt; CH2O_stable + surf" target="CHO_surf" id="87" weight="5.924362408531003" />
+      <edge source="CHO_stable + H_stable -&gt; CH2O_stable + surf" target="H_surf" id="88" weight="5.924362408531003" />
+      <edge source="CH3O_stable + surf -&gt; CH3_stable + O_stable" target="CH3O_surf" id="89" weight="7.228276185239032" />
+      <edge source="CH3O_stable + surf -&gt; CH3_stable + O_stable" target="surf" id="90" weight="7.228276185239032" />
+      <edge source="CH2_stable + O_stable -&gt; CH2O_stable + surf" target="CH2_surf" id="91" weight="6.182756625524506" />
+      <edge source="CH2_stable + O_stable -&gt; CH2O_stable + surf" target="O_surf" id="92" weight="6.182756625524506" />
+      <edge source="CHO_stable + surf -&gt; CH_stable + O_stable" target="CHO_surf" id="93" weight="7.58457012205583" />
+      <edge source="CHO_stable + surf -&gt; CH_stable + O_stable" target="surf" id="94" weight="7.58457012205583" />
+      <edge source="CO_stable + surf -&gt; C_stable + O_stable" target="CO_surf" id="95" weight="2.8038217992988685" />
+      <edge source="CO_stable + surf -&gt; C_stable + O_stable" target="surf" id="96" weight="2.8038217992988685" />
+      <edge source="CH3OH_stable + surf -&gt; CH3O_stable + H_stable" target="CH3OH_surf" id="97" weight="6.239072558505986" />
+      <edge source="CH3OH_stable + surf -&gt; CH3O_stable + H_stable" target="surf" id="98" weight="6.239072558505986" />
+      <edge source="CH2OH_stable + surf -&gt; CH2O_stable + H_stable" target="CH2OH_surf" id="99" weight="6.240085950566064" />
+      <edge source="CH2OH_stable + surf -&gt; CH2O_stable + H_stable" target="surf" id="100" weight="6.240085950566064" />
+      <edge source="O_stable + H_stable -&gt; OH_stable + surf" target="O_surf" id="101" weight="2.317512658846457" />
+      <edge source="O_stable + H_stable -&gt; OH_stable + surf" target="H_surf" id="102" weight="2.317512658846457" />
+      <edge source="OH_stable + H_stable -&gt; H2O_stable + surf" target="OH_surf" id="103" weight="2.8948610575907594" />
+      <edge source="OH_stable + H_stable -&gt; H2O_stable + surf" target="H_surf" id="104" weight="2.8948610575907594" />
+      <edge source="H2O_surf" target="OH_stable + H_stable -&gt; H2O_stable + surf" id="105" weight="2.8948610575907594" />
+      <edge source="H2O_surf" target="OH_stable + OH_stable -&gt; H2O_stable + O_stable" id="106" weight="5.04116756360596" />
+      <edge source="H2 + 2surf -&gt; 2H_stable" target="H2" id="107" weight="1.2798704225955841" />
+      <edge source="H2 + 2surf -&gt; 2H_stable" target="surf" id="108" weight="1.2798704225955841" />
+      <edge source="OH_stable + OH_stable -&gt; H2O_stable + O_stable" target="OH_surf" id="109" weight="5.04116756360596" />
+      <edge source="CO2_stable + C_stable -&gt; 2CO_stable" target="CO2_surf" id="110" weight="4.2329552571421925" />
+      <edge source="CO2_stable + C_stable -&gt; 2CO_stable" target="C_surf" id="111" weight="4.2329552571421925" />
+      <edge source="HCOO_stable + H_stable -&gt; H2COO_stable + surf" target="HCOO_surf" id="112" weight="2.809448466224619" />
+      <edge source="HCOO_stable + H_stable -&gt; H2COO_stable + surf" target="H_surf" id="113" weight="2.809448466224619" />
+      <edge source="H2COO_surf" target="HCOO_stable + H_stable -&gt; H2COO_stable + surf" id="114" weight="2.809448466224619" />
+      <edge source="H2COO_stable + H_stable -&gt; H2COOH_stable + surf" target="H2COO_surf" id="115" weight="3.5948170893142404" />
+      <edge source="H2COO_stable + H_stable -&gt; H2COOH_stable + surf" target="H_surf" id="116" weight="3.5948170893142404" />
+      <edge source="H2COOH_surf" target="H2COO_stable + H_stable -&gt; H2COOH_stable + surf" id="117" weight="3.5948170893142404" />
+      <edge source="CO2 + surf -&gt; CO2_stable" target="CO2" id="118" weight="0.3283462734838323" />
+      <edge source="CO2 + surf -&gt; CO2_stable" target="surf" id="119" weight="0.3283462734838323" />
+      <edge source="CO_stable -&gt; CO + surf" target="CO_surf" id="120" weight="2.849210413620653" />
+      <edge source="CO" target="CO_stable -&gt; CO + surf" id="121" weight="2.849210413620653" />
+      <edge source="H2O_stable -&gt; H2O + surf" target="H2O_surf" id="122" weight="3.460729829459991" />
+      <edge source="H2O" target="H2O_stable -&gt; H2O + surf" id="123" weight="3.460729829459991" />
+      <edge source="CH4_stable -&gt; CH4 + surf" target="CH4_surf" id="124" weight="5.96259545189832" />
+      <edge source="CH4" target="CH4_stable -&gt; CH4 + surf" id="125" weight="5.96259545189832" />
+      <edge source="CH3OH_stable -&gt; CH3OH + surf" target="CH3OH_surf" id="126" weight="5.504183818932979" />
+      <edge source="CH3OH" target="CH3OH_stable -&gt; CH3OH + surf" id="127" weight="5.504183818932979" />
     </edges>
   </graph>
 </gexf>
