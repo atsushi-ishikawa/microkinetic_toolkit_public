@@ -22,11 +22,18 @@ class ReactionForDB(Reaction):
         self._set_sympy_reactants()
 
     def _parse_reaction_str_for_sympy(self):
-        assert "->" in self._reaction_str
-        reactants_str, products_str = self._reaction_str.split("->")
-        self.reactants_for_sympy = self._hside_to_nspli_for_sympy(
-            reactants_str)
-        self.products_for_sympy = self._hside_to_nspli_for_sympy(products_str)
+        r_tuples, p_tuples = self._get_reactans_products_for_sympy()
+        self.reactants_for_sympy = r_tuples
+        self.products_for_sympy = p_tuples
+
+    def _get_reactans_products_for_sympy(self) -> Tuple:
+        products = []
+        for num, sp, _ in self.products:
+            products.append((num, sp))
+        reactants = []
+        for num, sp, _ in self.reactants:
+            reactants.append((num, sp))
+        return reactants, products
 
     def _hside_to_nspli_for_sympy(self, hside_str: str) -> List[N_SPECIE_TYPE]:
         terms = hside_str.split("+")
@@ -57,7 +64,10 @@ class ReactionForDB(Reaction):
             e_dict)
         rh_E = self._sympy_products.subs(
             e_dict)
-        react_e = float(rh_E - lh_E)
+        try:
+            react_e = float(rh_E - lh_E)
+        except TypeError:
+            import ipdb; ipdb.set_trace()
         return react_e
 
     def _set_sympy_products(self):
@@ -74,18 +84,17 @@ class ReactionForDB(Reaction):
                          list_nsp: List[N_SPECIE_TYPE]) -> Expr:
         hside_expr = 0.0
         for num, sym in list_nsp:
-            if " *" in sym:
-                sym = sym.replace("*", "{a}")
             spiecie = Symbol(sym)
             term = num * spiecie
             hside_expr = hside_expr + term
         return hside_expr
 
     def get_preexponential(self, T=300.0, sden=1.0e-5):
-        raise NotImplemented("")
         """
         test functions
         """
+        import warnings
+        warnings.warn("preexponential factor is substituted by test values")
         return 1.0
 
     def get_atoms_from_moldb(self, spe: str, site: str):
