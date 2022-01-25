@@ -50,7 +50,7 @@ class ReactionsForDB(ReactionsBase):
             w_mes = "set react_e_dict by default state_key and select_key.\n"\
                     "state_key: chem_react_symbol, select_key: min_e_data."
             warnings.warn(w_mes)
-            self._set_react_e_dict_from_asedb()
+            self.set_react_e_dict_from_asedb()
         return self._react_e_dict
 
     def set_react_e_dict_from_asedb(self,
@@ -215,8 +215,6 @@ def resize_img_to_hmin(im_list):
 
 
 class SnapshotAtomsMixin():
-    raise NotImplementedError("")
-
     def _gene_reactants_fig(self, angles: str = None):
         for reaction in self.reaction_list:
             _ = self._get_atoms_reacts_from_asedb(
