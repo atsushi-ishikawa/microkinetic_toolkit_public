@@ -396,14 +396,14 @@ class Reaction:
 			nmol = len(self.reactants)
 			spe_atom = self.get_atoms_from_adsorbate(spe, site)
 
-			if site == "surf":
+			if spe == "surf":
 				# bare surface
 				rxntype.append("surf")
 			else:
 				#vol = methane.data[mol]['molecular_volume']
 				vol  = 100.0  # TODO: molecule volume in Angstrom**3
 				rad  = 3.0/(4.0*np.pi)*np.cbrt(vol)  # molecular radius (in Angstrom) calculated from volume
-				rad *= 10e-10  # Angstrom --> m
+				rad *= 1.0e-10  # Angstrom --> m
 				# rad *= 0.182  # do empirical correction based on He, to match the vdW radius
 
 				if nmol == 1 and coef == 2:  # reacion among same species
