@@ -421,6 +421,7 @@ class Reaction:
                 d_ave += 2*rad/nmol  # mean diameter
 
                 if spe_atom is None:
+                    # spe_atom in only molecules.
                     pass  # bare surface
                 else:
                     mass = sum(spe_atom.get_masses())
@@ -436,6 +437,8 @@ class Reaction:
         # end loop over molecule
 
         if all(rxn == "gas" for rxn in rxntype):
+            with open("gas_react1.txt", "a") as add:
+                print(self.reactants, file=add)
             #
             # gas reaction --- collision theory expression
             #
@@ -452,12 +455,16 @@ class Reaction:
             # finally A in [mol^-1*cm^3*s^-1]
             #
         elif all(rxn == "surf" for rxn in rxntype):
+            with open("langmuir_or_desorpton2.txt", "a") as add:
+                print(self.reactants, file=add)
             #
             # Langmuir-Hinshelwood reaction or desorption --- apply Eyring's transition state theory
             #
             A = kB*T/hplanck/sden  # [s^-1]
             # A = kbolt*T/hplanck # [s^-1]
         else:
+            with open("adsorption_react3.txt", "a") as add:
+                print(self.reactants, file=add)
             #
             # adsorption --- Hertz-Knudsen or Chemkin
             #

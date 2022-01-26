@@ -3,6 +3,7 @@
 
 import re
 from typing import List, Union, Tuple
+import numpy as np
 from sympy import Symbol
 from sympy import Expr
 from .reaction import Reaction
@@ -12,6 +13,16 @@ F_NONE_TYPE = Union[float, None]
 N_SPECIE_TYPE = Tuple[int, str]
 H_SIDE_TYPE = List[N_SPECIE_TYPE]
 SPECIE_TYPE = Union[str, Symbol]
+units = create_units('2014')
+kB = units['_k']        # Boltzman's constant [J/K]
+Nav = units['_Nav']      # Avogadro's constant [mole/mol]
+amu = units['_amu']      # atomic mass unig (1.66e-27) [kg]
+hplanck = units['_hplanck']  # Plank's constant (6.63e-34) [J*s]
+R = kB*Nav             # R (gas constant) [J/mol/K]
+
+# unit conversion
+eVtoJ = 96.487*1.0e3
+eVtokJ = 96.487
 
 
 class ReactionForDB(Reaction):
