@@ -399,7 +399,6 @@ class Reaction:
             nmol = len(self.reactants)
             # need modification for asedb(reported by oda)
             spe_atom = self.get_atoms_from_adsorbate(spe, site)
-            import ipdb; ipdb.set_trace()
             if site == "surf":
                 # bare surface
                 rxntype.append("surf")
@@ -408,7 +407,7 @@ class Reaction:
                 vol = 100.0  # TODO: molecule volume in Angstrom**3
                 # molecular radius (in Angstrom) calculated from volume
                 rad = 3.0/(4.0*np.pi)*np.cbrt(vol)
-                rad *= 10e-10  # Angstrom --> m
+                rad *= 1.0e-10  # Angstrom --> m
                 # rad *= 0.182  # do empirical correction based on He, to match the vdW radius
 
                 if nmol == 1 and coef == 2:  # reacion among same species
