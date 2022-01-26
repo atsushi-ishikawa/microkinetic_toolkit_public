@@ -1,0 +1,47 @@
+,_reaction_id,eq_id,_reaction_str,activation_Ni(111),activation_Ru(0001),Reaction_freeE_Ni(111),Reaction_freeE_Ru(0001)
+0,0,R1,CH3_surf + H_surf -> CH4_surf + surf ,81.0,103.0,-63,-34
+1,1,R2,CH2_surf + H_surf -> CH3_surf + surf ,57.0,71.0,-5,22
+2,2,R3,CH_surf + H_surf -> CH2_surf + surf ,64.0,77.0,30,67
+3,3,R4,C_surf + H_surf -> CH_surf + surf ,88.0,101.0,-40,-1
+4,4,R5,CO2_surf + surf  -> CO_surf + O_ni_111,60.0,51.0,-106,-170
+5,5,R6,CO2_surf + H_surf -> COOH_ni_111+ surf ,112.0,121.0,25,20
+6,6,R7,CO2_surf + H_surf -> HCOO_surf + surf ,69.0,70.0,-25,-28
+7,7,R8,COOH_surf + surf  -> CO_surf + OH_ni_111,17.0,38.0,-116,-110
+8,8,R9,HCOO_surf + surf  -> HCO_surf + O_ni_111,146.0,104.0,43,-17
+9,9,R10,HCO_surf + surf  -> CO_surf + H_ni_111,19.0,5.0,-123,-125
+10,10,R11,COOH_surf + H_surf -> HCOOH_ni_111,83.0,114.0,16,53
+11,11,R12,HCOO_surf + H_surf -> HCOOH_ni_111+ surf ,113.0,125.0,67,101
+12,12,R13,HCOOH_surf + surf  -> HCO_surf + OH_ni_111,64.0,44.0,-9,-39
+13,13,R14,CH2OH_surf + H_surf -> CH3OH_surf + surf ,84.0,104.0,-46,-7
+14,14,R15,CHOH_surf + H_surf -> CH2OH_surf + surf ,89.0,64.0,19,26
+15,15,R16,COH_surf + H_surf -> CHOH_surf + surf ,89.0,96.0,68,103
+16,16,R17,CO_surf + H_surf -> COH_surf + surf ,209.0,198.0,112,100
+17,17,R18,CH3OH_surf + surf  -> CH3_surf + OH_ni_111,160.0,113.0,-29,-63
+18,18,R19,CH2OH_surf + surf  -> CH2_surf + OH_ni_111,64.0,43.0,-70,-92
+19,19,R20,CHOH_surf + surf  -> CH_surf + OH_ni_111,62.0,30.0,-81,-133
+20,20,R21,COH_surf + surf  -> C_surf + OH_ni_111,166.0,105.0,27,-29
+21,21,R22,CH2O_surf + H_surf -> CH3O_surf + surf ,60.0,82.0,-42,-10
+22,22,R23,CHO_surf + H_surf -> CH2O_surf + surf ,73.0,66.0,35,49
+23,23,R24,CH3O_surf + surf  -> CH3_surf + O_ni_111,127.0,117.0,-6,-84
+24,24,R25,CH2_surf + O_surf -> CH2O_surf + surf ,133.0,188.0,44,117
+25,25,R26,CHO_surf + surf  -> CH_surf + O_ni_111,104.0,105.0,-40,-135
+26,26,R27,CO_surf + surf  -> C_surf + O_ni_111,282.0,217.0,124,-9
+27,27,R28,CH3OH_surf + _surf -> CH3O_surf + H_ni_111,94.0,78.0,-38,-58
+28,28,R29,CH2OH_surf + surf  -> CH2O_surf + H_ni_111,67.0,86.0,-41,-55
+29,29,R30,CHOH_surf +  surf  -> HCO_surf + H_ni_111,61.0,68.0,-56,-79
+30,30,R31,O_surf + H_surf -> OH_surf + surf ,118.0,166.0,15,80
+31,31,R32,OH_surf + H_surf -> H2O_surf + surf ,133.0,125.0,29,38
+32,32,R33,H2 + 2ni_111 -> 2H_ni_111,64.0,51.0,-6,-32
+33,33,R34,OH_surf + OH_surf -> H2O_surf + O_ni_111,87.0,64.0,13,-42
+34,34,R35,CO2_surf + C_surf -> 2CO_ni_111,153.0,142.0,-229,-161
+35,35,R36,HCOO_surf + H_surf -> H2COO_surf + surf ,192.0,168.0,104,93
+36,36,R37,HCOOH_surf + H_surf -> H2COOH_surf + surf ,118.0,121.0,47,42
+37,37,R38,H2COO_surf + H_surf -> H2COOH_surf + surf ,90.0,156.0,10,51
+38,38,R39,H2COO_surf + surf  -> H2CO_surf + O_ni_111,32.0,36.0,-26,-60
+39,39,R40,H2COOH_surf + surf  -> H2CO_surf + OH_ni_111,34.0,18.0,-21,-32
+40,40,R41,CO2 + surf  -> CO2_ni_111,,,53,29
+41,41,R42,CO_surf -> CO + surf ,,,73,96
+42,42,R43,H2O_surf -> H2O + surf ,,,-33,-19
+43,43,R44,CH4_surf -> CH4 + surf ,,,-23,-11
+44,44,R45,HCOOH_surf -> HCOOH + surf ,,,-30,-13
+45,45,R46,CH3OH_surf -> CH3OH + surf ,,,-31,-25
