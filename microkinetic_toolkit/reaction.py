@@ -1,5 +1,4 @@
 import re
-import copy
 import numpy as np
 from tinydb import Query
 from ase.units import create_units
