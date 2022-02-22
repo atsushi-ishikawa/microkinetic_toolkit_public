@@ -5,14 +5,15 @@
  3,CO2_atop + H_atop -> HCOO_atop + surf,3
  4,HCOO_atop + surf -> CHO_atop + O_atop,4
  5,CHO_atop + surf -> CO_atop + H_atop,5
- 6,CO_atop + surf -> C_atop + O_atop,6
- 7,CO_atop + H_atop -> CHO_atop + surf,7
- 8,CHO_atop + surf -> C_atop + OH_atop,8
- 9,C_atop + H_atop -> CH_atop + surf,9
-10,CH_atop + H_atop -> CH2_atop + surf,10
-11,CH2_atop + H_atop -> CH3_atop + surf,11
-12,CH3_atop + H_atop -> CH4_atop + surf,12
-13,CH4_atop -> CH4 + surf,13
-14,O_atop + H_atop -> OH_atop + surf,14
-15,OH_atop + H_atop -> H2O_atop + surf,15
-15,H2O_atop -> H2O + surf,15
+ 6,CHO_atop + surf -> CH_atop + O_atop,6
+ 7,CO_atop + surf -> C_atop + O_atop,7
+ 8,CO_atop + H_atop -> CHO_atop + surf,8
+ 9,CHO_atop + surf -> C_atop + OH_atop,9
+10,C_atop + H_atop -> CH_atop + surf,10
+11,CH_atop + H_atop -> CH2_atop + surf,11
+12,CH2_atop + H_atop -> CH3_atop + surf,12
+13,CH3_atop + H_atop -> CH4_atop + surf,13
+14,CH4_atop -> CH4 + surf,14
+15,O_atop + H_atop -> OH_atop + surf,15
+16,OH_atop + H_atop -> H2O_atop + surf,16
+17,H2O_atop -> H2O + surf,17

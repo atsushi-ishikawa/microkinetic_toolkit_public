@@ -64,7 +64,8 @@ class ReactionsBase:
         surface = self.sort_atoms_by_z(surface)
         self._surface = surface
 
-    def set_kinetic_parameters(self, bep_param=None, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3, phi=0.5, rho_b=1.0e3):
+    def set_kinetic_parameters(self, bep_param=None, sden=1.0e-5, v0=1.0e-5, wcat=1.0e-3,
+                               area=1.0e-3, phi=0.5, rho_b=1.0e3):
         """
         Set various parameters.
 
@@ -73,6 +74,7 @@ class ReactionsBase:
             sden: side density [mol/m^2]
             v0: volumetric flowrate [m^3/sec]. 1 [m^2/sec] = 1.0e6 [mL/sec] = 6.0e7 [mL/min]
             wcat: catalyst weight [kg]
+            area: surface area [m^2/kg]
             phi: porosity
             rho_b: density of catalyst [kg/m^3]. typical is 1.0 g/cm^3 = 1.0*10^3 kg/m^3
         Returns:
@@ -85,8 +87,7 @@ class ReactionsBase:
         self._sden = sden
         self._v0 = v0
         self._wcat = wcat
-        # surface area. [m^2/kg] (e.g. BET) * [kg] --> [m^2]
-        self._area = 1000*wcat
+        self._area = area
         self._phi = phi
         self._rho_b = rho_b
         # reactor volume [m^3], calculated from w_cat.
@@ -251,6 +252,18 @@ class ReactionsBase:
             deltaSs[i] = reaction.get_entropy_difference()
         return deltaSs
 
+    def get_deltaNs(self):
+        """
+        Calculate the difference in the coefficient of gas-phase species.
+
+        Returns:
+            deltaNs: numpy array
+        """
+        deltaNs = np.zeros(len(self.reaction_list))
+        for i, reaction in enumerate(self.reaction_list):
+            deltaNs[i] = reaction.get_deltaN()
+        return deltaNs
+
     def get_rate_constants(self, deltaEs=None, T=300.0):
         """
         Calculate rate constants for all the elementary reactions.
@@ -265,8 +278,7 @@ class ReactionsBase:
         for i, reaction in enumerate(self.reaction_list):
             index = reaction._reaction_id
             deltaE = deltaEs[index]
-            kfor[i] = reaction.get_rate_constant(
-                deltaE, T, bep_param=self._bep_param, sden=self._sden)
+            kfor[i] = reaction.get_rate_constant(deltaE, T, bep_param=self._bep_param, sden=self._sden)
 
         return kfor
 
@@ -288,8 +300,8 @@ class ReactionsBase:
 
         odefile = "tmpode.py"
         self.make_rate_equation(odefile=odefile)
-        self.solve_rate_equation(
-            odefile=odefile, deltaEs=deltaEs, kfor=kfor, T=T, P=P, ratio=ratio)
+        self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, kfor=kfor,
+                                 T=T, P=P, ratio=ratio, verbose=True, plot=True)
         return None
 
     def make_rate_equation(self, odefile=None):
@@ -443,8 +455,7 @@ class ReactionsBase:
         if "surf" in dict1.values():
             # surface reaction
             tmp = ""
-            ind = [key for key, value in dict1.items() if value ==
-                   "surf"][0]  # index for "surf"
+            ind = [key for key, value in dict1.items() if value == "surf"][0]  # index for "surf"
 
             for imol, mol in enumerate(dict1):
                 comp = dict1[imol]
@@ -456,8 +467,7 @@ class ReactionsBase:
         comment = "\n\t# species --- "
 
         for imol, mol in enumerate(dict2):
-            fout.write("\trate[{0}] ={1}  # {2}\n".format(
-                imol, dict2[imol], dict1[imol]))
+            fout.write("\trate[{0}] ={1}  # {2}\n".format(imol, dict2[imol], dict1[imol]))
             comment += "%s = %s " % (imol, dict1[imol])
         comment += "\n"
 
@@ -478,13 +488,29 @@ class ReactionsBase:
 
         return None
 
-    def get_equilibrium_constant_from_deltaEs(self, deltaEs=None, T=300.0):
-        # get deltaG
+    def get_equilibrium_constant_from_deltaEs(self, deltaEs=None, T=300.0, P=1.0e5, V=1.0):
+        """
+        Get deltaGs by adding entropy and work (PV) contributions to deltaEs,
+        and convert it to Kc (equilibriums constant in concentration unit).
+
+        Args:
+            deltaEs: reaction energy [eV]
+            T: temperature [K]
+            P: total pressure [Pa]
+            V: reactor volume [m^3]
+        Returns:
+            Kc: equilibrium constant in concentration unit
+        """
         deltaEs = deltaEs.copy()*eVtokJ
         deltaSs = self.get_entropy_differences()
         deltaSs = deltaSs.copy()*eVtokJ
         TdeltaSs = T*deltaSs
-        deltaGs = deltaEs - TdeltaSs
+
+        # PV term
+        deltaNs = self.get_deltaNs()
+        PVdeltaNs = deltaNs.copy()*P*V*1.0e-3  # [Pa]*[m^3/mol] = [J/m^3]*[m^3/mol] = [J/mol] --> [kJ/mol]
+
+        deltaGs = deltaEs - TdeltaSs + PVdeltaNs
 
         # equilibrium constants
         Kp = np.exp(-deltaGs/R/T)  # in pressure unit
@@ -493,16 +519,20 @@ class ReactionsBase:
         Kc = Kp*((R*1.0e3)*T/1)
         return Kc
 
-    def solve_rate_equation(self, deltaEs=None, kfor=None, odefile=None, T=300.0, P=1.0, ratio=1.0):
+    def solve_rate_equation(self, deltaEs=None, kfor=None, odefile=None, T=300.0, P=1.0, ratio=1.0,
+                            verbose=False, plot=False):
         """
         Solve rate equations.
 
         Args:
+            deltaEs: reaction energy [eV]
             kfor: rate constant in forward direction
             odefile: ODE file
             T: temperature [K]
             P: total pressure [bar]
             ratio: pressure ratio of inlet (dict) [-]
+            verbose:
+            plot:
         """
         import numpy as np
         from scipy.integrate import solve_ivp
@@ -519,27 +549,23 @@ class ReactionsBase:
 
         # read species
         species = self.get_unique_species()
-        print("species:", species)
 
         ncomp = len(species)
         ngas = len(list(filter(lambda x: "surf" not in x, species)))
 
-        print("deltaEs [in eV]")
-        self.print_for_all_the_reactions(deltaEs)
-
-        Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs, T=T)
+        Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs, T=T, P=Pin, V=self._Vr)
 
         tau = self._Vr/self._v0  # residence time [sec]
         # tau = 1.0  # residence time [sec]
 
-        # empirical correction
-        #kfor *= 1.0e0
-
         # output results here
-        print("Kc [-]:", Kc)
-        print("kfor [-]:", kfor)
-        print(
-            "residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
+        if verbose:
+            print("species:", species)
+            print("deltaEs [in eV]")
+            print("Kc [-]:", Kc)
+            print("kfor [-]:", kfor)
+            self.print_for_all_the_reactions(deltaEs)
+            print("residence time [sec]: {0:5.3e}, GHSV [hr^-1]: {1:3d}".format(tau, int(60**2/tau)))
 
         # now solve the ODE
         t0, tf = 0, tau
@@ -565,16 +591,19 @@ class ReactionsBase:
         # density calculated from pressure. Note: R is in kJ/mol/K.
         C0 = Pin/(R*T*1e3)
         C0 *= x0
+        area_ = self._area * self._wcat  # [m^2/kg]*[kg] --> [m^2]
 
         # method:BDF, Radau, or LSODA
-        soln = solve_ivp(fun=lambda t, C: func(t, C, kfor, Kc, T, self._sden, self._area, self._Vr, ngas, ncomp),
-                         t_span=t_span, t_eval=t_eval, y0=C0, rtol=1e-5, atol=1e-7, method="Radau")
-        print(soln.nfev, "evaluations requred.")
+        rtol = 1.0e-5
+        soln = solve_ivp(fun=lambda t, C: func(t, C, kfor, Kc, T, self._sden, area_, self._Vr, ngas, ncomp),
+                         t_span=t_span, t_eval=t_eval, y0=C0, rtol=rtol, atol=rtol*1e-2, method="LSODA")
+        if verbose:
+            print(soln.nfev, "evaluations requred.")
 
-        self.draw_molar_fraction_change(
-            soln=soln, showfigure=True, savefigure=False)
+        if plot:
+            self.draw_molar_fraction_change(soln=soln, filename="mol_fraction.png")
         self.save_coverage(soln=soln)
-        return None
+        return soln
 
     def save_coverage(self, soln=None):
         """
@@ -585,8 +614,6 @@ class ReactionsBase:
         """
         import h5py
 
-        # time dependent coverage for graph
-        # dT = 10  # one record in dT points
         fac = 1.0e-6
 
         species = self.get_unique_species()
@@ -603,36 +630,18 @@ class ReactionsBase:
         tcov = np.array(tcov)
 
         h5file = h5py.File("coverage.h5", "w")
-        h5file.create_dataset("time", shape=(maxtime,),
-                              dtype=np.float, data=soln.t)
-        h5file.create_dataset(
-            "concentration", (ncomp, maxtime), dtype=np.float, data=tcov)
+        h5file.create_dataset("time", shape=(maxtime,), dtype=np.float, data=soln.t)
+        h5file.create_dataset("concentration", (ncomp, maxtime), dtype=np.float, data=tcov)
         h5file.close()
 
-        #f = open(coveragefile, "wt")
-        # f.write("      name      num     conc        time\n")  # header
-
-        # take averaged value
-        # with h5py.File("coverage.h5", "a") as file:
-        #	for isp in range(ncomp):
-        #		for itime in range(maxtime):
-        #			file["concentration"][isp,itime] = tcov[isp][itime]
-        #	#f.write("{0:16.14s}{1:03d}{2:12.4e}{3:12.4e}\n".format(species[isp],isp,tcov[isp][it],soln.t[it]))
-
-        # add RXN nodes at last
-        # for i in range(Nrxn):
-        #	f.write("R{0:>03d}            {1:03d}{2:12.4e}{3:12.4e}\n".format(i, i, 1.0e-20, 0.0))
-        # f.close()
         return None
 
-    def draw_molar_fraction_change(self, soln=None, showfigure=False, savefigure=False, filename="result.png"):
+    def draw_molar_fraction_change(self, soln=None, filename=None):
         """
         Draw molar fraction change with time.
 
         Args:
             soln: solution from solve_ivp
-            showfigure: whether to show figure
-            savefigure: whether to save figure
             filename: file name when saving figure
         """
         import matplotlib.pyplot as plt
@@ -646,23 +655,19 @@ class ReactionsBase:
 
         for i, isp in enumerate(species):
             if "surf" in isp:
-                fig2.plot(soln.t, soln.y[i], label="theta{}".
-                          format(isp.replace("_", "").replace("surf", "")))
+                fig2.plot(soln.t, soln.y[i], label="theta{}".format(isp.replace("_", "").replace("surf", "")))
             else:
-                fig1.plot(soln.t, soln.y[i], label="{}".
-                          format(isp))
+                fig1.plot(soln.t, soln.y[i], label="{}".format(isp))
 
-        fig1.set_xlabel("times /s")
+        fig1.set_xlabel("time /sec")
         fig1.set_ylabel("concentration /arb.units")
-        fig2.set_xlabel("times /s")
+        fig2.set_xlabel("time /sec")
         fig2.set_ylabel("concentration /arb.units")
         fig1.legend()
         fig2.legend()
 
-        if showfigure:
-            plt.show()
-        if savefigure:
-            plt.savefig(filename)
+        plt.savefig(filename)
+        plt.show()
 
         return None
 
@@ -685,7 +690,7 @@ class ReactionsBase:
             deltaEs = pickle.load(file)
 
         kfor = self.get_rate_constants(deltaEs=deltaEs, T=T)
-        Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs=deltaEs)
+        Kc = self.get_equilibrium_constant_from_deltaEs(deltaEs, T=T, P=Pin, V=self._Vr)
         krev = kfor / Kc
 
         AoverV = self._area / self._Vr
@@ -706,7 +711,6 @@ class ReactionsBase:
                     conc_all = 1.0
                     for mol in sequence:
                         coef, spe, site = mol
-
                         spe_num = self.get_index_of_species(spe)
                         conc = cov[spe_num][istep]
                         if site != "gas":  # surface species
@@ -722,8 +726,7 @@ class ReactionsBase:
 
         total_rate = np.zeros(rxn_num)
         for irxn in range(rxn_num):
-            total_rate[irxn] = rates["forward"][-1][irxn] - \
-                rates["reverse"][-1][irxn]
+            total_rate[irxn] = rates["forward"][-1][irxn] - rates["reverse"][-1][irxn]
 
         print("rate")
         self.print_for_all_the_reactions(total_rate)
@@ -734,8 +737,7 @@ class ReactionsBase:
     def print_for_all_the_reactions(self, property=None):
         print("{0:^40.38s}{1:^12s}".format("reaction", "value"))
         for irxn, reaction in enumerate(self.reaction_list):
-            print("{0:<40.38s}{1:>10.2e}".format(
-                reaction._reaction_str, property[irxn]))
+            print("{0:<40.38s}{1:>10.2e}".format(reaction._reaction_str, property[irxn]))
 
     def do_preparation(self):
         from .preparation import preparation
@@ -777,6 +779,47 @@ class ReactionsBase:
         newatoms.cell = atoms_copy.get_cell()
 
         return newatoms
+
+    def get_sensitivity(self, deltaEs=None, kfor=None, T=300, P=1.0, ratio=1.0, factor=1.1):
+        import matplotlib.pyplot as plt
+        import copy
+
+        odefile = "tmpode.py"
+        self.make_rate_equation(odefile=odefile)
+
+        n_species = len(self.get_unique_species())
+        n_rxn = len(self.reaction_list)
+        sens = np.zeros((n_rxn, n_species))
+        for irxn in range(n_rxn):
+            print("evaluating sensitivity for rxn = {0:d}/{1:d}".format(irxn, n_rxn-1))
+            kfor_new = copy.copy(kfor)
+            kfor_new[irxn] = kfor_new[irxn]*factor
+            soln = self.solve_rate_equation(odefile=odefile, deltaEs=deltaEs, kfor=kfor_new,
+                                            T=T, P=P, ratio=ratio, verbose=False, plot=False)
+            for spe in ratio:
+                idx  = self.get_index_of_species(spe)
+                xin  = soln.y[idx][0]
+                xout = soln.y[idx][-1]
+                conv = (xin-xout)/xin  # conversion
+                sens[irxn, idx] = conv*1.0e2  # to percent
+
+        # normalize, only for reactant species
+        for spe in ratio:
+            idx  = self.get_index_of_species(spe)
+            maxval = np.max(sens[:, idx])
+            for irxn in range(n_rxn):
+                sens[irxn, idx] = sens[irxn, idx] / maxval
+
+        small = 1.0e-3
+        for spe in ratio:
+            idx = self.get_index_of_species(spe)
+            plt.bar(x=range(n_rxn), height=sens[:, idx])
+            plt.ylim([min(sens[:, idx])-small, max(sens[:, idx])+small])
+            plt.xlabel("Elementary reactions (-)")
+            plt.ylabel("Sensitivity for {0:s} (-)".format(spe))
+            plt.show()
+
+        return sens
 
     def get_reaction_energies(self):
         pass
