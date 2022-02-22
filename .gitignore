@@ -163,10 +163,6 @@ tmpode.py
 # vscode
 .vscode/
 
-# input files
-*.csv
-*.json
-
 # output files
 *.png
 *POSCAR
