@@ -253,7 +253,9 @@ class Reaction:
             from .preparation.rot_control import make_atoms_with_standard_alignment
             import matplotlib.pyplot as plt
 
-            surf_copy = copy.deepcopy(surface)
+            #surf_copy = copy.deepcopy(surface)  # deepcopy does not work with Cython
+            surf_copy = surface.copy()
+            surf_copy.calc = surface.calc
 
             # adjust height
             shift = min(ads.positions[:, 2])
@@ -283,7 +285,10 @@ class Reaction:
         def optimize_geometry(atoms):
             import ase.optimize
 
-            atoms_copy = copy.deepcopy(atoms)
+            #atoms_copy = copy.deepcopy(atoms)  # deepcopy does not work with Cython
+            atoms_copy = atoms.copy()
+            atoms_copy.calc = atoms.calc
+
             opt = ase.optimize.bfgs.BFGS(atoms_copy, maxstep=0.1)
             opt.run(steps=30)
 
